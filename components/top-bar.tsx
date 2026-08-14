@@ -19,7 +19,6 @@ import { LoginDialog } from "@/components/ui/login-dialog";
 
 export function TopBar() {
   const { data: session } = useSession();
-  console.log(session?.user);
 
   return (
     <div className="w-full fixed top-0 left-0 right-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-background/80 dark:supports-[backdrop-filter]:bg-background/40 border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-transparent">
@@ -73,10 +72,7 @@ export function TopBar() {
               </DropdownMenu>
             ) : (
               <LoginDialog>
-                <GradientButton
-                  type="button"
-                  style={{ maxWidth: "240px" }}
-                >
+                <GradientButton type="button" style={{ maxWidth: "240px" }}>
                   <span className="flex items-center">
                     Login
                     <MoveRight className="ml-1 h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-2" />

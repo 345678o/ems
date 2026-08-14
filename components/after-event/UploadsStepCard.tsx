@@ -11,7 +11,15 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Upload, AlertCircle, X, Image, Video, FileText, Link } from "lucide-react";
+import {
+  Upload,
+  AlertCircle,
+  X,
+  Image,
+  Video,
+  FileText,
+  Link,
+} from "lucide-react";
 import type { FileUploads, ValidationErrors } from "./types";
 import React, { RefObject } from "react";
 
@@ -29,7 +37,10 @@ interface UploadsStepCardProps {
     targetIndex?: number
   ) => void;
   handleVideoUrlChange: (url: string) => void;
-  removeFile: (type: "images" | "report" | "permissionLetter", index?: number) => void;
+  removeFile: (
+    type: "images" | "report" | "permissionLetter",
+    index?: number
+  ) => void;
   validationErrors: ValidationErrors;
   completeStep: (stepId: number) => void;
 }
@@ -57,7 +68,7 @@ const ImageUploadBox = ({
       {file ? (
         <>
           {/* Preview for image files */}
-          {file.type.startsWith('image/') ? (
+          {file.type.startsWith("image/") ? (
             <div className="relative w-full h-full">
               <img
                 src={URL.createObjectURL(file)}
@@ -119,7 +130,9 @@ export default function UploadsStepCard({
   validationErrors,
   completeStep,
 }: UploadsStepCardProps) {
-  const [targetImageIndex, setTargetImageIndex] = React.useState<number | undefined>(undefined);
+  const [targetImageIndex, setTargetImageIndex] = React.useState<
+    number | undefined
+  >(undefined);
 
   return (
     <Card
@@ -158,7 +171,7 @@ export default function UploadsStepCard({
             if (files && files.length > 0) {
               handleFileUpload("images", files, targetImageIndex);
               // Reset input to allow selecting the same file again
-              e.target.value = '';
+              e.target.value = "";
               setTargetImageIndex(undefined);
             }
           }}
@@ -266,11 +279,12 @@ export default function UploadsStepCard({
                   </Button>
                 </div>
               ) : (
-                <div className="cursor-pointer" onClick={() => reportInputRef.current?.click()}>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => reportInputRef.current?.click()}
+                >
                   <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-400 text-xs mb-2">
-                    Upload PDF/Word
-                  </p>
+                  <p className="text-gray-400 text-xs mb-2">Upload PDF/Word</p>
                   <Button
                     variant="outline"
                     size="sm"
@@ -305,7 +319,7 @@ export default function UploadsStepCard({
             >
               {fileUploads.permissionLetter ? (
                 <div className="text-center">
-                  {fileUploads.permissionLetter.type.startsWith('image/') ? (
+                  {fileUploads.permissionLetter.type.startsWith("image/") ? (
                     <div className="relative w-full h-full">
                       <img
                         src={URL.createObjectURL(fileUploads.permissionLetter)}
@@ -329,11 +343,12 @@ export default function UploadsStepCard({
                   </Button>
                 </div>
               ) : (
-                <div className="cursor-pointer" onClick={() => permissionLetterInputRef.current?.click()}>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => permissionLetterInputRef.current?.click()}
+                >
                   <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-400 text-xs mb-2">
-                    Upload Image/PDF
-                  </p>
+                  <p className="text-gray-400 text-xs mb-2">Upload Image/PDF</p>
                   <Button
                     variant="outline"
                     size="sm"

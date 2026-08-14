@@ -182,7 +182,7 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
             <div className="lg:col-span-2 grid grid-cols-2 gap-4">
               <Card className="bg-white p-4">
                 <h3 className="text-sm text-gray-600 mb-1">
-                  Today's Registration
+                  Today&apos;s Registration
                 </h3>
                 <p className="text-2xl font-semibold">0</p>
               </Card>
@@ -193,7 +193,9 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
                 <p className="text-2xl font-semibold">{totalRegistrations}</p>
               </Card>
               <Card className="bg-white p-4">
-                <h3 className="text-sm text-gray-600 mb-1">Today's Sale</h3>
+                <h3 className="text-sm text-gray-600 mb-1">
+                  Today&apos;s Sale
+                </h3>
                 <p className="text-2xl font-semibold">{formatCurrency(0)}</p>
               </Card>
               <Card className="bg-white p-4">
@@ -203,7 +205,9 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
                 </p>
               </Card>
               <Card className="bg-white p-4">
-                <h3 className="text-sm text-gray-600 mb-1">Today's Refunds</h3>
+                <h3 className="text-sm text-gray-600 mb-1">
+                  Today&apos;s Refunds
+                </h3>
                 <p className="text-2xl font-semibold">{formatCurrency(0)}</p>
               </Card>
               <Card className="bg-white p-4">

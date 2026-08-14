@@ -344,7 +344,11 @@ async function seed() {
       name: "General Pass",
       class: "general",
       price: 499,
-      inclusions: ["3-day access", "Certificate of completion", "Lunch included"],
+      inclusions: [
+        "3-day access",
+        "Certificate of completion",
+        "Lunch included",
+      ],
       available: 50,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

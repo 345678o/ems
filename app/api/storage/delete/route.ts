@@ -1,26 +1,66 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { storageDeleteSchema } from "@/lib/api/schemas";
+import { authorizeEventStoragePath } from "@/lib/api/storage-auth";
+import {
+  forbidden,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api/response";
 
-export const runtime = "nodejs"; // ensure Node runtime
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // ── 1. Authentication ──────────────────────────────────────────────────────
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return unauthorized();
+
+  const userId = session.user.id;
+
   try {
-    const body = await req.json();
-    const { bucket, path } = body || {};
-
-    if (typeof bucket !== "string" || typeof path !== "string") {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    // ── 2. Parse + validate JSON body with Zod ─────────────────────────────
+    const body = await req.json().catch(() => null);
+    if (body === null) {
+      return validationError([
+        {
+          code: "custom",
+          path: [],
+          message: "Request body must be valid JSON",
+        },
+      ]);
     }
 
-    const { data, error } = await supabaseAdmin.storage.from(bucket).remove([path]);
+    const parsed = storageDeleteSchema.safeParse(body);
+    if (!parsed.success) return validationError(parsed.error.issues);
+
+    const { bucket, path } = parsed.data;
+
+    // ── 3. Path ownership enforcement ─────────────────────────────────────
+    // Verify the acting user owns the event at the head of the path.
+    const authorized = await authorizeEventStoragePath(path, userId);
+    if (!authorized) {
+      return forbidden(
+        "You do not have permission to delete files from this event's storage"
+      );
+    }
+
+    // ── 4. Delete ──────────────────────────────────────────────────────────
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucket)
+      .remove([path]);
+
     if (error) {
-      console.error("[delete] Storage delete error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("[delete] storage error:", error.message);
+      return serverError(error.message);
     }
 
-    return NextResponse.json({ success: true, data }, { status: 200 });
-  } catch (err: any) {
-    console.error("[delete] Unexpected error:", err);
-    return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
+    return ok({ deleted: data });
+  } catch (err: unknown) {
+    console.error("[delete] unexpected error");
+    return serverError(err instanceof Error ? err.message : "Unknown error");
   }
 }

@@ -9,7 +9,6 @@ import {
   Twitter,
   Linkedin,
   Youtube,
-  Globe,
   Mail,
   Phone,
 } from "lucide-react";

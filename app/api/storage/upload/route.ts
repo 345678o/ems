@@ -1,42 +1,80 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { storageUploadSchema } from "@/lib/api/schemas";
+import { authorizeEventStoragePath } from "@/lib/api/storage-auth";
+import {
+  forbidden,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api/response";
 
-export const runtime = "nodejs"; // ensure Node runtime for Buffer
+// Node runtime required for Buffer.
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // ── 1. Authentication ──────────────────────────────────────────────────────
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return unauthorized();
+
+  const userId = session.user.id;
+
   try {
     const form = await req.formData();
 
-    const bucket = form.get("bucket");
-    const path = form.get("path");
-    const file = form.get("file");
+    // ── 2. Validate text fields with Zod ───────────────────────────────────
+    const parsed = storageUploadSchema.safeParse({
+      bucket: form.get("bucket"),
+      path: form.get("path"),
+    });
+    if (!parsed.success) return validationError(parsed.error.issues);
 
-    if (typeof bucket !== "string" || typeof path !== "string" || !(file instanceof Blob)) {
-      return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+    const { bucket, path } = parsed.data;
+
+    // ── 3. Verify the file is present ──────────────────────────────────────
+    const file = form.get("file");
+    if (!(file instanceof Blob)) {
+      return validationError([
+        { code: "custom", path: ["file"], message: "file is required" },
+      ]);
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // ── 4. Path ownership enforcement ─────────────────────────────────────
+    // Paths are scoped to events. Verify the acting user owns the event
+    // at the head of the path.
+    const authorized = await authorizeEventStoragePath(path, userId);
+    if (!authorized) {
+      return forbidden(
+        "You do not have permission to upload to this event's storage"
+      );
+    }
 
-    // Upload via admin client to bypass RLS
+    // ── 5. Upload ──────────────────────────────────────────────────────────
+    const buffer = Buffer.from(await file.arrayBuffer());
+
     const { data, error } = await supabaseAdmin.storage
       .from(bucket)
       .upload(path, buffer, {
         cacheControl: "3600",
         upsert: false,
-        contentType: (file as any).type || "application/octet-stream",
+        contentType: file.type || "application/octet-stream",
       });
 
     if (error) {
-      console.error("[upload] Storage upload error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("[upload] storage error:", error.message);
+      return serverError(error.message);
     }
 
-    const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(data.path);
+    const { data: pub } = supabaseAdmin.storage
+      .from(bucket)
+      .getPublicUrl(data.path);
 
-    return NextResponse.json({ path: data.path, publicUrl: pub.publicUrl }, { status: 200 });
-  } catch (err: any) {
-    console.error("[upload] Unexpected error:", err);
-    return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
+    return ok({ path: data.path, publicUrl: pub.publicUrl });
+  } catch (err: unknown) {
+    console.error("[upload] unexpected error");
+    return serverError(err instanceof Error ? err.message : "Unknown error");
   }
 }

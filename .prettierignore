@@ -1,0 +1,19 @@
+# Prettier ignore file
+
+# Build artifacts
+.next/
+out/
+dist/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Static assets
+public/
+
+# Lock files (large diffs with no benefit)
+package-lock.json
+
+# Auto-generated Next.js files
+next-env.d.ts

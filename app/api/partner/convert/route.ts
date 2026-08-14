@@ -1,18 +1,29 @@
-// app/api/partner/convert/route.ts
-import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createClient } from "@/lib/supabase/server";
+import { partnerConvertSchema } from "@/lib/api/schemas";
+import {
+  notFound,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api/response";
 
-export async function PATCH() {
+export async function PATCH(req: Request) {
+  // ── 1. Authentication ──────────────────────────────────────────────────────
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
+  if (!session?.user?.email) return unauthorized("Not authenticated");
+
+  // ── 2. Validate body (this route takes no body; schema ensures it is empty
+  //       or absent — any extra fields are rejected to prevent injection). ────
+  const body = await req.json().catch(() => ({}));
+  const parsed = partnerConvertSchema.safeParse(body);
+  if (!parsed.success) return validationError(parsed.error.issues);
 
   const supabase = await createClient();
 
-  // 1) Grab the user row (we need the UUID id)
+  // ── 3. Load user row ───────────────────────────────────────────────────────
   const { data: user, error: userErr } = await supabase
     .from("users")
     .select("id, email, full_name, avatar_url")
@@ -20,53 +31,47 @@ export async function PATCH() {
     .maybeSingle();
 
   if (userErr) {
-    console.error("[/api/partner/convert] fetch user error:", userErr);
-    return NextResponse.json({ error: "Failed to load user" }, { status: 500 });
+    console.error("[/api/partner/convert] fetch user error:", userErr.message);
+    return serverError("Failed to load user");
   }
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
+  if (!user) return notFound("User not found");
 
-  // 2) Update role to 'club'
+  // ── 4. Promote user role to 'club' ─────────────────────────────────────────
   const { error: updErr } = await supabase
     .from("users")
     .update({ role: "club", updated_at: new Date().toISOString() })
     .eq("id", user.id);
 
   if (updErr) {
-    console.error("[/api/partner/convert] update user role error:", updErr);
-    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    console.error("[/api/partner/convert] update role error:", updErr.message);
+    return serverError("Update failed");
   }
 
-  // 3) Upsert into public.clubs with same UUID as user.id
+  // ── 5. Upsert club row ─────────────────────────────────────────────────────
   const displayName =
     user.full_name ||
     session.user.name ||
     (user.email ? user.email.split("@")[0] : "New Club");
 
-  const clubRow = {
-    id: user.id, // same as users.id
-    name: displayName,
-    description: "", // or a default copy
-    owner_id: user.id, // FK → public.users.id
-    form_schema: {}, // empty JSON for now
-    avatar_url: user.avatar_url || session.user.image || null,
-    email: user.email,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  const { error: clubErr } = await supabase
-    .from("clubs")
-    .upsert(clubRow, { onConflict: "id" }); // safe if already exists
+  const { error: clubErr } = await supabase.from("clubs").upsert(
+    {
+      id: user.id,
+      name: displayName,
+      description: "",
+      owner_id: user.id,
+      form_schema: {},
+      avatar_url: user.avatar_url || session.user.image || null,
+      email: user.email,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "id" }
+  );
 
   if (clubErr) {
-    console.error("[/api/partner/convert] upsert club error:", clubErr);
-    return NextResponse.json(
-      { error: "Club creation failed" },
-      { status: 500 }
-    );
+    console.error("[/api/partner/convert] upsert club error:", clubErr.message);
+    return serverError("Club creation failed");
   }
 
-  return NextResponse.json({ success: true });
+  return ok({ success: true });
 }

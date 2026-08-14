@@ -21,11 +21,13 @@ export interface Coupon {
 export interface Ticket {
   id: string;
   name: string;
-  class: "general" | "vip" | "premium";
+  class: TicketClass;
   price: number;
   inclusions: string[];
   available: number;
 }
+
+export type TicketClass = "general" | "vip" | "premium";
 
 export interface Event {
   id: string;

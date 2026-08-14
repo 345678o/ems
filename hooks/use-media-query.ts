@@ -19,6 +19,7 @@ export function useMediaQuery(query: string): boolean {
     const listener = () => setMatches(media.matches);
 
     // Set the initial value
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMatches(media.matches);
 
     // Add listener for changes

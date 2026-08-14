@@ -24,7 +24,7 @@ import { supabase } from "@/lib/supabase/browserClient"; // ✅ make sure your s
 export default function ProfilePage() {
   const [currentPage, setCurrentPage] = useState("profile");
   const [open, setOpen] = useState(false);
-  const { data: session, status } = useSession();
+  const { data: session, status: _status } = useSession();
   const router = useRouter();
 
   /** 🔑 Check role and redirect */
@@ -108,11 +108,11 @@ export default function ProfilePage() {
       setCurrentPage(id);
     } else if (id === "logout") {
       signOut();
-      window.location.href = "/home";
+      router.push("/home");
     } else if (id === "partner") {
       setCurrentPage("partner");
     } else {
-      window.location.href = "/home";
+      router.push("/home");
     }
   };
 

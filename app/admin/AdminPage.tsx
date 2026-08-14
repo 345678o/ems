@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Home, LogOut } from "lucide-react";
 import { IICEventCalendar } from "@/components/iic-event-calendar";
 import { ManageSelfHostedEvents } from "@/components/manage-self-hosted-events";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase/browserClient";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { useSession } from "next-auth/react";
@@ -30,29 +30,18 @@ interface Event {
   updated_at: string;
 }
 
-const supabaseUrl = "https://your-supabase-url.supabase.co";
-const supabaseKey = "your-supabase-key";
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 export default function AdminPage() {
   const params = useParams();
   const router = useRouter();
   const eventId = params.id as string;
   const [currentPage, setCurrentPage] = useState("event-info");
   const [open, setOpen] = useState(false);
-  const [event, setEvent] = useState<Event | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [_event, setEvent] = useState<Event | null>(null);
+  const [_isLoading, setIsLoading] = useState(true);
   const { data: session } = useSession();
 
-  useEffect(() => {
-    if (eventId) {
-      fetchEvent();
-    } else {
-      setIsLoading(false);
-    }
-  }, [eventId]);
-
-  const fetchEvent = async () => {
+  const fetchEvent = useCallback(async () => {
+    if (!eventId) return;
     try {
       const { data, error } = await supabase
         .from("events")
@@ -71,7 +60,16 @@ export default function AdminPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    if (eventId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchEvent();
+    } else {
+      setIsLoading(false);
+    }
+  }, [eventId, fetchEvent]);
 
   const links = [
     {

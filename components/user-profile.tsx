@@ -92,8 +92,7 @@ export function UserProfile() {
   };
 
   const handleImageEdit = () => {
-    console.log("[v0] Edit image clicked");
-    // Optional: implement upload → save avatar_url via PATCH /api/me
+    // TODO: implement upload → save avatar_url via PATCH /api/me
   };
 
   return (

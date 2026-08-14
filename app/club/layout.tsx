@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { usePathname } from "next/navigation";
 import {
   PermanentSidebar,
   PermanentSidebarLink,
@@ -21,7 +20,6 @@ export default function ClubLayout({
 }) {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const router = useRouter();
   // Only hide the shared sidebar on the event detail page: /club/event/[id]
   // This will NOT hide it on other subroutes like /club/event/create
   const isEventDetailPage = new RegExp("^/club/event/[^/]+$").test(

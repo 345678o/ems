@@ -1,11 +1,21 @@
-import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { v4 as uuidv4 } from "uuid";
+import { createEventSchema } from "@/lib/api/schemas";
+import {
+  badRequest,
+  created,
+  forbidden,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api/response";
 
-// Ensure Node.js runtime for Buffer/FormData handling
-export const runtime = 'nodejs';
+// Ensure Node.js runtime for Buffer / FormData handling.
+export const runtime = "nodejs";
 
-// Simple filename/path sanitization
+/** Strip characters outside a safe filename set. */
 function sanitizePathPart(input: string): string {
   return input
     .replace(/[^a-zA-Z0-9.-]/g, "_")
@@ -15,40 +25,32 @@ function sanitizePathPart(input: string): string {
 }
 
 export async function POST(req: Request) {
+  // ── 1. Authentication ──────────────────────────────────────────────────────
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return unauthorized();
+
+  const actingUserId = session.user.id;
+
   try {
     const form = await req.formData();
 
-    const name = String(form.get("name") || "").trim();
-    const theme = String(form.get("theme") || "").trim();
-    const start_datetime = String(form.get("start_datetime") || "").trim();
-    const end_datetime = String(form.get("end_datetime") || "").trim();
-    const estimated_participants = Number(form.get("estimated_participants"));
-    const estimated_budget = Number(form.get("estimated_budget"));
-    const club_id = String(form.get("club_id") || "").trim();
-    const event_type = String(form.get("event_type") || "free").trim() as 'free' | 'paid';
-    const file = form.get("event_blueprint") as unknown as File | null;
+    // ── 2. Extract text fields and validate with Zod ───────────────────────
+    const raw = {
+      name: String(form.get("name") ?? "").trim(),
+      theme: String(form.get("theme") ?? "").trim(),
+      start_datetime: String(form.get("start_datetime") ?? "").trim(),
+      end_datetime: String(form.get("end_datetime") ?? "").trim(),
+      // coerce strings → numbers (schema uses z.coerce.number)
+      estimated_participants: form.get("estimated_participants"),
+      estimated_budget: form.get("estimated_budget"),
+      club_id: String(form.get("club_id") ?? "").trim(),
+      event_type: String(form.get("event_type") ?? "free").trim(),
+    };
 
-    // Validate event_type
-    if (event_type !== 'free' && event_type !== 'paid') {
-      return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
-    }
+    const parsed = createEventSchema.safeParse(raw);
+    if (!parsed.success) return validationError(parsed.error.issues);
 
-    if (!name || !theme || !start_datetime || !end_datetime || !club_id || !file || Number.isNaN(estimated_participants) || Number.isNaN(estimated_budget)) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    // Basic date validation
-    if (new Date(end_datetime) < new Date(start_datetime)) {
-      return NextResponse.json({ error: "End datetime must be after start datetime" }, { status: 400 });
-    }
-
-    // Validate file type and size
-    const MAX_BYTES = 200 * 1024; // 200KB
-    const fileSize = (file as any).size as number;
-    const fileType = (file as any).type as string;
-    
-    // Debug log (server-side)
-    console.debug('[API] Received create event request', {
+    const {
       name,
       theme,
       start_datetime,
@@ -56,24 +58,47 @@ export async function POST(req: Request) {
       estimated_participants,
       estimated_budget,
       club_id,
-      fileType,
-      fileSize,
-    });
-    if (!fileType || fileType !== "application/pdf") {
-      return NextResponse.json({ error: "Event blueprint must be a PDF" }, { status: 400 });
+      event_type,
+    } = parsed.data;
+
+    // ── 3. Validate the uploaded file (cannot be done via Zod) ────────────
+    const file = form.get("event_blueprint");
+    if (!(file instanceof File)) {
+      return badRequest("event_blueprint is required and must be a file");
     }
-    if (fileSize > MAX_BYTES) {
-      return NextResponse.json({ error: "Event blueprint must be 200KB or smaller" }, { status: 400 });
+    if (file.type !== "application/pdf") {
+      return badRequest("Event blueprint must be a PDF");
+    }
+    if (file.size > 200 * 1024) {
+      return badRequest("Event blueprint must be 200 KB or smaller");
     }
 
-    // Upload to Storage (service role bypasses RLS)
+    // ── 4. Club ownership check ────────────────────────────────────────────
+    // ASSUMPTION: clubs.user_id holds the owner's UUID. Adjust if your
+    // schema uses a different column name (e.g. owner_id).
+    const { data: club, error: clubErr } = await supabaseAdmin
+      .from("clubs")
+      .select("id")
+      .eq("id", club_id)
+      .eq("user_id", actingUserId)
+      .maybeSingle();
+
+    if (clubErr) {
+      console.error(
+        "[events/create] club ownership lookup error:",
+        clubErr.message
+      );
+      return serverError("Could not verify club ownership");
+    }
+    if (!club) return forbidden("You do not administer this club");
+
+    // ── 5. Upload blueprint to Storage ────────────────────────────────────
     const BUCKET = "event-blueprints";
     const safeClub = sanitizePathPart(club_id);
     const safeName = sanitizePathPart(file.name || "blueprint.pdf");
     const filePath = `${safeClub}/${Date.now()}_${safeName}`;
 
-    const arrayBuffer = await file.arrayBuffer();
-    const fileBuffer = Buffer.from(arrayBuffer);
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
 
     const { error: uploadErr } = await supabaseAdmin.storage
       .from(BUCKET)
@@ -84,48 +109,48 @@ export async function POST(req: Request) {
       });
 
     if (uploadErr) {
-      console.error('[API] Storage upload error', uploadErr);
-      return NextResponse.json({ error: `Upload failed: ${uploadErr.message}` }, { status: 400 });
+      console.error("[events/create] storage upload error:", uploadErr.message);
+      return badRequest(`Upload failed: ${uploadErr.message}`);
     }
 
-    const { data: publicUrlData } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(filePath);
-    const blueprintUrl = publicUrlData.publicUrl;
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from(BUCKET)
+      .getPublicUrl(filePath);
 
-    if (!blueprintUrl) {
-      return NextResponse.json({ error: "Failed to get public URL" }, { status: 500 });
-    }
+    if (!publicUrlData.publicUrl)
+      return serverError("Failed to get public URL");
 
-    // Insert into events (service role bypasses RLS)
-    const id = String(form.get("id") || uuidv4());
-    const insertPayload = {
-      id,
-      name,
-      theme,
-      start_datetime,
-      end_datetime,
-      estimated_participants,
-      estimated_budget,
-      event_blueprint: blueprintUrl,
-      event_type,
-      status: "pending_approval",
-      hosted: "self",
-      club_id,
-    } as any;
+    // ── 6. Insert event row ────────────────────────────────────────────────
+    // Always generate a fresh server-side UUID — never trust a client-supplied id.
+    const id = uuidv4();
 
     const { data, error: insertErr } = await supabaseAdmin
       .from("events")
-      .insert(insertPayload)
+      .insert({
+        id,
+        name,
+        theme,
+        start_datetime,
+        end_datetime,
+        estimated_participants,
+        estimated_budget,
+        event_blueprint: publicUrlData.publicUrl,
+        event_type,
+        status: "pending_approval",
+        hosted: "self",
+        club_id,
+      })
       .select("id")
       .single();
 
     if (insertErr) {
-      console.error('[API] DB insert error', insertErr);
-      return NextResponse.json({ error: insertErr.message }, { status: 400 });
+      console.error("[events/create] DB insert error:", insertErr.message);
+      return badRequest(insertErr.message);
     }
 
-    return NextResponse.json({ id: data.id, event_blueprint: blueprintUrl }, { status: 201 });
-  } catch (err: any) {
-    console.error('[API] Unexpected error', err);
-    return NextResponse.json({ error: err?.message || "Unexpected error" }, { status: 500 });
+    return created({ id: data.id, event_blueprint: publicUrlData.publicUrl });
+  } catch (err: unknown) {
+    console.error("[events/create] unexpected error");
+    return serverError(err instanceof Error ? err.message : "Unexpected error");
   }
 }

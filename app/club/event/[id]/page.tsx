@@ -1,5 +1,5 @@
-"use client";
-import { useState, useEffect } from "react";
+﻿"use client";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import {
   PermanentSidebar,
@@ -18,7 +18,7 @@ import { AnalyticsPage } from "@/components/analytics-page";
 import React from "react";
 import { ClubTopBar } from "@/components/ui/club-topbar";
 import { Separator } from "@/components/ui/separator";
-import { Home, LogOut, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { supabase } from "@/lib/supabase/browserClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -61,7 +61,7 @@ export default function EventDashboard() {
     ] as const;
     const parseHash = () => {
       const h = (window.location.hash || "").replace("#", "");
-      if (allowed.includes(h as any)) {
+      if ((allowed as readonly string[]).includes(h)) {
         setCurrentPage(h);
       }
     };
@@ -75,13 +75,8 @@ export default function EventDashboard() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, [eventId]);
 
-  useEffect(() => {
-    if (eventId) {
-      fetchEvent();
-    }
-  }, [eventId]);
-
-  const fetchEvent = async () => {
+  const fetchEvent = useCallback(async () => {
+    if (!eventId) return;
     try {
       const { data, error } = await supabase
         .from("events")
@@ -100,7 +95,11 @@ export default function EventDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    if (eventId) fetchEvent();
+  }, [eventId, fetchEvent]);
 
   const links = [
     {
@@ -139,11 +138,11 @@ export default function EventDashboard() {
 
   const handleLinkClick = (id: string) => {
     setCurrentPage(id);
-    window.location.hash = id;
+    router.replace(`#${id}`, { scroll: false });
   };
 
   const handleHomeClick = () => {
-    window.location.href = "/club";
+    router.push("/club");
   };
 
   const renderCurrentPage = () => {
@@ -190,7 +189,7 @@ export default function EventDashboard() {
                     variant="ghost"
                     size="default"
                     aria-label="Back to Club"
-                    onClick={() => (window.location.href = "/club")}
+                    onClick={() => router.push("/club")}
                     className="h-9 w-9 ml-10 hover:bg-transparent hover:cursor-pointer"
                   >
                     <ArrowLeft className="h-5 w-5 dark:text-neutral-200 text-neutral-700" />{" "}
@@ -273,7 +272,7 @@ export default function EventDashboard() {
               <button
                 onClick={() => {
                   setCurrentPage("after-event");
-                  window.location.hash = "after-event";
+                  router.replace("#after-event", { scroll: false });
                 }}
                 className="inline-flex items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white/50"
               >

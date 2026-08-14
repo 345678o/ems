@@ -35,8 +35,7 @@ export const PermanentSidebarLink = ({
 }: {
   link: Links;
   className?: string;
-  [key: string]: any;
-}) => {
+} & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">) => {
   return (
     <a
       href={link.href}

@@ -4,7 +4,6 @@ import { FocusCards } from "@/components/ui/focus-cards";
 import FadeContent from "@/components/FadeContent";
 import LogoLoop from "@/components/LogoLoop";
 import GradientWaves from "@/components/GradientWaves";
-import { HomeIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase/browserClient";
 function Page() {
   const [events, setEvents] = useState<
@@ -25,12 +24,19 @@ function Page() {
           return;
         }
 
-        const filtered = (data || []).filter((e: any) => {
+        type HomeEvent = {
+          id: string;
+          name: string;
+          banners: Record<string, string> | null;
+        };
+        const filtered = ((data as HomeEvent[]) || []).filter((e) => {
           let b: Record<string, string> = {};
           try {
             b =
-              typeof e.banners === "string" ? JSON.parse(e.banners) : e.banners;
-          } catch (err) {
+              typeof e.banners === "string"
+                ? JSON.parse(e.banners)
+                : (e.banners ?? {});
+          } catch (_) {
             console.warn("Invalid banners JSON:", e.banners);
           }
           return (
@@ -38,9 +44,12 @@ function Page() {
           );
         });
 
-        setEvents(filtered as any);
-      } catch (err: any) {
-        console.error("[home] events fetch error:", err?.message || err);
+        setEvents(filtered.map((e) => ({ ...e, banners: e.banners ?? {} })));
+      } catch (err: unknown) {
+        console.error(
+          "[home] events fetch error:",
+          err instanceof Error ? err.message : err
+        );
         setEvents([]);
       }
     };

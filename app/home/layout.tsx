@@ -2,8 +2,6 @@ import type React from "react";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import TopBar from "@/components/top-bar";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabaseAdmin } from "@/lib/supabase/admin";

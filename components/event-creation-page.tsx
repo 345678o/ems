@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Edit, Trash2, Info } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
 import OptionWheel from "@/components/OptionWheel";
 
@@ -110,7 +110,7 @@ export function EventCreationPage() {
       const startDateTime = new Date(eventData.startDate).toISOString();
       const endDateTime = new Date(eventData.endDate).toISOString();
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("events")
         .insert([
           {
@@ -135,7 +135,6 @@ export function EventCreationPage() {
         return;
       }
 
-      console.log("Event created successfully:", data);
       alert("Event created successfully!");
 
       // Navigate back to the events page and refresh
@@ -466,7 +465,7 @@ export function EventCreationPage() {
         <div className="flex items-center justify-between pt-6">
           <div className="flex items-center gap-2">
             <Checkbox />
-            <span className="text-white text-sm">I'm not a robot</span>
+            <span className="text-white text-sm">I&apos;m not a robot</span>
             <div className="ml-2 text-xs text-neutral-400">
               reCAPTCHA
               <br />

@@ -54,7 +54,9 @@ export function LoginDialog({ children, triggerClassName }: LoginDialogProps) {
 
   return (
     <Dialog>
-      <DialogTrigger asChild className={triggerClassName}>{children}</DialogTrigger>
+      <DialogTrigger asChild className={triggerClassName}>
+        {children}
+      </DialogTrigger>
       <DialogContent
         className="max-w-3xl w-full p-0 overflow-hidden border-0 bg-transparent shadow-none"
         showCloseButton={false}
@@ -132,6 +134,13 @@ export function LoginDialog({ children, triggerClassName }: LoginDialogProps) {
                   {isLoading ? "Signing in..." : "Sign In"}
                 </button>
               </form>
+
+              <p className="text-center text-xs opacity-60 mt-4">
+                Don&apos;t have an account?{" "}
+                <a href="/register" className="text-purple-500 hover:underline">
+                  Sign Up
+                </a>
+              </p>
             </div>
           </div>
         </div>

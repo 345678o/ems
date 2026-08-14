@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/browserClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -59,10 +59,9 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Load participants from Supabase
+
   useEffect(() => {
-    if (event) {
-      loadParticipants();
-    }
+    if (event) loadParticipants();
   }, [event]);
 
   const loadParticipants = async () => {
@@ -159,8 +158,8 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
     }
   };
 
-  const handleView = (participant: Participant) => {
-    console.log("[v0] Viewing participant:", participant);
+  const handleView = (_participant: Participant) => {
+    // TODO: implement participant detail view
   };
 
   const getPassTypeBadge = (passType: string) => {

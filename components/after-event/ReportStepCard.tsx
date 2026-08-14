@@ -220,7 +220,11 @@ export default function ReportStepCard({
               id="student-participants"
               type="number"
               min={0}
-              value={formData.studentParticipants === 0 ? "0" : formData.studentParticipants || ""}
+              value={
+                formData.studentParticipants === 0
+                  ? "0"
+                  : formData.studentParticipants || ""
+              }
               onChange={(e) => {
                 const value = e.target.value;
                 if (value === "" || parseInt(value) >= 0) {
@@ -250,7 +254,11 @@ export default function ReportStepCard({
               id="faculty-participants"
               type="number"
               min={0}
-              value={formData.facultyParticipants === 0 ? "0" : formData.facultyParticipants || ""}
+              value={
+                formData.facultyParticipants === 0
+                  ? "0"
+                  : formData.facultyParticipants || ""
+              }
               onChange={(e) => {
                 const value = e.target.value;
                 if (value === "" || parseInt(value) >= 0) {
@@ -283,7 +291,11 @@ export default function ReportStepCard({
               id="external-participants"
               type="number"
               min={0}
-              value={formData.externalParticipants === 0 ? "0" : formData.externalParticipants || ""}
+              value={
+                formData.externalParticipants === 0
+                  ? "0"
+                  : formData.externalParticipants || ""
+              }
               onChange={(e) => {
                 const value = e.target.value;
                 if (value === "" || parseInt(value) >= 0) {

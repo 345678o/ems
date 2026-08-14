@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 type CardItem = {
@@ -99,6 +98,7 @@ export const Card = React.memo(function Card({
         </div>
       </div>
 
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx>{`
         @keyframes spinEaseIn {
           0% {
