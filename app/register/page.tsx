@@ -13,8 +13,21 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const ALLOWED_DOMAINS = ["gmail.com", "mlrit.ac.in"];
+
+  const isValidEmailDomain = (value: string) => {
+    const domain = value.trim().toLowerCase().split("@")[1] ?? "";
+    return ALLOWED_DOMAINS.includes(domain);
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isValidEmailDomain(email)) {
+      setError("Only @gmail.com or @mlrit.ac.in email addresses are allowed.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
