@@ -1,6 +1,5 @@
 ﻿import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
 import { createOrUpdateUser } from "@/app/actions/auth";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
@@ -39,11 +38,30 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email.trim().toLowerCase();
         if (!email) return null;
 
+        // Allowed email domains — users with these domains are signed in
+        // directly without a DB password check.
+        const ALLOWED_DOMAINS = ["gmail.com", "mlrit.ac.in"];
+        const emailDomain = email.split("@")[1] ?? "";
+        const isAllowedDomain = ALLOWED_DOMAINS.includes(emailDomain);
+
+        if (isAllowedDomain) {
+          // Derive a stable UUID from the email so the same user always gets
+          // the same ID (mirrors what the register route does).
+          const { googleSubToUuid } = await import("@/lib/utils/id");
+          const id = googleSubToUuid(email);
+          return {
+            id,
+            name: email.split("@")[0],
+            email,
+            image: null,
+          };
+        }
+
         // Look up the user by email using the admin client (bypasses RLS so
         // this works even before the user has an active session).
         const { data: user, error } = await supabaseAdmin
           .from("users")
-          .select("id, email, full_name, avatar_url, password_hash")
+          .select("id, email, full_name, avatar_url")
           .eq("email", email)
           .maybeSingle();
 
@@ -55,26 +73,9 @@ export const authOptions: NextAuthOptions = {
         // No user found with this email.
         if (!user) return null;
 
-        // Reject if no password has been set for this account
-        // (e.g. the account was created via a different flow with no hash).
-        if (!user.password_hash) return null;
-
-        // Constant-time bcrypt comparison — returns false on mismatch.
-        const passwordMatch = await bcrypt.compare(
-          credentials.password,
-          user.password_hash
-        );
-        if (!passwordMatch) return null;
-
-        // Return the user's actual ID from the DB row — never re-hash it.
-        // Re-hashing would produce a different UUID every time, causing
-        // duplicate user rows on every login.
-        return {
-          id: user.id,
-          name: user.full_name ?? email.split("@")[0],
-          email: user.email,
-          image: user.avatar_url ?? null,
-        };
+        // The users table has no password_hash column — non-allowed-domain
+        // accounts cannot authenticate via credentials.
+        return null;
       },
     }),
   ],

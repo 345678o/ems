@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import bcrypt from "bcryptjs";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { registerSchema } from "@/lib/api/schemas";
 import { googleSubToUuid } from "@/lib/utils/id";
@@ -29,7 +28,7 @@ export async function POST(req: NextRequest) {
     const parsed = registerSchema.safeParse(body);
     if (!parsed.success) return validationError(parsed.error.issues);
 
-    const { email, password, full_name } = parsed.data;
+    const { email, full_name } = parsed.data;
 
     // ── 2. Check if user already exists ─────────────────────────────────────
     const { data: existing, error: fetchError } = await supabaseAdmin
@@ -47,19 +46,17 @@ export async function POST(req: NextRequest) {
       return badRequest("An account with this email already exists");
     }
 
-    // ── 3. Hash password with bcrypt (cost factor 12) ───────────────────────
-    const password_hash = await bcrypt.hash(password, 12);
-
-    // ── 4. Derive stable UUID from email ────────────────────────────────────
+    // ── 3. Derive stable UUID from email ────────────────────────────────────
     const id = googleSubToUuid(email);
 
-    // ── 5. Insert new user row ──────────────────────────────────────────────
+    // ── 4. Insert new user row ───────────────────────────────────────────────
+    // The users table has no password_hash column — authentication is
+    // domain-based (any @gmail.com or @mlrit.ac.in address is trusted).
     const now = new Date().toISOString();
     const { error: insertError } = await supabaseAdmin.from("users").insert({
       id,
       email,
       full_name,
-      password_hash,
       created_at: now,
       updated_at: now,
     });
