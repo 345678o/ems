@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { Search, Inbox, MoveRight } from "lucide-react";
+import { Search, Inbox, MoveRight, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "./theme-toggle";
@@ -16,6 +16,7 @@ import {
 import { useSession, signOut } from "next-auth/react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { LoginDialog } from "@/components/ui/login-dialog";
+import Link from "next/link";
 
 export function TopBar() {
   const { data: session } = useSession();
@@ -24,7 +25,18 @@ export function TopBar() {
     <div className="w-full fixed top-0 left-0 right-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-background/80 dark:supports-[backdrop-filter]:bg-background/40 border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-transparent">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4 py-4">
-          <div className="h-8 w-16 rounded-sm bg-primary/80 dark:bg-white/20" />
+          <Link href="/home" className="h-8 w-16 rounded-sm bg-primary/80 dark:bg-white/20 block" />
+
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center gap-4">
+            <Link
+              href="/events"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent"
+            >
+              <Calendar className="h-4 w-4" />
+              Events
+            </Link>
+          </nav>
 
           <div className="flex-1">
             <div className="relative mx-auto max-w-2xl">
