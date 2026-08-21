@@ -37,7 +37,7 @@ export const ClubTopBar = ({
 
   return (
     <div
-      className="fixed top-0 right-0 z-50 ml-[140px] bg-blue-950 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4"
+      className="fixed top-0 right-0 z-[60] ml-[140px] bg-blue-950 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4"
       style={{ left }}
     >
       <div className="flex items-center justify-between">

@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   PermanentSidebar,
   PermanentSidebarLink,
@@ -45,6 +45,7 @@ interface Event {
 
 export default function EventDashboard() {
   const params = useParams();
+  const router = useRouter();
   const eventId = params.id as string;
   const [currentPage, setCurrentPage] = useState("event-info");
   const [event, setEvent] = useState<Event | null>(null);
@@ -253,7 +254,7 @@ export default function EventDashboard() {
             event?.hosted === "iic" && currentPage !== "after-event"
               ? "blur-lg"
               : ""
-          } pt-[60px]`}
+          } pt-[120px]`}
         >
           {renderCurrentPage()}
         </div>

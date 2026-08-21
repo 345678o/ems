@@ -1,0 +1,57 @@
+
+> ems@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.21 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://172.16.101.252:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 2.5s
+ ○ Compiling / ...
+ ✓ Compiled / in 7.8s
+ GET / 200 in 8588ms
+ ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 2.1s
+[next-auth][warn][DEBUG_ENABLED] 
+https://next-auth.js.org/warnings#debug_enabled
+ GET /api/auth/session 200 in 2519ms
+[next-auth][warn][DEBUG_ENABLED] 
+https://next-auth.js.org/warnings#debug_enabled
+ POST /api/auth/_log 200 in 499ms
+ GET /api/auth/session 200 in 473ms
+ GET /home 200 in 3466ms
+ ○ Compiling /events ...
+ ✓ Compiled /events in 1049ms
+ GET /events 200 in 1313ms
+ GET /api/auth/session 200 in 482ms
+ GET /api/auth/session 200 in 399ms
+ GET / 200 in 429ms
+ GET /api/auth/session 200 in 610ms
+ GET / 200 in 860ms
+ POST /api/auth/_log 200 in 861ms
+ GET /api/auth/session 200 in 865ms
+ GET /api/auth/session 200 in 697ms
+ GET /home 200 in 2190ms
+ GET /home 200 in 1014ms
+ GET /api/auth/session 200 in 434ms
+ POST /api/auth/_log 200 in 1007ms
+ GET /api/auth/session 200 in 557ms
+ GET /api/auth/session 200 in 466ms
+ GET /events 200 in 337ms
+ GET /api/auth/session 200 in 551ms
+ ✓ Compiled in 302ms
+ GET /api/auth/session 200 in 509ms
+ GET /api/auth/session 200 in 464ms
+ GET /events 200 in 1136ms
+ ○ Compiling /favicon.ico ...
+ GET /api/auth/session 200 in 556ms
+ ✓ Compiled /favicon.ico in 709ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 1133ms
+ GET /api/auth/session 200 in 568ms
+ GET /api/auth/session 200 in 474ms
+ GET /api/auth/session 200 in 560ms
+ GET /api/auth/session 200 in 559ms
+ GET /api/auth/session 200 in 499ms

@@ -57,22 +57,26 @@ export function useClubEvents(sessionUserId: string | null) {
       // Enrich each calendar entry with its after_event_report
       const enriched = await Promise.all(
         (calendarData || []).map(
-          async (item: CalendarEvent & { events?: ClubEvent }) => {
+          async (item) => {
             const { data: reportData } = await supabase
               .from("after_event_reports")
               .select("report_submitted, media_uploaded, social_media_promoted")
               .eq("event_id", item.event_id)
               .eq("submitted_by", sessionUserId)
               .maybeSingle();
+            // Extract the first event from the array (or undefined if empty/null)
+            const eventData = Array.isArray(item.events) && item.events.length > 0
+              ? item.events[0]
+              : (item.events ?? undefined);
             return {
               ...item,
-              event: item.events,
+              event: eventData,
               after_event_report: reportData || null,
             };
           }
         )
       );
-      setCalendarEvents(enriched as CalendarEvent[]);
+      setCalendarEvents(enriched);
     } catch (error) {
       console.error("Error fetching events:", error);
       setIicEvents([]);
