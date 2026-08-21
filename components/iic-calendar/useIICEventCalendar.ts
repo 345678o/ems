@@ -54,6 +54,7 @@ export function useIICEventCalendar() {
 
       const reportedIds = new Set(reports?.map((r) => r.event_id) || []);
 
+      // The clubs(name) select returns an array like [{ name: "Club" }] or []
       type IICEventRow = Pick<
         DbEvent,
         | "id"
@@ -64,7 +65,7 @@ export function useIICEventCalendar() {
         | "description"
         | "date_range"
         | "club_id"
-      > & { clubs: Pick<DbClub, "name"> | null };
+      > & { clubs: { name: string }[] };
 
       setEvents(
         (data ?? []).map((e: IICEventRow) => ({
@@ -75,7 +76,7 @@ export function useIICEventCalendar() {
           semester: e.semester || "",
           dateRange: e.date_range || "",
           club_id: e.club_id,
-          club_name: e.clubs?.name || "Unassigned",
+          club_name: e.clubs[0]?.name || "Unassigned",
           has_report: reportedIds.has(e.id),
         }))
       );

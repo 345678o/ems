@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
-import { FocusCards } from "@/components/ui/focus-cards";
+import AccordionGallery from "@/components/AccordionGallery";
 import FadeContent from "@/components/FadeContent";
 import LogoLoop from "@/components/LogoLoop";
 import GradientWaves from "@/components/GradientWaves";
@@ -68,11 +68,12 @@ function Page() {
       href: "https://company2.com",
     },
   ];
-  const cards = useMemo(
+  const galleryItems = useMemo(
     () =>
       events.map((e) => ({
-        title: e.name,
-        src: e.banners?.["1x1"] || "",
+        image: e.banners?.["1x1"] || e.banners?.["16:9"] || "",
+        label: e.name,
+        link: `/event/${e.id}`,
       })),
     [events]
   );
@@ -119,7 +120,26 @@ function Page() {
             {/* Width + left padding mirror CarouselItem: basis + pl */}
             <div className="mx-auto w-[90%] sm:w-[85%] md:w-[75%] lg:w-[70%] px-4 md:px-6">
               <h2 className="text-3xl font-bold mb-6 font-poppins">Live Now</h2>
-              <FocusCards cards={cards} />
+              <AccordionGallery
+                items={galleryItems.length ? galleryItems : undefined}
+                defaultIndex={Math.floor((galleryItems.length || 5) / 2)}
+                expandRatio={0.52}
+                trigger="hover"
+                accentColor="#ffffff"
+                overlayColor="#060010"
+                textColor="#ffffff"
+                grayscale
+                showLabels
+                duration={0.6}
+                ease="power3.out"
+                parallax={0.5}
+                tilt={8}
+                stagger={0.06}
+                height={460}
+                gap={10}
+                radius={16}
+                orientation="horizontal"
+              />
             </div>
           </FadeContent>
         </div>
