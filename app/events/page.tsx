@@ -2,29 +2,41 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import LogoLoop from "@/components/LogoLoop";
 
-// Placeholder data for carousel
+// Event images data
 const heroItems = [
   {
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1600&auto=format&fit=crop',
-    caption: 'Tech Summit 2024'
+    image: '/events/equniox.png',
+    caption: 'Equinox'
   },
   {
-    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1600&auto=format&fit=crop',
-    caption: 'Innovation Workshop'
+    image: '/events/hustle mania.png',
+    caption: 'Hustle Mania'
   },
   {
-    image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=1600&auto=format&fit=crop',
-    caption: 'Startup Pitch Day'
+    image: '/events/wc 2.0.png',
+    caption: 'Welcome 2.0'
   },
   {
-    image: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1600&auto=format&fit=crop',
-    caption: 'Hackathon 2024'
+    image: '/events/metaloop.png',
+    caption: 'Metaloop'
   },
   {
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1600&auto=format&fit=crop',
-    caption: 'Design Thinking'
+    image: '/events/B2B.png',
+    caption: 'B2B'
   }
+];
+
+const liveEvents = [
+  { image: '/events/equniox.png', title: 'Equinox' },
+  { image: '/events/hustle mania.png', title: 'Hustle Mania' },
+  { image: '/events/wc 2.0.png', title: 'Welcome 2.0' },
+  { image: '/events/metaloop.png', title: 'Metaloop' },
+  { image: '/events/B2B.png', title: 'B2B' },
+  { image: '/events/gi.png', title: 'GI' },
+  { image: '/events/wc.png', title: 'Welcome' },
+  { image: '/events/welcome-gate.jpg', title: 'Welcome Gate' },
 ];
 
 // ============================================================================
@@ -72,8 +84,8 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
         </div>
 
         {/* Center Card - Large/Full size */}
-        <div className="w-[55%] h-[480px] flex-shrink-0 transition-all duration-700">
-          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden shadow-2xl shadow-black/50 relative">
+        <div className="w-[55%] h-[480px] flex-shrink-0 transition-all duration-700 group">
+          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden shadow-2xl shadow-black/50 relative transition-transform duration-300 group-hover:scale-110 group-hover:z-50">
             {items[centerIndex]?.image && (
               <img 
                 src={items[centerIndex].image} 
@@ -206,40 +218,68 @@ function TopBar() {
 }
 
 // Event Card Component
-function EventCard() {
+function EventCard({ image, title }: { image?: string; title?: string }) {
   return (
-    <div className="group relative aspect-[3/4] bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-black/50">
-      {/* Placeholder content */}
-      <div className="absolute inset-0 flex items-center justify-center text-gray-600">
-        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+    <div className="group relative aspect-[3/4] bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-black/50 hover:z-50">
+      {image ? (
+        <>
+          <img 
+            src={image} 
+            alt={title || 'Event'} 
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
-        </svg>
-      </div>
+          {title && (
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity duration-300">
+              <h4 className="text-lg font-semibold text-white">{title}</h4>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center text-gray-600">
+          <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+      )}
     </div>
   );
 }
 
-// Club Avatar Row Component
+// Club logos data for LogoLoop
+const clubLogos = [
+  { src: '/clubs/apex', alt: 'APEX', title: 'APEX' },
+  { src: '/clubs/areo', alt: 'AREO', title: 'AREO' },
+  { src: '/clubs/came', alt: 'CAME', title: 'CAME' },
+  { src: '/clubs/cie', alt: 'CIE', title: 'CIE' },
+  { src: '/clubs/code', alt: 'CODE', title: 'CODE' },
+  { src: '/clubs/EWB', alt: 'EWB', title: 'EWB' },
+  { src: '/clubs/lit', alt: 'LIT', title: 'LIT' },
+  { src: '/clubs/mun', alt: 'MUN', title: 'MUN' },
+  { src: '/clubs/nss', alt: 'NSS', title: 'NSS' },
+  { src: '/clubs/scope', alt: 'SCOPE', title: 'SCOPE' },
+];
+
+// Club Avatar Row Component with LogoLoop
 function ClubAvatarRow() {
   return (
-    <div className="relative">
-      <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex-shrink-0 w-24 h-24 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 border-2 border-white/10 cursor-pointer hover:scale-110 transition-transform duration-200"
-          />
-        ))}
-      </div>
-      {/* Left fade */}
-      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#121212] to-transparent pointer-events-none" />
-      {/* Right fade */}
-      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#121212] to-transparent pointer-events-none" />
+    <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden">
+      <LogoLoop
+        logos={clubLogos}
+        speed={120}
+        direction="left"
+        logoHeight={80}
+        gap={60}
+        pauseOnHover
+        scaleOnHover
+        fadeOut
+        fadeOutColor="#121212"
+        ariaLabel="College clubs"
+      />
     </div>
   );
 }
@@ -268,8 +308,8 @@ export default function EventsPage() {
         <section className="py-12">
           <h2 className="text-3xl font-bold mb-8">Live Now</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <EventCard key={i} />
+            {liveEvents.map((event, i) => (
+              <EventCard key={i} image={event.image} title={event.title} />
             ))}
           </div>
         </section>
