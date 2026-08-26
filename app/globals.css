@@ -166,3 +166,10 @@
 }
 
 @plugin 'tailwind-scrollbar';
+
+.club-ring-gallery > div > div > div > div {
+  background: #242424 !important;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 18px !important;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 35%);
+}

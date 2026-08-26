@@ -9,6 +9,9 @@ function Page() {
   const [events, setEvents] = useState<
     Array<{ id: string; name: string; banners: Record<string, string> }>
   >([]);
+  const [clubs, setClubs] = useState<
+    Array<{ id: string; name: string; avatar_url: string | null }>
+  >([]);
 
   useEffect(() => {
     const load = async () => {
@@ -56,6 +59,41 @@ function Page() {
     load();
   }, []);
 
+  // Fetch clubs for the homepage clubs section
+  useEffect(() => {
+    const loadClubs = async () => {
+      console.log("[home] Fetching clubs...");
+      try {
+        const { data, error } = await supabase
+          .from("clubs")
+          .select("id,name,avatar_url")
+          .order("name", { ascending: true });
+
+        if (error) {
+          console.error("[home] clubs fetch error:", error.message);
+          setClubs([]);
+          return;
+        }
+
+        console.log("[home] Clubs fetched:", data);
+        setClubs(
+          (data || []).map((club) => ({
+            id: club.id,
+            name: club.name || "Unnamed Club",
+            avatar_url: club.avatar_url,
+          }))
+        );
+      } catch (err: unknown) {
+        console.error(
+          "[home] clubs fetch error:",
+          err instanceof Error ? err.message : err
+        );
+        setClubs([]);
+      }
+    };
+    loadClubs();
+  }, []);
+
   const imageLogos = [
     {
       src: "/logos/company1.png",
@@ -76,6 +114,16 @@ function Page() {
         link: `/event/${e.id}`,
       })),
     [events]
+  );
+
+  const clubItems = useMemo(
+    () =>
+      clubs.map((club) => ({
+        image: club.avatar_url || "/logos/iic.png", // fallback to IIC logo if no avatar
+        label: club.name,
+        link: `/club`, // TODO: Link to club profile or events filtered by club
+      })),
+    [clubs]
   );
 
   return (
@@ -153,10 +201,42 @@ function Page() {
             {/* Keep the heading aligned with the carousel's main slide */}
             <div className="mx-auto w-[90%] sm:w-[85%] md:w-[75%] lg:w-[70%] px-4 md:px-6 mb-10">
               <h2 className="text-3xl font-bold mb-6 font-poppins">
-                Browse by Clubs
+                Clubs
               </h2>
             </div>
 
+            {/* Clubs Gallery */}
+            <div className="mx-auto w-[90%] sm:w-[85%] md:w-[75%] lg:w-[70%] px-4 md:px-6">
+              <AccordionGallery
+                items={clubItems.length ? clubItems : undefined}
+                defaultIndex={Math.floor((clubItems.length || 5) / 2)}
+                expandRatio={0.52}
+                trigger="hover"
+                accentColor="#ffffff"
+                overlayColor="#060010"
+                textColor="#ffffff"
+                grayscale
+                showLabels
+                duration={0.6}
+                ease="power3.out"
+                parallax={0.5}
+                tilt={8}
+                stagger={0.06}
+                height={460}
+                gap={10}
+                radius={16}
+                orientation="horizontal"
+              />
+            </div>
+          </FadeContent>
+        </div>
+        <div className="mt-20">
+          <FadeContent
+            blur={true}
+            duration={500}
+            easing="ease-out"
+            initialOpacity={0}
+          >
             {/* Full-bleed LogoLoop like the carousel */}
             <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden">
               <LogoLoop

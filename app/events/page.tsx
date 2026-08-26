@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import LogoLoop from "@/components/LogoLoop";
 
@@ -156,10 +157,31 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
 
 // Top Bar Component
 function TopBar() {
+  const router = useRouter();
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/home");
+    }
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 z-[60] bg-[#121212] border-b border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-6">
         {/* Logo */}
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="Go back"
+          title="Go back"
+          className="w-12 h-10 rounded flex items-center justify-center text-gray-300 hover:bg-white/10 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
         <div className="w-12 h-10 bg-gradient-to-br from-gray-700 to-gray-800 rounded" />
 
         {/* Search Bar */}
