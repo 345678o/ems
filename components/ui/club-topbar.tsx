@@ -16,9 +16,10 @@ import {
 import { LogOut } from "lucide-react";
 
 export const ClubTopBar = ({
-  sidebarOpen = false,
+  leftOffset = 88,
 }: {
-  sidebarOpen?: boolean;
+  /** Current width (px) of the sidebar column, so the fixed bar doesn't overlap it. */
+  leftOffset?: number;
 }) => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -33,11 +34,11 @@ export const ClubTopBar = ({
   }, []);
 
   // Left offset reacts to sidebar width on desktop, stays 0 on mobile
-  const left = vw >= 768 ? (sidebarOpen ? 200 : 60) : 0; // matches DesktopSidebar widths
+  const left = vw >= 768 ? leftOffset : 0;
 
   return (
     <div
-      className="fixed top-0 right-0 z-[60] ml-[140px] bg-blue-950 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4"
+      className="fixed top-0 right-0 z-[60] bg-blue-950 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4"
       style={{ left }}
     >
       <div className="flex items-center justify-between">

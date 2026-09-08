@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { supabase } from "@/lib/supabase/browserClient";
@@ -34,6 +34,8 @@ export default function Profile() {
         router.replace("/club"); // 🚀 instant redirect
       } else if (data?.role === "admin") {
         router.replace("/admin");
+      } else if (data?.role === "faculty") {
+        router.replace("/faculty");
       } else {
         setLoading(false); // stay here, show ProfilePage
       }
@@ -50,5 +52,9 @@ export default function Profile() {
     );
   }
 
-  return <ProfilePage />;
+  return (
+    <Suspense fallback={null}>
+      <ProfilePage />
+    </Suspense>
+  );
 }

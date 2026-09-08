@@ -100,7 +100,7 @@ export default function ClubsPage() {
   return (
     <div className="min-h-screen bg-[#121212] font-poppins text-white">
       <TopBar />
-      <main className="mx-auto max-w-7xl px-5 pb-20 pt-28 sm:px-8 lg:px-12">
+      <main className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8 lg:px-12">
         <section className="grid gap-8 border-b border-white/10 pb-12 lg:grid-cols-[1fr_0.85fr] lg:items-end">
           <div>
             <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-white/45">

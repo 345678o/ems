@@ -25,6 +25,7 @@ import { GradientButton } from "@/components/ui/gradient-button";
 import { LoginDialog } from "@/components/ui/login-dialog";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ParticipantMenu } from "@/components/ui/participant-menu";
 
 const clubLinks = [
   "APEX",
@@ -53,9 +54,12 @@ export function TopBar() {
   };
 
   return (
-    <div className="w-full fixed top-0 left-0 right-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-background/80 dark:supports-[backdrop-filter]:bg-background/40 border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-transparent">
+    <div className="w-full sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-background/80 dark:supports-[backdrop-filter]:bg-background/40 border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-transparent">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4 py-4">
+          <div className="md:hidden">
+            <ParticipantMenu />
+          </div>
           <button
             type="button"
             onClick={handleBack}

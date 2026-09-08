@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { storageUploadSchema } from "@/lib/api/schemas";
 import { authorizeEventStoragePath } from "@/lib/api/storage-auth";
+import { extractEventTheme } from "@/lib/utils/theme-color.server";
 import {
   forbidden,
   ok,
@@ -14,6 +15,9 @@ import {
 
 // Node runtime required for Buffer.
 export const runtime = "nodejs";
+
+// path convention: `${eventId}/banners/banner_1x1.<ext>` (see components/event-info/DetailsTab.tsx)
+const POSTER_BANNER_PATH = /^([^/]+)\/banners\/banner_1x1\./;
 
 export async function POST(req: NextRequest) {
   // ── 1. Authentication ──────────────────────────────────────────────────────
@@ -71,6 +75,25 @@ export async function POST(req: NextRequest) {
     const { data: pub } = supabaseAdmin.storage
       .from(bucket)
       .getPublicUrl(data.path);
+
+    const posterMatch = path.match(POSTER_BANNER_PATH);
+    if (posterMatch) {
+      const eventId = posterMatch[1];
+      try {
+        const theme = await extractEventTheme(buffer);
+        if (theme) {
+          const { error: themeError } = await supabaseAdmin
+            .from("events")
+            .update({ theme_colors: theme })
+            .eq("id", eventId);
+          if (themeError) {
+            console.error("[upload] Failed to save theme_colors:", themeError.message);
+          }
+        }
+      } catch (err) {
+        console.error("[upload] Theme extraction failed:", err);
+      }
+    }
 
     return ok({ path: data.path, publicUrl: pub.publicUrl });
   } catch (err: unknown) {

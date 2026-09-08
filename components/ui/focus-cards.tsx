@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DEFAULT_EVENT_THEME, type EventTheme } from "@/lib/utils/theme-color";
 
 type CardItem = {
   title: string;
   src: string;
   href?: string;
+  colors?: EventTheme;
 };
 
 type CardProps = {
@@ -45,7 +48,9 @@ export const Card = React.memo(function Card({
     if (phase === "spinning-out") setPhase("idle");
   };
 
-  return (
+  const accent = (card.colors ?? DEFAULT_EVENT_THEME).dark;
+
+  const body = (
     <div
       onMouseEnter={() => setHovered(index)}
       onMouseLeave={() => setHovered(null)}
@@ -55,8 +60,8 @@ export const Card = React.memo(function Card({
         hovered !== null && hovered !== index && "blur-[2px] scale-[0.96]"
       )}
     >
-      {/* 1:1 image area */}
-      <div className="relative w-full aspect-square overflow-hidden">
+      {/* Portrait image area — matches Figma's Live Now card proportions */}
+      <div className="relative w-full aspect-[4/5] overflow-hidden">
         <img
           src={card.src}
           alt={card.title}
@@ -64,7 +69,12 @@ export const Card = React.memo(function Card({
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-[1.02]"
           draggable={false}
         />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/40 to-transparent" />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-14"
+          style={{
+            background: `linear-gradient(to top, ${accent}99, transparent)`,
+          }}
+        />
       </div>
 
       {/* Content area */}
@@ -125,6 +135,14 @@ export const Card = React.memo(function Card({
       `}</style>
     </div>
   );
+
+  return card.href ? (
+    <Link href={card.href} className="block">
+      {body}
+    </Link>
+  ) : (
+    body
+  );
 });
 
 Card.displayName = "Card";
@@ -143,6 +161,56 @@ export function FocusCards({ cards }: { cards: CardItem[] }) {
           setHovered={setHovered}
         />
       ))}
+    </div>
+  );
+}
+
+/**
+ * Horizontal, snap-scrolling poster row with a heading + "See All" link —
+ * the BookMyShow-style "Recommended" strip, reusing the same poster Card.
+ */
+export function FocusCardsRow({
+  title,
+  cards,
+  seeAllHref,
+}: {
+  title: string;
+  cards: CardItem[];
+  seeAllHref?: string;
+}) {
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  return (
+    <div className="w-full">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4">
+        <h2 className="font-poppins text-2xl font-bold text-white md:text-3xl">
+          {title}
+        </h2>
+        {seeAllHref && (
+          <Link
+            href={seeAllHref}
+            className="text-sm font-semibold text-[#D96CE5] transition-colors hover:text-[#FF8AC9]"
+          >
+            See All &rsaquo;
+          </Link>
+        )}
+      </div>
+
+      <div className="scrollbar-none mt-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
+        {cards.map((card, index) => (
+          <div
+            key={`${card.title}-${index}`}
+            className="w-[42vw] shrink-0 snap-start sm:w-[220px]"
+          >
+            <Card
+              card={card}
+              index={index}
+              hovered={hovered}
+              setHovered={setHovered}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

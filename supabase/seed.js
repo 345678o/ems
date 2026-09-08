@@ -27,7 +27,7 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 });
 
 // ─── Demo IDs ────────────────────────────────────────────────────────────────
-// Must match lib/utils/id.ts googleSubToUuid(email) exactly, since that's what
+// Must match lib/utils/id.ts emailToUuid(email) exactly, since that's what
 // the credentials login flow uses as the user's real id (clubs.id === session.user.id).
 const { v5: uuidv5 } = require("uuid");
 const ID_NAMESPACE = "1e1eb861-ee4f-4c5e-bed1-04ee744e8559";

@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Anton } from "next/font/google";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { Progress } from "@/components/ui/progress";
+import { ChartLine } from "lucide-react";
 import { supabase } from "@/lib/supabase/browserClient";
+
+const anton = Anton({ weight: "400", subsets: ["latin"] });
 
 interface Event {
   id: string;
@@ -132,17 +136,21 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
   );
 
   return (
-    <div className="p-6 bg-transparent min-h-screen">
+    <div className="p-6 bg-[#141414] min-h-screen">
       <div className="mb-6">
-        <h1 className="text-white text-lg font-medium mb-4">
-          Club - Event Dashboard - Analytics
-        </h1>
+        <div className="flex items-center gap-3 mb-1">
+          <ChartLine className="w-6 h-6 text-blue-500" />
+          <h1 className={`${anton.className} text-white text-2xl tracking-wide`}>
+            Analytics
+          </h1>
+        </div>
+        <p className="text-neutral-500 text-sm">{event?.name}</p>
       </div>
 
       {/* Event Transaction Section */}
       <Card className="bg-neutral-900 border-neutral-700 mb-6">
         <CardHeader>
-          <CardTitle className="text-white text-lg">
+          <CardTitle className={`${anton.className} text-white text-lg tracking-wide`}>
             Event Transaction
           </CardTitle>
           <p className="text-neutral-400 text-sm">
@@ -153,10 +161,10 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Chart Section */}
             <div className="lg:col-span-1">
-              <Card className="bg-white p-4">
+              <Card className="bg-neutral-800 border-neutral-700 p-4">
                 <div className="mb-4">
-                  <h3 className="text-sm text-gray-600 mb-1">Total Sales</h3>
-                  <p className="text-2xl font-semibold">
+                  <h3 className="text-sm text-neutral-400 mb-1">Total Sales</h3>
+                  <p className={`${anton.className} text-2xl text-white`}>
                     {formatCurrency(totalSale)}
                   </p>
                 </div>
@@ -168,7 +176,7 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
                       <Line
                         type="monotone"
                         dataKey="value"
-                        stroke="#3b82f6"
+                        stroke="#2563EB"
                         strokeWidth={2}
                         dot={false}
                       />
@@ -180,39 +188,35 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
 
             {/* Metrics Grid */}
             <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-              <Card className="bg-white p-4">
-                <h3 className="text-sm text-gray-600 mb-1">
-                  Today&apos;s Registration
+              <Card className="bg-neutral-800 border-neutral-700 p-4">
+                <h3 className="text-sm text-neutral-400 mb-1">
+                  Today's Registration
                 </h3>
-                <p className="text-2xl font-semibold">0</p>
+                <p className={`${anton.className} text-2xl text-white`}>0</p>
               </Card>
-              <Card className="bg-white p-4">
-                <h3 className="text-sm text-gray-600 mb-1">
+              <Card className="bg-neutral-800 border-neutral-700 p-4">
+                <h3 className="text-sm text-neutral-400 mb-1">
                   Total Registrations
                 </h3>
-                <p className="text-2xl font-semibold">{totalRegistrations}</p>
+                <p className={`${anton.className} text-2xl text-white`}>{totalRegistrations}</p>
               </Card>
-              <Card className="bg-white p-4">
-                <h3 className="text-sm text-gray-600 mb-1">
-                  Today&apos;s Sale
-                </h3>
-                <p className="text-2xl font-semibold">{formatCurrency(0)}</p>
+              <Card className="bg-neutral-800 border-neutral-700 p-4">
+                <h3 className="text-sm text-neutral-400 mb-1">Today's Sale</h3>
+                <p className={`${anton.className} text-2xl text-white`}>{formatCurrency(0)}</p>
               </Card>
-              <Card className="bg-white p-4">
-                <h3 className="text-sm text-gray-600 mb-1">Total Sale</h3>
-                <p className="text-2xl font-semibold">
+              <Card className="bg-neutral-800 border-neutral-700 p-4">
+                <h3 className="text-sm text-neutral-400 mb-1">Total Sale</h3>
+                <p className={`${anton.className} text-2xl text-white`}>
                   {formatCurrency(totalSale)}
                 </p>
               </Card>
-              <Card className="bg-white p-4">
-                <h3 className="text-sm text-gray-600 mb-1">
-                  Today&apos;s Refunds
-                </h3>
-                <p className="text-2xl font-semibold">{formatCurrency(0)}</p>
+              <Card className="bg-neutral-800 border-neutral-700 p-4">
+                <h3 className="text-sm text-neutral-400 mb-1">Today's Refunds</h3>
+                <p className={`${anton.className} text-2xl text-white`}>{formatCurrency(0)}</p>
               </Card>
-              <Card className="bg-white p-4">
-                <h3 className="text-sm text-gray-600 mb-1">Total Refunds</h3>
-                <p className="text-2xl font-semibold">{formatCurrency(0)}</p>
+              <Card className="bg-neutral-800 border-neutral-700 p-4">
+                <h3 className="text-sm text-neutral-400 mb-1">Total Refunds</h3>
+                <p className={`${anton.className} text-2xl text-white`}>{formatCurrency(0)}</p>
               </Card>
             </div>
           </div>
@@ -224,7 +228,7 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
         {/* Recent Transactions */}
         <Card className="bg-neutral-900 border-neutral-700">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-white">Recent Transactions</CardTitle>
+            <CardTitle className={`${anton.className} text-white tracking-wide`}>Recent Transactions</CardTitle>
             <Button
               variant="outline"
               size="sm"
@@ -285,7 +289,7 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
         {/* Tickets Status */}
         <Card className="bg-neutral-900 border-neutral-700">
           <CardHeader>
-            <CardTitle className="text-white">Tickets Status</CardTitle>
+            <CardTitle className={`${anton.className} text-white tracking-wide`}>Tickets Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

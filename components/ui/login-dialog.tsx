@@ -21,21 +21,9 @@ export function LoginDialog({ children, triggerClassName }: LoginDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const ALLOWED_DOMAINS = ["gmail.com", "mlrit.ac.in"];
-
-  const isValidEmailDomain = (value: string) => {
-    const domain = value.trim().toLowerCase().split("@")[1] ?? "";
-    return ALLOWED_DOMAINS.includes(domain);
-  };
-
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-
-    if (!isValidEmailDomain(email)) {
-      setError("Only @gmail.com or @mlrit.ac.in email addresses are allowed.");
-      return;
-    }
 
     setIsLoading(true);
     setError(null);
@@ -48,11 +36,7 @@ export function LoginDialog({ children, triggerClassName }: LoginDialogProps) {
       });
       if (res?.error) {
         console.error("[LoginDialog] signIn error:", res.error);
-        setError(
-          res.error === "CredentialsSignin"
-            ? "Invalid email or password."
-            : `Sign in error: ${res.error}`
-        );
+        setError(`Sign in error: ${res.error}`);
       } else if (res?.ok) {
         // Force a full page reload so Next.js session is refreshed everywhere
         window.location.replace("/home");
@@ -134,7 +118,8 @@ export function LoginDialog({ children, triggerClassName }: LoginDialogProps) {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="Leave blank if you don't have one"
+                    autoComplete="current-password"
                     className="w-full px-4 py-2.5 rounded-xl border dark:border-white/10 border-black/10 dark:bg-white/5 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                   />
                 </div>
@@ -147,13 +132,6 @@ export function LoginDialog({ children, triggerClassName }: LoginDialogProps) {
                   {isLoading ? "Signing in..." : "Sign In"}
                 </button>
               </form>
-
-              <p className="text-center text-xs opacity-60 mt-4">
-                Don&apos;t have an account?{" "}
-                <a href="/register" className="text-purple-500 hover:underline">
-                  Sign Up
-                </a>
-              </p>
             </div>
           </div>
         </div>

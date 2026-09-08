@@ -34,6 +34,8 @@ export default function Profile() {
         router.replace("/user/profile"); // 🚀 instant redirect
       } else if (data?.role === "club") {
         router.replace("/club");
+      } else if (data?.role === "faculty") {
+        router.replace("/faculty");
       } else {
         setLoading(false); // stay here, show ProfilePage
       }
