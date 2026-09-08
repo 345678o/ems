@@ -22,7 +22,7 @@ export function UserAppShell({
   const [collapsed, toggle] = useSidebarCollapsed("user-sidebar-collapsed");
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[#141414]">
+    <div className="flex min-h-screen w-full flex-col bg-background">
       {topBar}
       <div className="flex flex-1">
         <div

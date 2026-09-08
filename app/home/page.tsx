@@ -2,46 +2,48 @@
 import logger from "@/lib/logger";
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Anton } from "next/font/google";
-import { MapPin, CalendarDays } from "lucide-react";
-import { FocusCardsRow } from "@/components/ui/focus-cards";
-import FadeContent from "@/components/fade-content";
+import { ArrowRight, MapPin, CalendarDays } from "lucide-react";
 import LogoLoop from "@/components/logo-loop";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-  type CarouselApi,
-} from "@/components/ui/carousel";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { GradientButton } from "@/components/ui/gradient-button";
+import { Button } from "@/components/ui/button";
+import { TornCard } from "@/components/ui/torn-card";
+import { ScribbleStar, ScribbleArrow } from "@/components/ui/scribble";
+import { CategoryBadge, toEventCategory } from "@/components/ui/category-badge";
 import { supabase } from "@/lib/supabase/browserClient";
-import { cn } from "@/lib/utils";
 import type { EventTheme } from "@/lib/utils/theme-color";
 
-const anton = Anton({ weight: "400", subsets: ["latin"] });
+type HomeEventRow = {
+  id: string;
+  name: string;
+  venue: string | null;
+  city: string | null;
+  banners: Record<string, string>;
+  theme_colors: EventTheme | null;
+  start_datetime: string | null;
+  club: { name: string } | null;
+};
+
+/** Small stacked date chip, e.g. "APR / 26", torn-ticket style. */
+function DateChip({ iso }: { iso: string | null }) {
+  const d = iso ? new Date(iso) : null;
+  return (
+    <div className="flex w-14 shrink-0 flex-col items-center rounded-lg border border-ink/10 bg-secondary py-1.5 leading-none shadow-sm">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-hotpink">
+        {d ? d.toLocaleDateString("en-IN", { month: "short" }) : "TBA"}
+      </span>
+      <span className="font-display mt-1 text-lg text-ink">
+        {d ? d.getDate() : "?"}
+      </span>
+    </div>
+  );
+}
 
 function Page() {
-  const [events, setEvents] = useState<
-    Array<{
-      id: string;
-      name: string;
-      venue: string | null;
-      city: string | null;
-      banners: Record<string, string>;
-      theme_colors: EventTheme | null;
-      start_datetime: string | null;
-      club: { name: string } | null;
-    }>
-  >([]);
+  const [events, setEvents] = useState<HomeEventRow[]>([]);
   const [clubs, setClubs] = useState<
     Array<{ id: string; name: string; avatar_url: string | null }>
   >([]);
   const [ticketPrices, setTicketPrices] = useState<Record<string, number>>({});
-  const [heroApi, setHeroApi] = useState<CarouselApi>();
-  const [heroIndex, setHeroIndex] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -59,7 +61,7 @@ function Page() {
           return;
         }
 
-        type HomeEvent = {
+        type RawHomeEvent = {
           id: string;
           name: string;
           venue: string | null;
@@ -69,7 +71,7 @@ function Page() {
           start_datetime: string | null;
           clubs: { name: string } | { name: string }[] | null;
         };
-        const filtered = ((data as unknown as HomeEvent[]) || []).filter(
+        const filtered = ((data as unknown as RawHomeEvent[]) || []).filter(
           (e) => {
             let b: Record<string, string> = {};
             try {
@@ -117,7 +119,7 @@ function Page() {
           events.map((e) => e.id)
         );
       if (error) {
-        console.error("[home] ticket price fetch error:", error.message);
+        logger.error("[home] ticket price fetch error:", error.message);
         return;
       }
       const min: Record<string, number> = {};
@@ -133,16 +135,6 @@ function Page() {
     };
     loadPrices();
   }, [events]);
-
-  useEffect(() => {
-    if (!heroApi) return;
-    setHeroIndex(heroApi.selectedScrollSnap());
-    const onSelect = () => setHeroIndex(heroApi.selectedScrollSnap());
-    heroApi.on("select", onSelect);
-    return () => {
-      heroApi.off("select", onSelect);
-    };
-  }, [heroApi]);
 
   useEffect(() => {
     const loadClubs = async () => {
@@ -176,24 +168,15 @@ function Page() {
     loadClubs();
   }, []);
 
-  const cards = useMemo(
-    () =>
-      events.map((e) => ({
-        title: e.name,
-        src: e.banners?.["1x1"] || "",
-        href: `/events/${e.id}`,
-        colors: e.theme_colors ?? undefined,
-      })),
-    [events]
-  );
+  const heroPhotos = useMemo(() => events.slice(0, 3), [events]);
 
   const clubLogos = useMemo(
     () =>
       clubs.map((c) => ({
         node: (
-          <Avatar className="h-[50px] w-[50px] border-2 border-white/10 ring-2 ring-[#D96CE5]/20">
+          <Avatar className="h-[50px] w-[50px] border-2 border-ink/10 ring-2 ring-hotpink/20">
             <AvatarImage src={c.avatar_url ?? undefined} alt={c.name} />
-            <AvatarFallback className="bg-gradient-to-br from-[#D96CE5] to-[#7B2FE5] text-white">
+            <AvatarFallback className="bg-ink text-paper font-display">
               {c.name.charAt(0)}
             </AvatarFallback>
           </Avatar>
@@ -204,35 +187,118 @@ function Page() {
     [clubs]
   );
 
-  return (
-    <div className="relative min-h-screen bg-[#141414] overflow-hidden">
-      {/* Ambient glow — festival-lights atmosphere behind the hero */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[520px] opacity-40 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(60% 60% at 20% 20%, #7B2FE5 0%, transparent 70%), radial-gradient(50% 50% at 85% 10%, #D96CE5 0%, transparent 70%)",
-        }}
-      />
+  const rotations = [-6, 3, -2];
+  const cardTilts = [-1.5, 1, -1, 1.5, -0.5, 1.5];
 
-      {/* Hero — split layout, one live event at a time */}
-      {events.length > 0 && (
-        <section className="relative mx-auto w-[90%] max-w-7xl pt-10 pb-4 sm:w-[85%] md:w-[75%] lg:w-[70%]">
-          <Carousel
-            opts={{ align: "center", loop: true }}
-            setApi={setHeroApi}
-          >
-            <CarouselContent>
-              {events.map((e) => {
+  return (
+    <div className="paper-grain min-h-screen bg-background">
+      {/* ---------------------------------------------------------------- */}
+      {/* Hero                                                              */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="relative mx-auto w-[92%] max-w-7xl pt-14 pb-16 sm:w-[88%]">
+        <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
+          {/* Left — headline */}
+          <div className="relative">
+            <p className="font-marker mb-3 hidden -rotate-2 text-xl text-hotpink md:block">
+              Same campus.
+              <br />
+              Different perspective.
+            </p>
+
+            <h1 className="font-display text-5xl leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-7xl">
+              EVENTS ARE
+              <br />
+              BETTER
+              <br />
+              <span className="marker-highlight">TOGETHER</span>
+            </h1>
+
+            <p className="mt-6 max-w-md text-base text-ink/70">
+              Discover. Register. Participate. Your one-stop feed for every
+              club&apos;s fests, hackathons, workshops, and everything in
+              between.
+            </p>
+
+            <div className="mt-8 flex items-center gap-4">
+              <Link href="/events">
+                <Button
+                  size="lg"
+                  className="rounded-full px-7 text-base shadow-[3px_3px_0_0_var(--ink)]"
+                >
+                  Explore Events
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <ScribbleArrow className="hidden h-8 w-16 -rotate-12 text-ink/40 sm:block" />
+            </div>
+          </div>
+
+          {/* Right — polaroid collage of live events */}
+          <div className="relative mx-auto h-[320px] w-full max-w-sm md:h-[380px]">
+            <ScribbleStar className="absolute -top-4 left-2 h-6 w-6 text-hotpink" />
+            {heroPhotos.length === 0 ? (
+              <div className="polaroid absolute inset-x-8 top-4 rotate-2">
+                <div className="flex aspect-[4/5] w-full items-center justify-center bg-paper-dim text-sm text-ink/40">
+                  Events coming soon
+                </div>
+              </div>
+            ) : (
+              heroPhotos.map((e, i) => (
+                <Link
+                  key={e.id}
+                  href={`/events/${e.id}`}
+                  className="polaroid absolute w-[62%] transition-transform hover:z-20 hover:scale-105"
+                  style={{
+                    transform: `rotate(${rotations[i % rotations.length]}deg)`,
+                    left: `${i * 16}%`,
+                    top: `${i * 14}%`,
+                    zIndex: i,
+                  }}
+                >
+                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-paper-dim">
+                    <img
+                      src={e.banners?.["1x1"]}
+                      alt={e.name}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  </div>
+                  <p className="font-marker mt-2 truncate text-center text-lg leading-none text-ink/80">
+                    {e.name}
+                  </p>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Upcoming Events                                                   */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="border-y-2 border-dashed border-ink/15 bg-secondary/50 py-14">
+        <div className="mx-auto w-[92%] max-w-7xl sm:w-[88%]">
+          <div className="mb-8 flex items-end justify-between">
+            <h2 className="font-display flex items-center gap-2 text-3xl text-ink md:text-4xl">
+              <ScribbleStar className="h-6 w-6 text-hotpink" />
+              Upcoming Events
+            </h2>
+            <Link
+              href="/events"
+              className="text-sm font-semibold text-ink underline decoration-hotpink decoration-2 underline-offset-4 hover:text-hotpink"
+            >
+              View All →
+            </Link>
+          </div>
+
+          {events.length === 0 ? (
+            <p className="font-marker text-xl text-ink/50">
+              Nothing on the calendar yet — check back soon.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {events.slice(0, 6).map((e, i) => {
+                const category = toEventCategory(e.name);
                 const price = ticketPrices[e.id];
-                const badge = e.start_datetime
-                  ? new Date(e.start_datetime).toLocaleDateString("en-IN", {
-                      weekday: "short",
-                      day: "numeric",
-                      month: "short",
-                    })
-                  : "Coming soon";
                 const location = Array.from(
                   new Set(
                     [e.venue, e.city].filter(
@@ -243,213 +309,85 @@ function Page() {
                 ).join(", ");
 
                 return (
-                  <CarouselItem key={e.id} className="basis-full">
-                    <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12">
-                      {/* Left — event details */}
-                      <div className="order-2 md:order-1">
-                        <div className="mb-4 flex items-center gap-2">
-                          <CalendarDays className="h-3.5 w-3.5 text-[#FF8AC9]" />
-                          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#FF8AC9]">
-                            {badge}
-                          </span>
+                  <Link key={e.id} href={`/events/${e.id}`} className="group block">
+                    <TornCard
+                      rotate={cardTilts[i % cardTilts.length]}
+                      className="overflow-hidden transition-transform group-hover:-translate-y-1"
+                    >
+                      <div className="relative aspect-[16/10] w-full overflow-hidden">
+                        <img
+                          src={e.banners?.["16:9"] || e.banners?.["1x1"]}
+                          alt={e.name}
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute left-3 top-3">
+                          <CategoryBadge category={category} />
                         </div>
-
-                        <h1
-                          className={`${anton.className} text-3xl leading-tight tracking-wide text-white md:text-5xl`}
-                        >
-                          {e.name}
-                        </h1>
-
-                        {e.club?.name && (
-                          <p className="mt-3 text-sm text-neutral-400 md:text-base">
-                            Hosted by{" "}
-                            <span className="text-neutral-200">
-                              {e.club.name}
-                            </span>
-                          </p>
-                        )}
-
-                        {location && (
-                          <p className="mt-1 flex items-center gap-1.5 text-sm text-neutral-400 md:text-base">
-                            <MapPin className="h-4 w-4 shrink-0" />
-                            {location}
-                          </p>
-                        )}
-
-                        {price !== undefined && (
-                          <p className="mt-4 text-lg font-semibold text-white">
-                            ₹{price} onwards
-                          </p>
-                        )}
-
-                        <Link href={`/events/${e.id}`} className="mt-6 inline-block">
-                          <GradientButton className="text-base">
-                            Book tickets
-                          </GradientButton>
-                        </Link>
                       </div>
-
-                      {/* Right — banner card */}
-                      <Link
-                        href={`/events/${e.id}`}
-                        className="order-1 md:order-2"
-                      >
-                        <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_20px_60px_-15px_rgba(123,47,229,0.35)]">
-                          <img
-                            src={e.banners?.["1x1"]}
-                            alt={e.name}
-                            className="absolute inset-0 h-full w-full object-cover"
-                          />
+                      <div className="flex gap-3 p-4">
+                        <DateChip iso={e.start_datetime} />
+                        <div className="min-w-0">
+                          <h3 className="font-display truncate text-lg text-ink">
+                            {e.name}
+                          </h3>
+                          {e.club?.name && (
+                            <p className="truncate text-xs text-ink/50">
+                              {e.club.name}
+                            </p>
+                          )}
+                          {location && (
+                            <p className="mt-1 flex items-center gap-1 truncate text-xs text-ink/60">
+                              <MapPin className="h-3 w-3 shrink-0" />
+                              {location}
+                            </p>
+                          )}
+                          {price !== undefined && (
+                            <p className="mt-1 text-xs font-semibold text-hotpink">
+                              ₹{price} onwards
+                            </p>
+                          )}
                         </div>
-                      </Link>
-                    </div>
-                  </CarouselItem>
+                      </div>
+                    </TornCard>
+                  </Link>
                 );
               })}
-            </CarouselContent>
-
-            {events.length > 1 && (
-              <>
-                <CarouselPrevious className="-left-4 top-1/2 h-11 w-11 -translate-y-1/2 border-none bg-neutral-800/80 text-white hover:bg-neutral-700 md:-left-12" />
-                <CarouselNext className="-right-4 top-1/2 h-11 w-11 -translate-y-1/2 border-none bg-neutral-800/80 text-white hover:bg-neutral-700 md:-right-12" />
-              </>
-            )}
-          </Carousel>
-
-          {events.length > 1 && (
-            <div className="mt-6 flex items-center justify-center gap-1.5">
-              {events.map((e, i) => (
-                <button
-                  key={e.id}
-                  type="button"
-                  aria-label={`Go to slide ${i + 1}`}
-                  onClick={() => heroApi?.scrollTo(i)}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all",
-                    i === heroIndex
-                      ? "w-6 bg-white"
-                      : "w-1.5 bg-white/25 hover:bg-white/40"
-                  )}
-                />
-              ))}
             </div>
           )}
-        </section>
-      )}
+        </div>
+      </section>
 
-      <div className="relative z-10 w-full mb-10">
-        <div className="mt-20">
-          <FadeContent
-            blur={true}
-            duration={500}
-            easing="ease-out"
-            initialOpacity={0}
-            delay={500}
-          >
-            <div id="live-now" className="scroll-mt-24">
-              <FocusCardsRow
-                title="Recommended for you"
-                cards={cards}
-                seeAllHref="/events"
-              />
-            </div>
-          </FadeContent>
+      {/* ---------------------------------------------------------------- */}
+      {/* Clubs                                                             */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="py-14">
+        <div className="mx-auto mb-8 w-[92%] max-w-7xl sm:w-[88%]">
+          <h2 className="font-display flex items-center gap-2 text-3xl text-ink md:text-4xl">
+            Powered by our Clubs
+            <CalendarDays className="hidden h-6 w-6 text-hotpink sm:block" />
+          </h2>
+          <p className="font-marker mt-1 text-lg text-ink/60">
+            The student communities behind every fest on this page.
+          </p>
         </div>
 
-        <div className="mt-20">
-          <FadeContent
-            blur={true}
-            duration={500}
-            easing="ease-out"
-            initialOpacity={0}
-          >
-            <div className="mx-auto w-[90%] px-4 sm:w-[85%] md:w-[75%] md:px-6 lg:w-[70%]">
-              <h2
-                className={`${anton.className} text-2xl tracking-wide text-white md:text-3xl`}
-              >
-                Happening Soon
-              </h2>
-
-              <div className="mt-6 divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
-                {events.length === 0 ? (
-                  <p className="px-5 py-6 text-sm text-neutral-500">
-                    Nothing on the calendar yet — check back soon.
-                  </p>
-                ) : (
-                  events.map((e) => (
-                    <Link
-                      key={e.id}
-                      href={`/events/${e.id}`}
-                      className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-white/[0.04]"
-                    >
-                      <img
-                        src={e.banners?.["1x1"] || ""}
-                        alt=""
-                        className="h-12 w-12 shrink-0 rounded-lg object-cover"
-                      />
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-white md:text-base">
-                        {e.name}
-                      </span>
-                      <span className="hidden shrink-0 text-sm text-neutral-400 sm:block">
-                        {e.start_datetime
-                          ? new Date(e.start_datetime).toLocaleDateString(
-                              "en-IN",
-                              { day: "numeric", month: "short", year: "numeric" }
-                            )
-                          : "TBA"}
-                      </span>
-                      <span className="shrink-0 rounded-full bg-gradient-to-r from-[#FF8AC9] via-[#D96CE5] to-[#7B2FE5] px-4 py-1.5 text-xs font-semibold text-white">
-                        Register
-                      </span>
-                    </Link>
-                  ))
-                )}
-              </div>
-            </div>
-          </FadeContent>
-        </div>
-
-        <div className="mt-20">
-          <FadeContent
-            blur={true}
-            duration={500}
-            easing="ease-out"
-            initialOpacity={0}
-          >
-            <div
-              id="clubs"
-              className="mx-auto mb-10 w-[90%] scroll-mt-24 px-4 sm:w-[85%] md:w-[75%] md:px-6 lg:w-[70%]"
-            >
-              <h2
-                className={`${anton.className} text-2xl tracking-wide text-white md:text-3xl`}
-              >
-                Powered by our Clubs
-              </h2>
-              <p className="mt-1 text-sm text-neutral-500">
-                The student communities behind every fest on this page.
-              </p>
-            </div>
-
-            {/* LogoLoop of real clubs, framed like a dashed ticket strip */}
-            {clubLogos.length > 0 && (
-              <div className="relative w-full overflow-hidden border-y border-dashed border-white/10 bg-white/[0.02] py-2">
-                <LogoLoop
-                  logos={clubLogos}
-                  speed={80}
-                  direction="left"
-                  logoHeight={50}
-                  gap={48}
-                  pauseOnHover
-                  scaleOnHover
-                  fadeOut
-                  fadeOutColor="#141414"
-                  ariaLabel="Clubs"
-                />
-              </div>
-            )}
-          </FadeContent>
-        </div>
-      </div>
+        {clubLogos.length > 0 && (
+          <div className="relative w-full overflow-hidden border-y border-dashed border-ink/15 bg-secondary/50 py-3">
+            <LogoLoop
+              logos={clubLogos}
+              speed={80}
+              direction="left"
+              logoHeight={50}
+              gap={48}
+              pauseOnHover
+              scaleOnHover
+              fadeOut
+              fadeOutColor="#f3ede1"
+              ariaLabel="Clubs"
+            />
+          </div>
+        )}
+      </section>
     </div>
   );
 }

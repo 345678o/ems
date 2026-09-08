@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Separator } from "@/components/ui/separator";
+import { ScribbleArrow } from "@/components/ui/scribble";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -75,52 +75,53 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800 from-gray-50 via-white to-gray-100">
-      <div className="max-w-3xl w-full">
-        <div className="flex items-center rounded-3xl overflow-hidden dark:bg-[#141414] bg-white shadow-2xl relative">
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-tl dark:from-violet-600/20 from-pink-100 via-transparent to-transparent pointer-events-none" />
-
-          {/* Left Side — Logos */}
-          <div className="flex-1 p-12 flex flex-col justify-center items-center gap-8 relative z-10">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="w-full max-w-3xl">
+        <div className="grid overflow-hidden rounded-[28px] bg-card shadow-2xl md:grid-cols-2">
+          {/* Left Side — photo panel, hidden on small screens */}
+          <div className="relative hidden md:block">
             <Image
-              src="/logos/mlrit.svg"
-              alt="MLRIT Logo"
-              width={160}
-              height={80}
-              className="h-20 w-auto object-contain"
+              src="/events/welcome-gate.jpg"
+              alt=""
+              fill
+              sizes="400px"
+              className="object-cover"
             />
-            <Image
-              src="/logos/iic.svg"
-              alt="Institution's Innovation Council Logo"
-              width={160}
-              height={96}
-              className="h-24 w-auto object-contain"
-            />
+            <div className="absolute inset-0 bg-ink/35" />
+            <div className="absolute top-6 left-6 flex items-center gap-3">
+              <Image
+                src="/logos/mlrit.svg"
+                alt="MLRIT Logo"
+                width={80}
+                height={40}
+                className="h-8 w-auto object-contain brightness-0 invert"
+              />
+            </div>
+            <p className="font-marker absolute bottom-6 left-6 right-6 flex items-center gap-2 text-3xl leading-none text-white">
+              Good + things ahead
+              <ScribbleArrow className="h-6 w-10 text-hotpink" />
+            </p>
           </div>
 
-          {/* Vertical Separator */}
-          <Separator
-            orientation="vertical"
-            className="h-96 dark:bg-white/10 bg-black/10"
-          />
-
           {/* Right Side — Register Form */}
-          <div className="flex-1 p-10 flex flex-col justify-center items-center relative z-10">
-            <div className="w-full max-w-sm">
-              <h1 className="font-figtree text-2xl font-bold text-center mb-6">
-                Create Account
+          <div className="paper-grain flex flex-col justify-center p-8 sm:p-10">
+            <div className="w-full">
+              <h1 className="font-display text-2xl text-ink sm:text-3xl">
+                Join EMS
               </h1>
+              <p className="mt-1 mb-6 text-sm text-muted-foreground">
+                Create your account to start registering for events.
+              </p>
 
               {error && (
-                <div className="mb-4 p-3 rounded-lg text-xs text-red-500 bg-red-500/10 border border-red-500/20 text-center">
+                <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-center text-xs text-destructive">
                   {error}
                 </div>
               )}
 
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium mb-1 opacity-80">
+                  <label className="mb-1 block text-xs font-semibold text-ink/70">
                     Full Name
                   </label>
                   <input
@@ -129,12 +130,12 @@ export default function RegisterPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="John Doe"
-                    className="w-full px-4 py-2.5 rounded-xl border dark:border-white/10 border-black/10 dark:bg-white/5 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                    className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-ink transition-all placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-hotpink"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium mb-1 opacity-80">
+                  <label className="mb-1 block text-xs font-semibold text-ink/70">
                     Email address
                   </label>
                   <input
@@ -143,12 +144,12 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="user@example.com"
-                    className="w-full px-4 py-2.5 rounded-xl border dark:border-white/10 border-black/10 dark:bg-white/5 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                    className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-ink transition-all placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-hotpink"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium mb-1 opacity-80">
+                  <label className="mb-1 block text-xs font-semibold text-ink/70">
                     Password
                   </label>
                   <input
@@ -157,25 +158,27 @@ export default function RegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-4 py-2.5 rounded-xl border dark:border-white/10 border-black/10 dark:bg-white/5 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                    className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-ink transition-all placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-hotpink"
                   />
-                  <p className="text-xs opacity-60 mt-1">Min. 8 characters</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Min. 8 characters
+                  </p>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#FF8AC9] via-[#D96CE5] to-[#7B2FE5] text-white font-medium text-sm hover:opacity-95 transition-opacity disabled:opacity-50 shadow-md"
+                  className="w-full rounded-full bg-primary py-3 px-6 text-sm font-semibold text-primary-foreground shadow-md transition-opacity hover:opacity-90 disabled:opacity-50"
                 >
                   {isLoading ? "Creating account..." : "Sign Up"}
                 </button>
               </form>
 
-              <p className="text-center text-xs opacity-60 mt-4">
+              <p className="mt-4 text-center text-xs text-muted-foreground">
                 Already have an account?{" "}
                 <button
                   onClick={() => router.push("/")}
-                  className="text-purple-500 hover:underline"
+                  className="font-semibold text-hotpink hover:underline"
                 >
                   Sign In
                 </button>

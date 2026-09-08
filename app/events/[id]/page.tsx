@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Anton } from "next/font/google";
 import { format, parseISO } from "date-fns";
 import {
   CalendarDays,
   Clock,
-  Globe,
+  MapPin,
   Ticket,
   ArrowLeft,
   ArrowRight,
+  Share2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { Button } from "@/components/ui/button";
@@ -23,9 +23,9 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel";
-import { DEFAULT_EVENT_THEME, type EventTheme } from "@/lib/utils/theme-color";
-
-const anton = Anton({ weight: "400", subsets: ["latin"] });
+import type { EventTheme } from "@/lib/utils/theme-color";
+import { CategoryBadge, toEventCategory } from "@/components/ui/category-badge";
+import { ScribbleStar } from "@/components/ui/scribble";
 
 interface EventDetail {
   id: string;
@@ -41,7 +41,11 @@ interface EventDetail {
   banners: Record<string, string>;
   theme_colors: EventTheme | null;
   club_id: string | null;
-  clubs: { name: string; avatar_url: string | null; about: string | null } | null;
+  clubs: {
+    name: string;
+    avatar_url: string | null;
+    about: string | null;
+  } | null;
 }
 
 interface PastEvent {
@@ -56,30 +60,6 @@ const PLACEHOLDER_PASSES = [
   { tier: "Silver", price: "₹299" },
 ];
 
-// Figma reference: hero glow = 3 blurred orbs (the event's 3 extracted colors)
-// fading into a flat page background — #141414 in dark mode, #FFF0F0 in light.
-function HeroGlow({ theme }: { theme: EventTheme }) {
-  const orbs = [
-    { color: theme.primary, left: "-8%", top: "-22%" },
-    { color: theme.dark, left: "20%", top: "2%" },
-    { color: theme.light, left: "57%", top: "-14%" },
-  ];
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
-      {orbs.map((orb, i) => (
-        <div
-          key={i}
-          className="absolute w-[46vw] h-[46vw] max-w-[560px] max-h-[560px] rounded-full blur-[110px]"
-          style={{ background: orb.color, left: orb.left, top: orb.top }}
-        />
-      ))}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#FFF0F0] dark:hidden" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#141414] hidden dark:block" />
-    </div>
-  );
-}
-
 function InfoRow({
   icon: Icon,
   children,
@@ -88,8 +68,8 @@ function InfoRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3 text-sm text-neutral-800 dark:text-white/85">
-      <Icon className="w-4 h-4 shrink-0" />
+    <div className="flex items-center gap-3 text-sm text-foreground/80">
+      <Icon className="h-4 w-4 shrink-0 text-hotpink" />
       <span>{children}</span>
     </div>
   );
@@ -102,6 +82,7 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [pastEvents, setPastEvents] = useState<PastEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     if (!eventId) return;
@@ -142,21 +123,40 @@ export default function EventDetailPage() {
     load();
   }, [eventId]);
 
+  const handleShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: event?.name, url });
+        return;
+      } catch {
+        // user cancelled or share failed — fall through to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      // clipboard unavailable — nothing more we can do here
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FFF0F0] dark:bg-[#141414]">
-        <p className="text-neutral-500 dark:text-white/60">Loading event...</p>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-foreground/50">Loading event...</p>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#FFF0F0] dark:bg-[#141414]">
-        <p className="text-neutral-500 dark:text-white/60">Event not found.</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
+        <p className="text-foreground/50">Event not found.</p>
         <Link href="/events">
-          <Button variant="outline">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+          <Button variant="outline" className="rounded-full">
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to events
           </Button>
         </Link>
@@ -164,165 +164,177 @@ export default function EventDetailPage() {
     );
   }
 
-  const theme = event.theme_colors ?? DEFAULT_EVENT_THEME;
   const heroBanner = event.banners?.["16:9"] || event.banners?.["1x1"];
+  const category = toEventCategory(event.event_type);
 
   return (
-    <div className="min-h-screen bg-[#FFF0F0] dark:bg-[#141414] text-neutral-900 dark:text-white">
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <HeroGlow theme={theme} />
-
-        <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 pt-10 md:pt-16 pb-16 md:pb-24">
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white hover:underline mb-8"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to events
-          </Link>
-
-          <div className="grid md:grid-cols-[1fr_360px] gap-10 items-start">
-            <div>
-              <h1
-                className={`${anton.className} uppercase tracking-tight text-5xl sm:text-6xl md:text-7xl leading-[0.95] text-white mb-6`}
-              >
-                {event.name}
-              </h1>
-
-              <Button
-                size="lg"
-                disabled
-                title="Registration opening soon"
-                className="bg-neutral-200 text-black hover:bg-neutral-300 mb-8"
-              >
-                Registration opening soon
-              </Button>
-
-              {event.additional_details && (
-                <div className="rounded-xl border border-black/10 dark:border-white/15 bg-black/5 dark:bg-white/5 backdrop-blur-sm p-5 max-w-md">
-                  <p className="text-sm font-medium text-neutral-700 dark:text-white/70 mb-2">
-                    About Event
-                  </p>
-                  <p className="text-sm text-neutral-900 dark:text-white/90 whitespace-pre-line">
-                    {event.additional_details}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {heroBanner && (
-                <div className="w-full aspect-square rounded-2xl overflow-hidden border border-black/10 dark:border-white/15">
-                  <img
-                    src={heroBanner}
-                    alt={event.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              <div className="rounded-xl border border-black/10 dark:border-white/15 bg-black/5 dark:bg-white/5 backdrop-blur-sm p-5 space-y-3">
-                <InfoRow icon={CalendarDays}>
-                  {format(parseISO(event.start_datetime), "MMM d, yyyy")}
-                  {event.end_datetime &&
-                    ` - ${format(parseISO(event.end_datetime), "MMM d, yyyy")}`}
-                </InfoRow>
-                <InfoRow icon={Clock}>
-                  {format(parseISO(event.start_datetime), "h:mm a")}
-                </InfoRow>
-                {event.venue && (
-                  <InfoRow icon={Globe}>
-                    {[event.venue, event.city, event.country].filter(Boolean).join(", ")}
-                  </InfoRow>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Passes — visual-only placeholder, no ticketing backend yet */}
-      <section className="max-w-6xl mx-auto px-4 md:px-6 py-14">
-        <h2
-          className={`${anton.className} uppercase text-3xl md:text-4xl mb-6 flex items-center gap-3`}
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto max-w-4xl px-4 py-8 md:px-6 md:py-12">
+        <Link
+          href="/events"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-foreground/60 hover:text-hotpink"
         >
-          <Ticket className="w-7 h-7" />
-          Passes
-        </h2>
-        <div className="max-w-xl space-y-3">
-          {PLACEHOLDER_PASSES.map((pass) => (
-            <div
-              key={pass.tier}
-              className="flex items-center justify-between rounded-lg border border-neutral-300 dark:border-white/15 bg-white/60 dark:bg-white/5 px-5 py-4"
-            >
-              <span className="font-semibold">{pass.tier}</span>
-              <div className="flex items-center gap-4">
-                <span className="text-neutral-600 dark:text-white/70">
-                  {pass.price}
-                </span>
-                <ArrowRight className="w-4 h-4 text-neutral-400 dark:text-white/50" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+          <ArrowLeft className="h-4 w-4" />
+          Back to Events
+        </Link>
 
-      {/* About the organizer */}
-      {event.clubs && (
-        <section className="max-w-6xl mx-auto px-4 md:px-6 py-14">
-          <h2 className={`${anton.className} uppercase text-3xl md:text-4xl mb-6`}>
-            About the Organizer
+        {/* Banner */}
+        <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-3xl border-2 border-ink/80 bg-paper-dim shadow-[0_16px_36px_-16px_rgb(0_0_0_/_0.3)]">
+          {heroBanner && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={heroBanner}
+              alt={event.name}
+              className="h-full w-full object-cover"
+            />
+          )}
+          <div className="absolute left-4 top-4">
+            <CategoryBadge category={category} className="shadow-sm" />
+          </div>
+        </div>
+
+        {/* Title + scribble */}
+        <div className="mb-6 flex items-start gap-3">
+          <h1 className="font-display text-3xl leading-tight text-ink sm:text-4xl md:text-5xl">
+            {event.name}
+          </h1>
+          <ScribbleStar className="mt-2 hidden h-6 w-6 shrink-0 text-hotpink sm:block" />
+        </div>
+
+        {/* Facts row */}
+        <div className="mb-8 flex flex-wrap gap-x-8 gap-y-3 rounded-2xl border border-border bg-card p-5">
+          <InfoRow icon={CalendarDays}>
+            {format(parseISO(event.start_datetime), "MMM d, yyyy")}
+            {event.end_datetime &&
+              ` - ${format(parseISO(event.end_datetime), "MMM d, yyyy")}`}
+          </InfoRow>
+          <InfoRow icon={Clock}>
+            {format(parseISO(event.start_datetime), "h:mm a")}
+          </InfoRow>
+          {event.venue && (
+            <InfoRow icon={MapPin}>
+              {[event.venue, event.city, event.country]
+                .filter(Boolean)
+                .join(", ")}
+            </InfoRow>
+          )}
+        </div>
+
+        {/* CTAs */}
+        <div className="mb-10 flex flex-wrap items-center gap-3">
+          <Button
+            size="lg"
+            disabled
+            title="Registration opening soon"
+            className="rounded-full bg-ink px-8 text-paper hover:bg-ink/90"
+          >
+            Registration opening soon
+          </Button>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:border-ink/40"
+          >
+            <Share2 className="h-4 w-4" />
+            {shareCopied ? "Link copied!" : "Share"}
+          </button>
+        </div>
+
+        {/* About */}
+        {event.additional_details && (
+          <section className="mb-12">
+            <h2 className="font-display mb-3 text-2xl text-ink">
+              About the Event
+            </h2>
+            <p className="whitespace-pre-line rounded-2xl border border-border bg-card p-5 text-sm leading-relaxed text-foreground/80">
+              {event.additional_details}
+            </p>
+          </section>
+        )}
+
+        {/* Passes — visual-only placeholder, no ticketing backend yet */}
+        <section className="mb-12">
+          <h2 className="font-display mb-4 flex items-center gap-2 text-2xl text-ink">
+            <Ticket className="h-6 w-6 text-hotpink" />
+            Passes
           </h2>
-          <div className="rounded-2xl border border-neutral-300 dark:border-white/15 bg-white/60 dark:bg-white/5 p-8 flex flex-col sm:flex-row items-start gap-6">
-            <Avatar className="w-24 h-24 shrink-0">
-              <AvatarImage src={event.clubs.avatar_url ?? undefined} />
-              <AvatarFallback className="text-2xl">
-                {event.clubs.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className={`${anton.className} uppercase text-2xl mb-2`}>
-                {event.clubs.name}
-              </p>
-              <p className="text-sm text-neutral-600 dark:text-white/70">
-                {event.clubs.about}
-              </p>
-            </div>
+          <div className="space-y-3">
+            {PLACEHOLDER_PASSES.map((pass) => (
+              <div
+                key={pass.tier}
+                className="flex items-center justify-between rounded-xl border border-border bg-card px-5 py-3.5"
+              >
+                <span className="font-semibold text-foreground">
+                  {pass.tier}
+                </span>
+                <div className="flex items-center gap-4">
+                  <span className="text-foreground/60">{pass.price}</span>
+                  <ArrowRight className="h-4 w-4 text-foreground/40" />
+                </div>
+              </div>
+            ))}
           </div>
         </section>
-      )}
 
-      {/* Past events */}
-      {pastEvents.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 md:px-6 py-14">
-          <h2 className={`${anton.className} uppercase text-3xl md:text-4xl mb-6`}>
-            Past Events
-          </h2>
-          <Carousel opts={{ align: "start" }}>
-            <CarouselContent>
-              {pastEvents.map((pe) => (
-                <CarouselItem key={pe.id} className="basis-1/2 md:basis-1/3">
-                  <Link href={`/events/${pe.id}`}>
-                    <div className="aspect-square rounded-xl overflow-hidden border border-neutral-300 dark:border-white/15 bg-neutral-200 dark:bg-neutral-800">
-                      {pe.banners?.["1x1"] && (
-                        <img
-                          src={pe.banners["1x1"]}
-                          alt={pe.name}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </div>
-                    <p className="mt-2 text-sm font-medium truncate">{pe.name}</p>
-                  </Link>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
-        </section>
-      )}
+        {/* About the organizer */}
+        {event.clubs && (
+          <section className="mb-12">
+            <h2 className="font-display mb-4 text-2xl text-ink">
+              About the Organizer
+            </h2>
+            <div className="flex flex-col items-start gap-5 rounded-2xl border border-border bg-card p-6 sm:flex-row">
+              <Avatar className="h-20 w-20 shrink-0 border-2 border-ink/70">
+                <AvatarImage src={event.clubs.avatar_url ?? undefined} />
+                <AvatarFallback className="text-xl">
+                  {event.clubs.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-display mb-1.5 text-xl text-ink">
+                  {event.clubs.name}
+                </p>
+                <p className="text-sm text-foreground/70">
+                  {event.clubs.about}
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Past events */}
+        {pastEvents.length > 0 && (
+          <section className="mb-6">
+            <h2 className="font-display mb-4 text-2xl text-ink">Past Events</h2>
+            <Carousel opts={{ align: "start" }}>
+              <CarouselContent>
+                {pastEvents.map((pe) => (
+                  <CarouselItem key={pe.id} className="basis-1/2 md:basis-1/3">
+                    <Link href={`/events/${pe.id}`}>
+                      <div className="polaroid">
+                        <div className="relative aspect-square w-full overflow-hidden bg-paper-dim">
+                          {pe.banners?.["1x1"] && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={pe.banners["1x1"]}
+                              alt={pe.name}
+                              className="h-full w-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <p className="mt-1 truncate text-center text-sm font-medium text-ink">
+                          {pe.name}
+                        </p>
+                      </div>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="border-border bg-card text-foreground" />
+              <CarouselNext className="border-border bg-card text-foreground" />
+            </Carousel>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

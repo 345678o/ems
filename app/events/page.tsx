@@ -1,332 +1,105 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import LogoLoop from "@/components/logo-loop";
 import { ParticipantMenu } from "@/components/ui/participant-menu";
+import { ScribbleStar, ScribbleUnderline } from "@/components/ui/scribble";
+import {
+  CategoryBadge,
+  type EventCategory,
+} from "@/components/ui/category-badge";
+import { Search } from "lucide-react";
 
-// Event images data
-const heroItems = [
+// ============================================================================
+// PLACEHOLDER EVENT DATA
+// ============================================================================
+
+type LiveEvent = {
+  image: string;
+  title: string;
+  category: EventCategory;
+  venue: string;
+  month: string;
+  day: string;
+};
+
+const liveEvents: LiveEvent[] = [
   {
     image: "/events/equniox.png",
-    caption: "Equinox",
+    title: "Equinox",
+    category: "tech",
+    venue: "Main Auditorium",
+    month: "APR",
+    day: "26",
   },
   {
     image: "/events/hustle mania.png",
-    caption: "Hustle Mania",
+    title: "Hustle Mania",
+    category: "sports",
+    venue: "College Grounds",
+    month: "APR",
+    day: "28",
   },
   {
     image: "/events/wc 2.0.png",
-    caption: "Welcome 2.0",
+    title: "Welcome 2.0",
+    category: "cultural",
+    venue: "Main Auditorium",
+    month: "MAY",
+    day: "03",
   },
   {
     image: "/events/metaloop.png",
-    caption: "Metaloop",
+    title: "Metaloop",
+    category: "tech",
+    venue: "CSE Block",
+    month: "MAY",
+    day: "10",
   },
   {
     image: "/events/B2B.png",
-    caption: "B2B",
+    title: "B2B",
+    category: "workshop",
+    venue: "Seminar Hall",
+    month: "MAY",
+    day: "15",
+  },
+  {
+    image: "/events/gi.png",
+    title: "GI",
+    category: "cultural",
+    venue: "Open Grounds",
+    month: "MAY",
+    day: "18",
+  },
+  {
+    image: "/events/wc.png",
+    title: "Welcome",
+    category: "cultural",
+    venue: "Main Auditorium",
+    month: "MAY",
+    day: "22",
+  },
+  {
+    image: "/events/welcome-gate.jpg",
+    title: "Welcome Gate",
+    category: "other",
+    venue: "Front Lawn",
+    month: "MAY",
+    day: "25",
   },
 ];
 
-const liveEvents = [
-  { image: "/events/equniox.png", title: "Equinox" },
-  { image: "/events/hustle mania.png", title: "Hustle Mania" },
-  { image: "/events/wc 2.0.png", title: "Welcome 2.0" },
-  { image: "/events/metaloop.png", title: "Metaloop" },
-  { image: "/events/B2B.png", title: "B2B" },
-  { image: "/events/gi.png", title: "GI" },
-  { image: "/events/wc.png", title: "Welcome" },
-  { image: "/events/welcome-gate.jpg", title: "Welcome Gate" },
+const FILTERS: { id: "all" | EventCategory; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "cultural", label: "Cultural" },
+  { id: "tech", label: "Tech" },
+  { id: "sports", label: "Sports" },
+  { id: "workshop", label: "Workshops" },
+  { id: "other", label: "Others" },
 ];
-
-// ============================================================================
-// SUB-COMPONENTS
-// ============================================================================
-
-// Hero Carousel Component - 3 Card Layout
-function HeroCarousel({ items }: { items: typeof heroItems }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const totalCards = items.length;
-
-  const nextSlide = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % totalCards);
-  }, [totalCards]);
-
-  const prevSlide = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + totalCards) % totalCards);
-  }, [totalCards]);
-
-  useEffect(() => {
-    const interval = setInterval(nextSlide, 5000);
-    return () => clearInterval(interval);
-  }, [nextSlide]);
-
-  // Calculate indices for left, center, right
-  const leftIndex = (currentIndex - 1 + totalCards) % totalCards;
-  const centerIndex = currentIndex;
-  const rightIndex = (currentIndex + 1) % totalCards;
-
-  return (
-    <div className="relative h-[500px] overflow-hidden">
-      {/* Container with 3 visible cards */}
-      <div className="relative h-full flex items-center justify-center gap-6 px-6">
-        {/* Left Card - Half visible */}
-        <div className="w-[20%] h-[350px] flex-shrink-0 opacity-60 scale-90 transition-all duration-700">
-          <div className="relative w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
-            {items[leftIndex]?.image && (
-              <Image
-                src={items[leftIndex].image}
-                alt={items[leftIndex].caption || ""}
-                fill
-                sizes="(max-width: 768px) 100vw, 300px"
-                className="object-cover"
-                unoptimized
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Center Card - Large/Full size */}
-        <div className="w-[55%] h-[480px] flex-shrink-0 transition-all duration-700 group">
-          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden shadow-2xl shadow-black/50 relative transition-transform duration-300 group-hover:scale-110 group-hover:z-50">
-            {items[centerIndex]?.image && (
-              <Image
-                src={items[centerIndex].image}
-                alt={items[centerIndex].caption || ""}
-                fill
-                sizes="(max-width: 768px) 100vw, 600px"
-                className="object-cover"
-                unoptimized
-              />
-            )}
-            {/* Caption overlay */}
-            {items[centerIndex]?.caption && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                <h3 className="text-2xl font-bold text-white">
-                  {items[centerIndex].caption}
-                </h3>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Card - Half visible */}
-        <div className="w-[20%] h-[350px] flex-shrink-0 opacity-60 scale-90 transition-all duration-700">
-          <div className="relative w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
-            {items[rightIndex]?.image && (
-              <Image
-                src={items[rightIndex].image}
-                alt={items[rightIndex].caption || ""}
-                fill
-                sizes="(max-width: 768px) 100vw, 300px"
-                className="object-cover"
-                unoptimized
-              />
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10"
-        aria-label="Previous"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10"
-        aria-label="Next"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5l7 7-7 7"
-          />
-        </svg>
-      </button>
-
-      {/* Indicator Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-        {items.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentIndex(i)}
-            className={cn(
-              "h-2 rounded-full transition-all duration-300",
-              i === currentIndex
-                ? "w-8 bg-white"
-                : "w-2 bg-white/40 hover:bg-white/60"
-            )}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Top Bar Component
-function TopBar() {
-  const router = useRouter();
-
-  const handleBack = () => {
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/home");
-    }
-  };
-
-  return (
-    <div className="sticky top-0 z-[60] bg-[#121212] border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-6">
-        <div className="md:hidden">
-          <ParticipantMenu />
-        </div>
-        {/* Logo */}
-        <button
-          type="button"
-          onClick={handleBack}
-          aria-label="Go back"
-          title="Go back"
-          className="w-12 h-10 rounded flex items-center justify-center text-gray-300 hover:bg-white/10 transition-colors"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
-        <div className="w-12 h-10 bg-gradient-to-br from-gray-700 to-gray-800 rounded" />
-
-        {/* Search Bar */}
-        <div className="flex-1 max-w-2xl">
-          <div className="relative">
-            <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search for events..."
-              className="w-full h-11 pl-12 pr-4 bg-white/5 border border-white/10 rounded-full text-white placeholder:text-gray-500 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 transition-all"
-            />
-          </div>
-        </div>
-
-        {/* Right Icons */}
-        <div className="flex items-center gap-4">
-          {/* Notification Icon */}
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer">
-              <svg
-                className="w-5 h-5 text-gray-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 13V6a8 8 0 10-16 0v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4"
-                />
-              </svg>
-            </div>
-            {/* Orange badge dot */}
-            <div className="absolute top-0 right-0 w-3 h-3 bg-orange-500 rounded-full border-2 border-[#121212]" />
-          </div>
-
-          {/* Profile Avatar */}
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-600 to-gray-700" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Event Card Component
-function EventCard({ image, title }: { image?: string; title?: string }) {
-  return (
-    <div className="group relative aspect-[3/4] bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-black/50 hover:z-50">
-      {image ? (
-        <>
-          <Image
-            src={image}
-            alt={title || "Event"}
-            fill
-            sizes="(max-width: 768px) 100vw, 300px"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            unoptimized
-          />
-          {title && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity duration-300">
-              <h4 className="text-lg font-semibold text-white">{title}</h4>
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center text-gray-600">
-          <svg
-            className="w-16 h-16"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // Club logos data for LogoLoop
 const clubLogos = [
@@ -342,20 +115,92 @@ const clubLogos = [
   { src: "/clubs/scope", alt: "SCOPE", title: "SCOPE" },
 ];
 
-// Club Avatar Row Component with LogoLoop
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
+function TopBar() {
+  return (
+    <div className="sticky top-0 z-[60] border-b border-border bg-background/95 backdrop-blur">
+      <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 md:px-6">
+        <div className="md:hidden">
+          <ParticipantMenu />
+        </div>
+        <p className="font-marker hidden shrink-0 text-xl text-hotpink md:block">
+          EMS <ScribbleStar className="-mt-1 inline h-3 w-3" />
+        </p>
+        <div className="ml-auto w-full max-w-sm">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+            <input
+              type="text"
+              placeholder="Search events..."
+              className="h-10 w-full rounded-full border border-border bg-card pl-10 pr-4 text-sm text-foreground placeholder:text-foreground/40 focus:border-hotpink focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EventRow({ event }: { event: LiveEvent }) {
+  return (
+    <a
+      href="#"
+      className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-3 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-12px_rgb(0_0_0_/_0.25)] sm:p-4"
+    >
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 border-ink/80 shadow-sm sm:h-20 sm:w-20">
+        <Image
+          src={event.image}
+          alt={event.title}
+          fill
+          sizes="80px"
+          className="object-cover"
+          unoptimized
+        />
+      </div>
+
+      <div className="flex shrink-0 flex-col items-center justify-center rounded-xl bg-paper-dim px-3 py-1.5 text-center leading-none">
+        <span className="text-[10px] font-bold uppercase tracking-wide text-hotpink">
+          {event.month}
+        </span>
+        <span className="font-display text-lg text-ink">{event.day}</span>
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="mb-1.5 flex items-center gap-2">
+          <CategoryBadge category={event.category} />
+        </div>
+        <h3 className="truncate font-display text-base text-foreground sm:text-lg">
+          {event.title}
+        </h3>
+        <p className="truncate text-sm text-foreground/60">{event.venue}</p>
+      </div>
+
+      <span
+        aria-hidden
+        className="hidden shrink-0 text-2xl text-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-hotpink sm:block"
+      >
+        →
+      </span>
+    </a>
+  );
+}
+
 function ClubAvatarRow() {
   return (
-    <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden">
+    <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
       <LogoLoop
         logos={clubLogos}
-        speed={120}
+        speed={100}
         direction="left"
-        logoHeight={80}
-        gap={60}
+        logoHeight={64}
+        gap={56}
         pauseOnHover
         scaleOnHover
         fadeOut
-        fadeOutColor="#121212"
+        fadeOutColor="#f3ede1"
         ariaLabel="College clubs"
       />
     </div>
@@ -367,31 +212,93 @@ function ClubAvatarRow() {
 // ============================================================================
 
 export default function EventsPage() {
+  const [activeFilter, setActiveFilter] = useState<"all" | EventCategory>(
+    "all"
+  );
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    return liveEvents.filter((e) => {
+      const matchesFilter =
+        activeFilter === "all" || e.category === activeFilter;
+      const matchesQuery = e.title.toLowerCase().includes(query.toLowerCase());
+      return matchesFilter && matchesQuery;
+    });
+  }, [activeFilter, query]);
+
   return (
-    <div className="min-h-screen bg-[#121212] text-white font-poppins">
-      {/* Top Bar */}
+    <div className="min-h-screen bg-background text-foreground">
       <TopBar />
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Hero Carousel - 3 Card Layout */}
-        <section className="py-12">
-          <HeroCarousel items={heroItems} />
-        </section>
-
-        {/* Live Now Section */}
-        <section className="py-12">
-          <h2 className="text-3xl font-bold mb-8">Live Now</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {liveEvents.map((event, i) => (
-              <EventCard key={i} image={event.image} title={event.title} />
-            ))}
+      <div className="mx-auto max-w-5xl px-4 py-10 md:px-6 md:py-14">
+        {/* Headline */}
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <h1 className="font-display text-4xl leading-none text-ink sm:text-5xl">
+              All Events
+            </h1>
+            <ScribbleUnderline className="mt-2 h-3 w-32 text-hotpink" />
           </div>
-        </section>
+          <ScribbleStar className="mb-1 hidden h-6 w-6 text-hotpink sm:block" />
+        </div>
 
-        {/* Browse by Club Section */}
-        <section className="py-12 pb-20">
-          <h2 className="text-3xl font-bold mb-8">Browse by club</h2>
+        {/* Filters */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setActiveFilter(f.id)}
+              className={cn(
+                "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                activeFilter === f.id
+                  ? "border-ink bg-ink text-paper"
+                  : "border-border bg-card text-foreground/70 hover:border-ink/40"
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search (mobile-visible, mirrors the top bar's on larger screens) */}
+        <div className="relative mb-8 md:hidden">
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search events..."
+            className="h-10 w-full rounded-full border border-border bg-card pl-10 pr-4 text-sm text-foreground placeholder:text-foreground/40 focus:border-hotpink focus:outline-none"
+          />
+        </div>
+        <div className="mb-8 hidden md:block">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search events..."
+            className="h-10 w-full max-w-sm rounded-full border border-border bg-card px-4 text-sm text-foreground placeholder:text-foreground/40 focus:border-hotpink focus:outline-none"
+          />
+        </div>
+
+        {/* Event list */}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {filtered.map((event) => (
+            <EventRow key={event.title} event={event} />
+          ))}
+          {filtered.length === 0 && (
+            <p className="col-span-full py-10 text-center text-sm text-foreground/50">
+              No events match that search.
+            </p>
+          )}
+        </div>
+
+        {/* Browse by Club */}
+        <section className="mt-16 pb-10">
+          <h2 className="font-display mb-6 text-2xl text-ink sm:text-3xl">
+            Browse by club
+          </h2>
           <ClubAvatarRow />
         </section>
       </div>

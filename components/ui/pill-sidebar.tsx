@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ScribbleStar } from "@/components/ui/scribble";
 
 export interface PillSidebarItem {
   id: string;
@@ -70,15 +71,15 @@ export function PillSidebar({
         className
       )}
     >
-      <div className="relative flex h-full w-full flex-col overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-b from-neutral-900 to-[#141414] px-3 py-4 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
+      <div className="relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-sidebar-foreground/10 bg-sidebar px-3 py-4 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
         {/* ambient brand glow */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-4 top-0 h-32 rounded-full bg-gradient-to-br from-[#7B2FE5]/30 to-[#D96CE5]/20 blur-2xl"
+          className="pointer-events-none absolute inset-x-4 top-0 h-32 rounded-full bg-hotpink/20 blur-2xl"
         />
 
         <div className="relative flex items-center justify-between">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/5 ring-1 ring-white/10">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-sidebar-foreground/5 ring-1 ring-sidebar-foreground/10">
             {logo}
           </div>
           {!collapsed && (
@@ -86,19 +87,25 @@ export function PillSidebar({
               type="button"
               onClick={onToggle}
               aria-label="Collapse sidebar"
-              className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+              className="grid h-8 w-8 place-items-center rounded-full bg-sidebar-foreground/10 text-sidebar-foreground transition-colors hover:bg-sidebar-foreground/20"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
           )}
         </div>
 
+        {!collapsed && (
+          <p className="font-marker relative mt-2 pl-1 text-lg leading-none text-hotpink">
+            Good vibes only <ScribbleStar className="ml-0.5 -mt-1 inline h-3 w-3" />
+          </p>
+        )}
+
         {collapsed && (
           <button
             type="button"
             onClick={onToggle}
             aria-label="Expand sidebar"
-            className="relative mt-3 grid h-8 w-8 place-self-center place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+            className="relative mt-3 grid h-8 w-8 place-self-center place-items-center rounded-full bg-sidebar-foreground/10 text-sidebar-foreground transition-colors hover:bg-sidebar-foreground/20"
           >
             <ChevronLeft className="h-4 w-4 rotate-180" />
           </button>
@@ -113,14 +120,18 @@ export function PillSidebar({
                 <Icon
                   className={cn(
                     "h-5 w-5 shrink-0",
-                    isActive ? "text-neutral-900" : "text-neutral-300"
+                    isActive
+                      ? "text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/70"
                   )}
                 />
                 {!collapsed && (
                   <span
                     className={cn(
                       "truncate text-sm font-medium",
-                      isActive ? "text-neutral-900" : "text-neutral-300"
+                      isActive
+                        ? "text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70"
                     )}
                   >
                     {item.label}
@@ -131,7 +142,9 @@ export function PillSidebar({
             const itemClassName = cn(
               "flex items-center gap-3 rounded-full px-3.5 py-2.5 transition-colors",
               collapsed ? "justify-center" : "justify-start",
-              isActive ? "bg-white shadow-sm" : "hover:bg-white/10"
+              isActive
+                ? "bg-sidebar-accent shadow-sm"
+                : "hover:bg-sidebar-foreground/10"
             );
 
             return item.href ? (

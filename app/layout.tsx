@@ -2,7 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Figtree } from "next/font/google";
+import { Figtree, Archivo_Black, Caveat } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import Footer from "@/components/ui/footer";
@@ -15,6 +15,18 @@ export const metadata: Metadata = {
 
 const figtree = Figtree({
   subsets: ["latin"],
+});
+
+const archivoBlack = Archivo_Black({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-archivo-black",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-caveat",
 });
 
 export default function RootLayout({
@@ -42,7 +54,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${figtree.className}`}
+        className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${archivoBlack.variable} ${caveat.variable} ${figtree.className}`}
       >
         <Providers>
           {/* Spacer to offset the fixed top bar height */}
