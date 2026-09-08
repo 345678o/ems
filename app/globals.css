@@ -8,6 +8,7 @@
   --color-paper-dim: var(--paper-dim);
   --color-ink: var(--ink);
   --color-hotpink: var(--hotpink);
+  --color-pink-soft: var(--pink-soft);
   --color-badge-cultural: var(--badge-cultural);
   --color-badge-cultural-foreground: var(--badge-cultural-foreground);
   --color-badge-tech: var(--badge-tech);
@@ -62,10 +63,13 @@
 
   /* Scrapbook palette — kraft-paper cream, ink black, marker pink,
      plus one color per event category badge. */
-  --paper: #f3ede1;
-  --paper-dim: #e8dfcd;
+  --paper: #f5f1e8;
+  --paper-dim: #eae2d1;
   --ink: #17150f;
   --hotpink: #ff2f7e;
+  /* Soft secondary pink — restrained use only (a wash behind a badge,
+     a decorative dot), never a dominant fill. */
+  --pink-soft: #ffb7c9;
   --badge-cultural: #ffd4e6;
   --badge-cultural-foreground: #a3134f;
   --badge-tech: #cfe0ff;

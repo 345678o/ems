@@ -2,9 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { motion } from "motion/react";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScribbleStar } from "@/components/ui/scribble";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 export interface PillSidebarItem {
   id: string;
@@ -25,7 +31,7 @@ interface PillSidebarProps {
 }
 
 /** Collapsed / expanded pixel widths — keep in sync with any manual offsets elsewhere. */
-export const PILL_SIDEBAR_WIDTH = { collapsed: 88, expanded: 248 } as const;
+export const PILL_SIDEBAR_WIDTH = { collapsed: 76, expanded: 224 } as const;
 
 export function useSidebarCollapsed(storageKey: string, defaultValue = false) {
   const [collapsed, setCollapsed] = React.useState(() => {
@@ -67,11 +73,11 @@ export function PillSidebar({
     <div
       className={cn(
         "flex h-full shrink-0 flex-col items-center py-5 transition-[width] duration-300 ease-out",
-        collapsed ? "w-[88px]" : "w-[248px]",
+        collapsed ? "w-[76px]" : "w-[224px]",
         className
       )}
     >
-      <div className="relative flex h-full w-full flex-col overflow-hidden rounded-[28px] border border-sidebar-foreground/10 bg-sidebar px-3 py-4 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
+      <div className="relative flex h-full w-full flex-col overflow-hidden rounded-[24px] bg-sidebar px-2.5 py-4 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
         {/* ambient brand glow */}
         <div
           aria-hidden
@@ -79,7 +85,7 @@ export function PillSidebar({
         />
 
         <div className="relative flex items-center justify-between">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-sidebar-foreground/5 ring-1 ring-sidebar-foreground/10">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-sidebar-foreground/5 ring-1 ring-sidebar-foreground/10">
             {logo}
           </div>
           {!collapsed && (
@@ -87,16 +93,17 @@ export function PillSidebar({
               type="button"
               onClick={onToggle}
               aria-label="Collapse sidebar"
-              className="grid h-8 w-8 place-items-center rounded-full bg-sidebar-foreground/10 text-sidebar-foreground transition-colors hover:bg-sidebar-foreground/20"
+              className="grid h-7 w-7 place-items-center rounded-full bg-sidebar-foreground/10 text-sidebar-foreground transition-all duration-150 hover:scale-105 hover:bg-sidebar-foreground/20"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
 
         {!collapsed && (
           <p className="font-marker relative mt-2 pl-1 text-lg leading-none text-hotpink">
-            Good vibes only <ScribbleStar className="ml-0.5 -mt-1 inline h-3 w-3" />
+            Good vibes only{" "}
+            <ScribbleStar className="ml-0.5 -mt-1 inline h-3 w-3" />
           </p>
         )}
 
@@ -111,27 +118,34 @@ export function PillSidebar({
           </button>
         )}
 
-        <nav className="relative mt-6 flex flex-1 flex-col gap-1.5 overflow-y-auto">
+        <nav className="relative mt-6 flex flex-1 flex-col gap-1 overflow-y-auto">
           {items.map((item) => {
             const isActive = item.id === activeId;
             const Icon = item.icon;
             const content = (
               <>
+                {isActive && (
+                  <motion.span
+                    layoutId="sidebar-active-pill"
+                    className="absolute inset-0 rounded-full bg-sidebar-accent shadow-sm"
+                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                  />
+                )}
                 <Icon
                   className={cn(
-                    "h-5 w-5 shrink-0",
+                    "relative z-10 h-[18px] w-[18px] shrink-0 transition-colors",
                     isActive
                       ? "text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/70"
+                      : "text-sidebar-foreground/65 group-hover:text-sidebar-foreground"
                   )}
                 />
                 {!collapsed && (
                   <span
                     className={cn(
-                      "truncate text-sm font-medium",
+                      "relative z-10 truncate text-sm font-medium transition-colors",
                       isActive
                         ? "text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/70"
+                        : "text-sidebar-foreground/65 group-hover:text-sidebar-foreground"
                     )}
                   >
                     {item.label}
@@ -140,33 +154,36 @@ export function PillSidebar({
               </>
             );
             const itemClassName = cn(
-              "flex items-center gap-3 rounded-full px-3.5 py-2.5 transition-colors",
+              "group relative flex items-center gap-3 rounded-full px-3.5 py-2.5 transition-colors duration-150",
               collapsed ? "justify-center" : "justify-start",
-              isActive
-                ? "bg-sidebar-accent shadow-sm"
-                : "hover:bg-sidebar-foreground/10"
+              !isActive && "hover:bg-sidebar-foreground/10"
             );
 
-            return item.href ? (
+            const el = item.href ? (
               <Link
-                key={item.id}
                 href={item.href}
                 onClick={item.onClick}
                 className={itemClassName}
-                title={collapsed ? item.label : undefined}
               >
                 {content}
               </Link>
             ) : (
               <button
-                key={item.id}
                 type="button"
                 onClick={item.onClick}
                 className={itemClassName}
-                title={collapsed ? item.label : undefined}
               >
                 {content}
               </button>
+            );
+
+            return (
+              <Tooltip key={item.id} delayDuration={300}>
+                <TooltipTrigger asChild>{el}</TooltipTrigger>
+                <TooltipContent side="right" sideOffset={10}>
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
             );
           })}
         </nav>
