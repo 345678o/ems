@@ -10,7 +10,11 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["source.unsplash.com", "hxcygmrgqrfjoggeuwnw.supabase.co"],
+    domains: [
+      "source.unsplash.com",
+      "images.unsplash.com",
+      "hxcygmrgqrfjoggeuwnw.supabase.co",
+    ],
   },
   // ✅ Fix turbopack root detection with multiple lockfiles
   turbopack: {

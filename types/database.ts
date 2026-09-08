@@ -24,7 +24,7 @@ export interface DbUser {
   email: string;
   full_name: string | null;
   avatar_url: string | null;
-  role?: string | null; // "user" | "club" | "admin"
+  role?: string | null; // "user" | "club" | "admin" | "faculty"
   password_hash?: string | null; // server-only; never select client-side
   created_at: ISODateString;
   updated_at: ISODateString;

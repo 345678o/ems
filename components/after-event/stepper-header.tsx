@@ -1,7 +1,8 @@
 "use client";
 
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { StepConfig } from "./types";
-import { Progress } from "@/components/ui/progress"; // your shadcn Progress
 
 interface StepperHeaderProps {
   steps: StepConfig[];
@@ -11,32 +12,68 @@ interface StepperHeaderProps {
 
 export default function StepperHeader({
   steps,
-  isStepCompleted: _isStepCompleted,
+  isStepCompleted,
   isStepActive,
 }: StepperHeaderProps) {
-  // Find the active step
-  const activeStep = steps.find((step) => isStepActive(step.id));
-
-  // Calculate progress as %
-  // Formula: Each step represents (100 / steps.length) percentage
-  // When on step 0 with nothing completed, show 33.33%
-  // When on step 1 (step 0 completed), show 66.66%
-  // When all completed, show 100%
-  const activeStepIndex = activeStep ? activeStep.id : 0;
-  const progressPerStep = 100 / steps.length;
-  const progressValue = Math.min(100, (activeStepIndex + 1) * progressPerStep);
-
   return (
-    <div className="mb-8">
-      {/* Active Step Title */}
-      <div className="mb-2 text-center -ml-10">
-        <p className="text-sm font-semibold">
-          {activeStep ? activeStep.title : steps[0].title}
-        </p>
-      </div>
+    <div className="mb-2">
+      <div className="flex items-start">
+        {steps.map((step, index) => {
+          const completed = isStepCompleted(step.id);
+          const active = isStepActive(step.id);
+          const Icon = step.icon;
 
-      {/* Progress bar */}
-      <Progress value={progressValue} />
+          return (
+            <div
+              key={step.id}
+              className={cn(
+                "flex items-center",
+                index < steps.length - 1 && "flex-1"
+              )}
+            >
+              <div className="flex flex-col items-center gap-2 shrink-0">
+                <div
+                  className={cn(
+                    "h-11 w-11 rounded-full flex items-center justify-center border-2 transition-colors shrink-0",
+                    completed
+                      ? "bg-[#FFAA33] border-[#FFAA33] text-black"
+                      : active
+                      ? "border-[#FFAA33] text-[#FFAA33] bg-transparent"
+                      : "border-neutral-300 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500 bg-transparent"
+                  )}
+                >
+                  {completed ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    <Icon className="w-5 h-5" />
+                  )}
+                </div>
+                <div className="text-center max-w-[140px]">
+                  <p
+                    className={cn(
+                      "text-xs font-medium leading-tight",
+                      active || completed
+                        ? "text-neutral-900 dark:text-white"
+                        : "text-neutral-400 dark:text-neutral-500"
+                    )}
+                  >
+                    {step.title}
+                  </p>
+                </div>
+              </div>
+
+              {index < steps.length - 1 && (
+                <div
+                  className={cn(
+                    "h-0.5 flex-1 mx-2 -mt-6",
+                    completed ? "bg-[#FFAA33]" : "bg-neutral-300 dark:bg-neutral-700"
+                  )}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

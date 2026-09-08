@@ -254,7 +254,7 @@ export default function ClubPage() {
   return (
     <div className="min-h-screen bg-[#121212] font-poppins text-white">
       <TopBar />
-      <main className="mx-auto max-w-7xl px-5 pb-20 pt-28 sm:px-8 lg:px-12">
+      <main className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8 lg:px-12">
         <Link
           href="/home"
           className="mb-10 inline-flex items-center gap-2 text-sm text-white/50 transition hover:text-white"

@@ -82,6 +82,14 @@ export default function AdminPage() {
       id: "iic-event-calender",
     },
     {
+      label: "Events Calendar",
+      href: "/events",
+      icon: (
+        <CalendarPlus className="h-5 w-5 shrink-0 dark:text-neutral-200 text-neutral-600" />
+      ),
+      id: "events-calendar",
+    },
+    {
       label: "Manage Self Hosted Events",
       href: "#",
       icon: (
@@ -114,6 +122,10 @@ export default function AdminPage() {
     }
     if (id === "home") {
       router.push("/home");
+      return;
+    }
+    if (id === "events-calendar") {
+      router.push("/events");
       return;
     }
     if (id !== "menu") {

@@ -16,7 +16,7 @@ export function googleSubToUuid(sub: string): string {
     if (!sub || typeof sub !== "string") {
       return "11111111-1111-4111-8111-111111111111";
     }
-    return uuidv5(sub, NAMESPACE);
+    return uuidv5(sub.trim().toLowerCase(), NAMESPACE);
   } catch (err) {
     logger.error("[id.ts] googleSubToUuid error:", err);
     return "22222222-2222-4222-8222-222222222222";

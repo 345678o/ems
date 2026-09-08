@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import LogoLoop from "@/components/logo-loop";
+import { ParticipantMenu } from "@/components/ui/participant-menu";
 
 // Event images data
 const heroItems = [
@@ -202,8 +203,11 @@ function TopBar() {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[60] bg-[#121212] border-b border-white/10">
+    <div className="sticky top-0 z-[60] bg-[#121212] border-b border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-6">
+        <div className="md:hidden">
+          <ParticipantMenu />
+        </div>
         {/* Logo */}
         <button
           type="button"
@@ -367,9 +371,6 @@ export default function EventsPage() {
     <div className="min-h-screen bg-[#121212] text-white font-poppins">
       {/* Top Bar */}
       <TopBar />
-
-      {/* Spacer for fixed top bar */}
-      <div className="h-20" />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6">
