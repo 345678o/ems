@@ -8,7 +8,7 @@ import {
   ReactNode,
   CSSProperties,
 } from "react";
-import "./LogoLoop.css";
+import "./logo-loop.css";
 
 const ANIMATION_CONFIG = {
   SMOOTH_TAU: 0.25,

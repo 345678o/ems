@@ -10,11 +10,11 @@
 The club dashboard at `/club` is built from focused sub-components under
 `components/club/` and composes three tabs:
 
-| Tab | Value | Description |
-|---|---|---|
-| IIC Activities | `iic` | IIC-hosted events assigned to this club |
-| Self Driven Activities | `self-hosted` | Events created by the club itself |
-| My Calendar Activities | `calendar` | IIC events the club has added to its calendar |
+| Tab                    | Value         | Description                                   |
+| ---------------------- | ------------- | --------------------------------------------- |
+| IIC Activities         | `iic`         | IIC-hosted events assigned to this club       |
+| Self Driven Activities | `self-hosted` | Events created by the club itself             |
+| My Calendar Activities | `calendar`    | IIC events the club has added to its calendar |
 
 ---
 
@@ -54,26 +54,26 @@ Two nested tabs: **Current** (end date ≥ today) and **Past** (end date < today
 
 A full-width table (`CalendarTable.tsx`) with columns:
 
-| Column | Description |
-|---|---|
-| S.No. | Row index |
-| Title of Activity | Name, semester/quarter, free/paid badge |
-| View Activity Details | Opens `IICEventDetailDialog` |
-| Upload Activity Report | Routes to `/club/event/[id]#after-event` |
-| Report Status | Badge: Not Started / Report Submitted / Media Uploaded / Completed |
-| Reviewer's Comment | Text or "NA" |
-| Review for Request | Text or "NA" |
-| Download Report | Disabled (not yet implemented) |
-| Action | Delete row from calendar |
+| Column                 | Description                                                        |
+| ---------------------- | ------------------------------------------------------------------ |
+| S.No.                  | Row index                                                          |
+| Title of Activity      | Name, semester/quarter, free/paid badge                            |
+| View Activity Details  | Opens `IICEventDetailDialog`                                       |
+| Upload Activity Report | Routes to `/club/event/[id]#after-event`                           |
+| Report Status          | Badge: Not Started / Report Submitted / Media Uploaded / Completed |
+| Reviewer's Comment     | Text or "NA"                                                       |
+| Review for Request     | Text or "NA"                                                       |
+| Download Report        | Disabled (not yet implemented)                                     |
+| Action                 | Delete row from calendar                                           |
 
 ### Report status logic (`utils.ts → getReportStatus`)
 
-| Condition | Label |
-|---|---|
-| No `after_event_report` row | Not Started |
-| `report_submitted = true` | Report Submitted |
-| `report_submitted + media_uploaded` | Media Uploaded |
-| All three flags true | Completed |
+| Condition                           | Label            |
+| ----------------------------------- | ---------------- |
+| No `after_event_report` row         | Not Started      |
+| `report_submitted = true`           | Report Submitted |
+| `report_submitted + media_uploaded` | Media Uploaded   |
+| All three flags true                | Completed        |
 
 ---
 

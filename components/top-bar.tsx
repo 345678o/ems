@@ -1,5 +1,5 @@
-// TopBar.tsx
 "use client";
+// TopBar.tsx
 
 import React, { useState } from "react";
 import {
@@ -65,7 +65,10 @@ export function TopBar() {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <Link href="/home" className="h-8 w-16 rounded-sm bg-primary/80 dark:bg-white/20 block" />
+          <Link
+            href="/home"
+            className="h-8 w-16 rounded-sm bg-primary/80 dark:bg-white/20 block"
+          />
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-4">
@@ -95,7 +98,9 @@ export function TopBar() {
                 <Users className="h-4 w-4" />
                 Clubs
               </button>
-              <div className={`invisible absolute left-0 top-full z-50 w-56 translate-y-2 rounded-xl border border-border bg-background p-2 opacity-0 shadow-xl transition-all group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 ${clubsOpen ? "visible translate-y-0 opacity-100" : ""}`}>
+              <div
+                className={`invisible absolute left-0 top-full z-50 w-56 translate-y-2 rounded-xl border border-border bg-background p-2 opacity-0 shadow-xl transition-all group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 ${clubsOpen ? "visible translate-y-0 opacity-100" : ""}`}
+              >
                 <p className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Browse clubs
                 </p>

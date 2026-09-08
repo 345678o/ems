@@ -1,10 +1,10 @@
 "use client";
 
-import StepperHeader from "@/components/after-event/StepperHeader";
-import ReportStepCard from "@/components/after-event/ReportStepCard";
-import UploadsStepCard from "@/components/after-event/UploadsStepCard";
-import SocialStepCard from "@/components/after-event/SocialStepCard";
-import CompletionCard from "@/components/after-event/CompletionCard";
+import StepperHeader from "@/components/after-event/stepper-header";
+import ReportStepCard from "@/components/after-event/report-step-card";
+import UploadsStepCard from "@/components/after-event/uploads-step-card";
+import SocialStepCard from "@/components/after-event/social-step-card";
+import CompletionCard from "@/components/after-event/completion-card";
 import {
   useAfterEventReport,
   AFTER_EVENT_STEPS,
@@ -91,3 +91,5 @@ export function AfterEventPage({ eventId }: AfterEventPageProps) {
     </div>
   );
 }
+
+export default AfterEventPage;

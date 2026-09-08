@@ -23,7 +23,7 @@ In [`app/api/auth/[...nextauth]/route.ts`](../app/api/auth/[...nextauth]/route.t
 
 Align the code with the reality that authentication is domain-verified rather than password-based.
 
-* **Code Changes Implied**:
+- **Code Changes Implied**:
   - Remove the `password` and `confirmPassword` fields from `registerSchema`, the registration API, and frontend registration forms.
   - Remove `bcryptjs` and `@types/bcryptjs` from dependencies.
   - Remove references to the `password_hash` column in Supabase migrations/types.
@@ -35,7 +35,7 @@ Align the code with the reality that authentication is domain-verified rather th
 
 Implement standard, secure password-based credential authentication for all users across all domains.
 
-* **Code Changes Implied**:
+- **Code Changes Implied**:
   - In the user registration action/route (`app/api/auth/register`), hash the supplied password using `bcryptjs` (e.g. `await bcrypt.hash(password, 10)`).
   - Store the computed hash into the `password_hash` column of the `users` table in Supabase.
   - In `authorize()` in [`app/api/auth/[...nextauth]/route.ts`](../app/api/auth/[...nextauth]/route.ts):
@@ -49,7 +49,7 @@ Implement standard, secure password-based credential authentication for all user
 
 Retain domain-trust authentication for pre-approved organizations/domains while supporting real password credentials for others.
 
-* **Code Changes Implied**:
+- **Code Changes Implied**:
   - Make the domain allowlist configurable via an environment variable (e.g., `AUTH_ALLOWED_DOMAINS="gmail.com,mlrit.ac.in"`) rather than hardcoding it in source code.
   - For users within the allowlisted domains, allow direct domain-trust sign-in.
   - For users outside the allowlisted domains (or for all regular credential sign-ins):

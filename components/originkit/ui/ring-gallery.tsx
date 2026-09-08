@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useEffect, useMemo, useRef } from "react";
-import { useMotionValue, animate } from "framer-motion";
+import { useMotionValue, animate } from "motion/react";
 
 type Direction = "clockwise" | "anticlockwise";
 type Stack = "firstOnTop" | "lastOnTop";
@@ -77,7 +77,12 @@ const DEFAULT_IMAGES: ImageItem[] = [
   },
 ];
 
-const DEFAULT_RING: Ring = { radiusX: 200, radiusY: 200, tilt: true, repeat: 6 };
+const DEFAULT_RING: Ring = {
+  radiusX: 200,
+  radiusY: 200,
+  tilt: true,
+  repeat: 6,
+};
 
 const DEFAULT_TRANSITION: Transition = {
   type: "tween",
@@ -199,11 +204,10 @@ export default function CircleImage({
 
     animationRef.current?.stop();
     const sign = live.direction === "anticlockwise" ? -1 : 1;
-    animationRef.current = animate(
-      angle,
-      angle.get() + Math.PI * 2 * sign,
-      { ...live.transition, repeat: Infinity } as any
-    );
+    animationRef.current = animate(angle, angle.get() + Math.PI * 2 * sign, {
+      ...live.transition,
+      repeat: Infinity,
+    } as any);
   };
 
   const onDragStart = (clientX: number, clientY: number) => {
@@ -381,7 +385,9 @@ export default function CircleImage({
                       height: "100%",
                       objectFit: fit,
                       objectPosition:
-                        fit === "cover" ? `center ${focusOf(image)}%` : "center",
+                        fit === "cover"
+                          ? `center ${focusOf(image)}%`
+                          : "center",
                       display: "block",
                       pointerEvents: "none",
                     }}

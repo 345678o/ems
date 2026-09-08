@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import "./OptionWheel.css";
+import "./option-wheel.css";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,7 +73,7 @@ const DEFAULT_ITEMS: string[] = [
 // Component
 // ---------------------------------------------------------------------------
 
-const OptionWheel = ({
+export const OptionWheel = ({
   items = DEFAULT_ITEMS,
   defaultSelected = 3,
   onChange,
@@ -419,5 +419,7 @@ const OptionWheel = ({
     </div>
   );
 };
+
+OptionWheel.displayName = "OptionWheel";
 
 export default OptionWheel;

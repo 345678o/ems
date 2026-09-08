@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -54,13 +55,13 @@ export async function POST(req: NextRequest) {
       .remove([path]);
 
     if (error) {
-      console.error("[delete] storage error:", error.message);
+      logger.error("[delete] storage error:", error.message);
       return serverError(error.message);
     }
 
     return ok({ deleted: data });
   } catch (err: unknown) {
-    console.error("[delete] unexpected error");
+    logger.error("[delete] unexpected error");
     return serverError(err instanceof Error ? err.message : "Unknown error");
   }
 }

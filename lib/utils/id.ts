@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 // utils/id.ts
 import { v5 as uuidv5 } from "uuid";
 
@@ -11,7 +12,7 @@ export function googleSubToUuid(sub: string): string {
     }
     return uuidv5(sub, NAMESPACE);
   } catch (err) {
-    console.error("[id.ts] googleSubToUuid error:", err);
+    logger.error("[id.ts] googleSubToUuid error:", err);
     return "22222222-2222-4222-8222-222222222222";
   }
 }

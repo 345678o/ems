@@ -1,9 +1,10 @@
-// app/components/tickets/TicketCard.tsx
 "use client";
+// app/components/tickets/TicketCard.tsx
+
 import React from "react";
 import { Ticket, CalendarDays, Clock } from "lucide-react";
 
-type TicketCardProps = {
+export type TicketCardProps = {
   tier?: "GOLD" | "SILVER" | "PLATINUM" | string;
   ticketNo: string;
   dateRange: string; // e.g., "1 - 3 August"
@@ -177,3 +178,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
     </div>
   );
 };
+
+TicketCard.displayName = "TicketCard";
+
+export default TicketCard;

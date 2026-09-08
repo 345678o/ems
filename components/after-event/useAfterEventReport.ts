@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -110,7 +111,7 @@ export function useAfterEventReport(eventId: string) {
           .maybeSingle();
 
         if (error) {
-          console.error("Error loading existing report:", error);
+          logger.error("Error loading existing report:", error);
           return;
         }
 
@@ -148,7 +149,7 @@ export function useAfterEventReport(eventId: string) {
         else if (!data.media_uploaded) setCurrentStep(1);
         else setCurrentStep(2);
       } catch (e) {
-        console.error("Unexpected error loading report:", e);
+        logger.error("Unexpected error loading report:", e);
       }
     };
 
@@ -432,7 +433,7 @@ export function useAfterEventReport(eventId: string) {
           });
           toast.success("Files uploaded and saved!");
         } catch (err) {
-          console.error("Upload/save failed:", err);
+          logger.error("Upload/save failed:", err);
           toast.error("Upload failed. Please try again.");
           return;
         }
@@ -454,7 +455,7 @@ export function useAfterEventReport(eventId: string) {
         setCompletedSteps((prev) => [...prev, stepId]);
       if (stepId < AFTER_EVENT_STEPS.length - 1) setCurrentStep(stepId + 1);
     } catch (error) {
-      console.error("Error completing step:", error);
+      logger.error("Error completing step:", error);
       toast.error("An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);

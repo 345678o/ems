@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -66,7 +67,7 @@ export default function RegisterPage() {
       // Success — redirect to home
       window.location.replace("/home");
     } catch (err) {
-      console.error("[RegisterPage] exception:", err);
+      logger.error("[RegisterPage] exception:", err);
       setError("An unexpected error occurred");
       setIsLoading(false);
     }

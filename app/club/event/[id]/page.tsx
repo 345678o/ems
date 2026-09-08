@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -86,13 +87,13 @@ export default function EventDashboard() {
         .single();
 
       if (error) {
-        console.error("Error fetching event:", error);
+        logger.error("Error fetching event:", error);
         return;
       }
 
       setEvent(data);
     } catch (error) {
-      console.error("Error fetching event:", error);
+      logger.error("Error fetching event:", error);
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +112,7 @@ export default function EventDashboard() {
           .single();
 
         if (error) {
-          console.error("Error fetching event:", error);
+          logger.error("Error fetching event:", error);
           return;
         }
 
@@ -119,7 +120,7 @@ export default function EventDashboard() {
           setEvent(data);
         }
       } catch (error) {
-        console.error("Error fetching event:", error);
+        logger.error("Error fetching event:", error);
       } finally {
         if (!ignore) {
           setIsLoading(false);

@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useEffect, useState } from "react";
 import {
@@ -56,7 +57,7 @@ export interface AfterEventReportData {
   event_id: string | null;
 }
 
-interface ProgramDataDialogProps {
+export interface EventReportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   data: AfterEventReportData | null;
@@ -66,7 +67,7 @@ export function EventReportDialog({
   open,
   onOpenChange,
   data,
-}: ProgramDataDialogProps) {
+}: EventReportDialogProps) {
   // Load club info for the Submitted By section using submitted_by as the club ID
   const [club, setClub] = useState<Pick<
     DbClub,
@@ -94,7 +95,7 @@ export function EventReportDialog({
         if (!cancelled) setClub(clubData ?? null);
       } catch (e) {
         if (!cancelled) setClub(null);
-        console.error("Failed to load club for submitted_by:", e);
+        logger.error("Failed to load club for submitted_by:", e);
       } finally {
         if (!cancelled) setLoadingClub(false);
       }
@@ -444,3 +445,7 @@ export function EventReportDialog({
     </Dialog>
   );
 }
+
+EventReportDialog.displayName = "EventReportDialog";
+
+export default EventReportDialog;

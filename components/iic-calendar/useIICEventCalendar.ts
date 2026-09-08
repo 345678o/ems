@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase/browserClient";
@@ -81,7 +82,7 @@ export function useIICEventCalendar() {
         }))
       );
     } catch (e) {
-      console.error("Failed to fetch IIC events", e);
+      logger.error("Failed to fetch IIC events", e);
       setEvents([]);
     }
   }, [selectedSemester, selectedClubId]);
@@ -111,7 +112,7 @@ export function useIICEventCalendar() {
       if (error) throw error;
       setClubs((data as IICClub[]) || []);
     } catch (e: unknown) {
-      console.error("Failed to load clubs", e instanceof Error ? e.message : e);
+      logger.error("Failed to load clubs", e instanceof Error ? e.message : e);
       setClubs([]);
     } finally {
       setIsLoadingClubs(false);
@@ -130,7 +131,7 @@ export function useIICEventCalendar() {
     if (!ok) return;
     const { error } = await supabase.from("events").delete().eq("id", eventId);
     if (error) {
-      console.error("Failed to delete event:", error.message);
+      logger.error("Failed to delete event:", error.message);
       return;
     }
     setEvents((prev) => prev.filter((e) => e.id !== eventId));
@@ -156,7 +157,7 @@ export function useIICEventCalendar() {
         .limit(1)
         .maybeSingle();
       if (error) {
-        console.error("Failed to load after_event_report:", error.message);
+        logger.error("Failed to load after_event_report:", error.message);
       } else {
         setReportData(data as unknown as AfterEventReportData);
       }

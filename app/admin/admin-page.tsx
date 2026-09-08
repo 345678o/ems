@@ -1,10 +1,11 @@
 "use client";
+import logger from "@/lib/logger";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { CalendarPlus, BadgeCheck } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import React from "react";
 import { Separator } from "@/components/ui/separator";
 import { Home, LogOut } from "lucide-react";
@@ -50,13 +51,13 @@ export default function AdminPage() {
         .single();
 
       if (error) {
-        console.error("Error fetching event:", error);
+        logger.error("Error fetching event:", error);
         return;
       }
 
       setEvent(data);
     } catch (error) {
-      console.error("Error fetching event:", error);
+      logger.error("Error fetching event:", error);
     } finally {
       setIsLoading(false);
     }

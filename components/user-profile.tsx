@@ -1,5 +1,6 @@
-// components/UserProfile.tsx
 "use client";
+import logger from "@/lib/logger";
+// components/UserProfile.tsx
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -37,7 +38,7 @@ export function UserProfile() {
         setLoading(true);
         const res = await fetch("/api/me", { cache: "no-store" });
         if (!res.ok) {
-          console.error("[UserProfile] GET /api/me failed", await res.json());
+          logger.error("[UserProfile] GET /api/me failed", await res.json());
           return;
         }
         const { user } = await res.json();
@@ -51,7 +52,7 @@ export function UserProfile() {
           });
         }
       } catch (e) {
-        console.error("[UserProfile] load error:", e);
+        logger.error("[UserProfile] load error:", e);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -78,13 +79,13 @@ export function UserProfile() {
         }),
       });
       if (!res.ok) {
-        console.error("[UserProfile] PATCH /api/me failed", await res.json());
+        logger.error("[UserProfile] PATCH /api/me failed", await res.json());
         alert("Update failed");
         return;
       }
       alert("Profile updated");
     } catch (e) {
-      console.error("[UserProfile] update error:", e);
+      logger.error("[UserProfile] update error:", e);
       alert("Update failed");
     } finally {
       setSaving(false);

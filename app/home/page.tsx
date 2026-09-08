@@ -1,9 +1,10 @@
 "use client";
+import logger from "@/lib/logger";
 import React, { useEffect, useMemo, useState } from "react";
-import AccordionGallery from "@/components/AccordionGallery";
-import FadeContent from "@/components/FadeContent";
-import LogoLoop from "@/components/LogoLoop";
-import GradientWaves from "@/components/GradientWaves";
+import AccordionGallery from "@/components/accordion-gallery";
+import FadeContent from "@/components/fade-content";
+import LogoLoop from "@/components/logo-loop";
+import GradientWaves from "@/components/gradient-waves";
 import { supabase } from "@/lib/supabase/browserClient";
 function Page() {
   const [events, setEvents] = useState<
@@ -22,7 +23,7 @@ function Page() {
           .order("created_at", { ascending: false });
 
         if (error) {
-          console.error("[home] events fetch error:", error.message);
+          logger.error("[home] events fetch error:", error.message);
           setEvents([]);
           return;
         }
@@ -40,7 +41,7 @@ function Page() {
                 ? JSON.parse(e.banners)
                 : (e.banners ?? {});
           } catch (_) {
-            console.warn("Invalid banners JSON:", e.banners);
+            logger.warn("Invalid banners JSON:", e.banners);
           }
           return (
             Boolean(b?.["1x1"]) && Boolean(b?.["16:9"]) && Boolean(b?.["21:9"])
@@ -49,7 +50,7 @@ function Page() {
 
         setEvents(filtered.map((e) => ({ ...e, banners: e.banners ?? {} })));
       } catch (err: unknown) {
-        console.error(
+        logger.error(
           "[home] events fetch error:",
           err instanceof Error ? err.message : err
         );
@@ -62,7 +63,7 @@ function Page() {
   // Fetch clubs for the homepage clubs section
   useEffect(() => {
     const loadClubs = async () => {
-      console.log("[home] Fetching clubs...");
+      logger.info("[home] Fetching clubs...");
       try {
         const { data, error } = await supabase
           .from("clubs")
@@ -70,12 +71,12 @@ function Page() {
           .order("name", { ascending: true });
 
         if (error) {
-          console.error("[home] clubs fetch error:", error.message);
+          logger.error("[home] clubs fetch error:", error.message);
           setClubs([]);
           return;
         }
 
-        console.log("[home] Clubs fetched:", data);
+        logger.info("[home] Clubs fetched:", data);
         setClubs(
           (data || []).map((club) => ({
             id: club.id,
@@ -84,7 +85,7 @@ function Page() {
           }))
         );
       } catch (err: unknown) {
-        console.error(
+        logger.error(
           "[home] clubs fetch error:",
           err instanceof Error ? err.message : err
         );
@@ -200,9 +201,7 @@ function Page() {
           >
             {/* Keep the heading aligned with the carousel's main slide */}
             <div className="mx-auto w-[90%] sm:w-[85%] md:w-[75%] lg:w-[70%] px-4 md:px-6 mb-10">
-              <h2 className="text-3xl font-bold mb-6 font-poppins">
-                Clubs
-              </h2>
+              <h2 className="text-3xl font-bold mb-6 font-poppins">Clubs</h2>
             </div>
 
             {/* Clubs Gallery */}

@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -58,7 +59,7 @@ export function ManageSelfHostedEvents() {
       .eq("status", "pending_approval")
       .order("created_at", { ascending: false });
     if (error) {
-      console.error("Failed to load events:", error.message);
+      logger.error("Failed to load events:", error.message);
       setEvents([]);
     } else {
       // Supabase typing sometimes infers related tables as arrays; cast safely
@@ -79,7 +80,7 @@ export function ManageSelfHostedEvents() {
       .update({ status: "approved" })
       .eq("id", eventId);
     if (error) {
-      console.error("Approve failed:", error.message);
+      logger.error("Approve failed:", error.message);
       return;
     }
     setEvents((prev) =>
@@ -93,7 +94,7 @@ export function ManageSelfHostedEvents() {
       .update({ status: "rejected" })
       .eq("id", eventId);
     if (error) {
-      console.error("Reject failed:", error.message);
+      logger.error("Reject failed:", error.message);
       return;
     }
     setEvents((prev) =>

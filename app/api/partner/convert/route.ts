@@ -1,4 +1,5 @@
-import { getServerSession } from "next-auth";
+import logger from "@/lib/logger";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createClient } from "@/lib/supabase/server";
 import { partnerConvertSchema } from "@/lib/api/schemas";
@@ -31,7 +32,7 @@ export async function PATCH(req: Request) {
     .maybeSingle();
 
   if (userErr) {
-    console.error("[/api/partner/convert] fetch user error:", userErr.message);
+    logger.error("[/api/partner/convert] fetch user error:", userErr.message);
     return serverError("Failed to load user");
   }
   if (!user) return notFound("User not found");
@@ -43,7 +44,7 @@ export async function PATCH(req: Request) {
     .eq("id", user.id);
 
   if (updErr) {
-    console.error("[/api/partner/convert] update role error:", updErr.message);
+    logger.error("[/api/partner/convert] update role error:", updErr.message);
     return serverError("Update failed");
   }
 
@@ -69,7 +70,7 @@ export async function PATCH(req: Request) {
   );
 
   if (clubErr) {
-    console.error("[/api/partner/convert] upsert club error:", clubErr.message);
+    logger.error("[/api/partner/convert] upsert club error:", clubErr.message);
     return serverError("Club creation failed");
   }
 

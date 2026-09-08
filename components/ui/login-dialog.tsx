@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import React, { useState } from "react";
 import { signIn } from "next-auth/react";
@@ -47,7 +48,7 @@ export function LoginDialog({ children, triggerClassName }: LoginDialogProps) {
         callbackUrl: "/home",
       });
       if (res?.error) {
-        console.error("[LoginDialog] signIn error:", res.error);
+        logger.error("[LoginDialog] signIn error:", res.error);
         setError(
           res.error === "CredentialsSignin"
             ? "Invalid email or password."
@@ -58,7 +59,7 @@ export function LoginDialog({ children, triggerClassName }: LoginDialogProps) {
         window.location.replace("/home");
       }
     } catch (err) {
-      console.error("[LoginDialog] exception:", err);
+      logger.error("[LoginDialog] exception:", err);
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);

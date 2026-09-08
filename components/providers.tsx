@@ -1,5 +1,5 @@
-// app/providers.tsx
 "use client";
+// app/providers.tsx
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/components/theme-provider";

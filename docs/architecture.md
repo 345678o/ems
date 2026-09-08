@@ -17,14 +17,14 @@ hosting models:
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Frontend | Next.js 15 (App Router), React 19, TypeScript |
-| UI | Tailwind CSS 4, Radix UI, shadcn/ui |
-| Database | Supabase (PostgreSQL) |
-| Auth | NextAuth.js v4 (Credentials provider, bcrypt) |
-| Animation | Motion (Framer Motion successor) |
-| Icons | Lucide React, Tabler Icons |
+| Layer     | Choice                                        |
+| --------- | --------------------------------------------- |
+| Frontend  | Next.js 15 (App Router), React 19, TypeScript |
+| UI        | Tailwind CSS 4, Radix UI, shadcn/ui           |
+| Database  | Supabase (PostgreSQL)                         |
+| Auth      | NextAuth.js v4 (Credentials provider, bcrypt) |
+| Animation | Motion (Framer Motion successor)              |
+| Icons     | Lucide React, Tabler Icons                    |
 
 ---
 
@@ -61,29 +61,32 @@ types/
 ## Key Architectural Patterns
 
 ### Event lifecycle
+
 1. Club submits event via `POST /api/events/create` (auth + ownership checks).
 2. Event starts in `status: "pending_approval"`.
 3. Admin approves/rejects via the admin panel.
 4. After the event the club submits an after-event report (3-step stepper).
 
 ### Authentication flow
+
 - NextAuth `CredentialsProvider` with **bcrypt** password verification.
 - User's UUID is a deterministic `uuidv5` of their email (`lib/utils/id.ts`).
 - `session.user.id` is typed in `types/next-auth.d.ts` — no casts needed.
 - All API routes guard with `getServerSession(authOptions)`.
 
 ### Authorization model
+
 - Storage upload/delete: path must start with `${session.user.id}/`.
 - Event creation: `clubs.user_id` must match the session user.
 - Admin routes: checked via user role stored in `public.users`.
 
 ### Supabase clients
 
-| Client | File | Key |
-|---|---|---|
-| Browser (anon) | `lib/supabase/browserClient.ts` | `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| Server (anon + cookies) | `lib/supabase/server.ts` | `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| Admin (service role) | `lib/supabase/admin.ts` | `SUPABASE_SERVICE_ROLE_KEY` |
+| Client                  | File                            | Key                             |
+| ----------------------- | ------------------------------- | ------------------------------- |
+| Browser (anon)          | `lib/supabase/browserClient.ts` | `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| Server (anon + cookies) | `lib/supabase/server.ts`        | `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| Admin (service role)    | `lib/supabase/admin.ts`         | `SUPABASE_SERVICE_ROLE_KEY`     |
 
 Both `lib/supabase/admin.ts` and `lib/api/response.ts` throw at startup if
 required env vars are missing — there are no silent fallbacks.
@@ -92,13 +95,13 @@ required env vars are missing — there are no silent fallbacks.
 
 ## API Routes
 
-| Route | Method | Auth | Description |
-|---|---|---|---|
-| `/api/events/create` | POST | Session + club ownership | Create event with PDF blueprint |
-| `/api/storage/upload` | POST | Session + path ownership | Upload user file to allowed bucket |
-| `/api/storage/delete` | POST | Session + path ownership | Delete user file from allowed bucket |
-| `/api/me` | GET / PATCH | Session | Read / update own profile |
-| `/api/partner/convert` | PATCH | Session | Promote own account to club role |
+| Route                  | Method      | Auth                     | Description                          |
+| ---------------------- | ----------- | ------------------------ | ------------------------------------ |
+| `/api/events/create`   | POST        | Session + club ownership | Create event with PDF blueprint      |
+| `/api/storage/upload`  | POST        | Session + path ownership | Upload user file to allowed bucket   |
+| `/api/storage/delete`  | POST        | Session + path ownership | Delete user file from allowed bucket |
+| `/api/me`              | GET / PATCH | Session                  | Read / update own profile            |
+| `/api/partner/convert` | PATCH       | Session                  | Promote own account to club role     |
 
 All routes use shared helpers from `lib/api/response.ts` (`ok`, `created`,
 `unauthorized`, `forbidden`, `validationError`, etc.) and validate inputs with

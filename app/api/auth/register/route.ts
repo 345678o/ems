@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { registerSchema } from "@/lib/api/schemas";
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (fetchError) {
-      console.error("[register] DB lookup error:", fetchError.message);
+      logger.error("[register] DB lookup error:", fetchError.message);
       return serverError("Database error");
     }
 
@@ -62,13 +63,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (insertError) {
-      console.error("[register] Insert error:", insertError.message);
+      logger.error("[register] Insert error:", insertError.message);
       return serverError("Failed to create account");
     }
 
     return created({ id, email });
   } catch (err: unknown) {
-    console.error("[register] Unexpected error:", err);
+    logger.error("[register] Unexpected error:", err);
     return serverError(err instanceof Error ? err.message : "Unknown error");
   }
 }

@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
       });
 
     if (error) {
-      console.error("[upload] storage error:", error.message);
+      logger.error("[upload] storage error:", error.message);
       return serverError(error.message);
     }
 
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     return ok({ path: data.path, publicUrl: pub.publicUrl });
   } catch (err: unknown) {
-    console.error("[upload] unexpected error");
+    logger.error("[upload] unexpected error");
     return serverError(err instanceof Error ? err.message : "Unknown error");
   }
 }

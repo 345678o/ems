@@ -110,7 +110,8 @@ export default function ClubsPage() {
               Browse clubs.
             </h1>
             <p className="mt-5 max-w-md text-base leading-7 text-white/60">
-              Explore student communities and open a club page to see its events.
+              Explore student communities and open a club page to see its
+              events.
             </p>
           </div>
 
@@ -129,7 +130,7 @@ export default function ClubsPage() {
         {featuredClub && (
           <section className="grid gap-5 py-12 lg:grid-cols-[1.5fr_0.7fr_0.7fr]">
             <Link
-                    href={`/clubs/view/${featuredClub.name.toLowerCase()}`}
+              href={`/clubs/view/${featuredClub.name.toLowerCase()}`}
               className="group relative flex min-h-[290px] flex-col justify-between overflow-hidden rounded-xl border border-white/10 bg-[#242424] p-7 text-white transition-transform hover:-translate-y-1 sm:p-10"
             >
               <div className="flex items-start justify-between gap-4">
@@ -186,7 +187,7 @@ export default function ClubsPage() {
               {filteredClubs.map((club) => (
                 <Link
                   key={club.id}
-                        href={`/clubs/view/${club.name.toLowerCase()}`}
+                  href={`/clubs/view/${club.name.toLowerCase()}`}
                   className="group flex items-center gap-4 rounded-xl border border-white/10 bg-[#1d1d1d] p-4 transition hover:border-white/30 hover:bg-[#242424] hover:shadow-lg hover:shadow-black/20"
                 >
                   <ClubMark club={club} />

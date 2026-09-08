@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (clubErr) {
-      console.error(
+      logger.error(
         "[events/create] club ownership lookup error:",
         clubErr.message
       );
@@ -109,7 +110,7 @@ export async function POST(req: Request) {
       });
 
     if (uploadErr) {
-      console.error("[events/create] storage upload error:", uploadErr.message);
+      logger.error("[events/create] storage upload error:", uploadErr.message);
       return badRequest(`Upload failed: ${uploadErr.message}`);
     }
 
@@ -144,13 +145,13 @@ export async function POST(req: Request) {
       .single();
 
     if (insertErr) {
-      console.error("[events/create] DB insert error:", insertErr.message);
+      logger.error("[events/create] DB insert error:", insertErr.message);
       return badRequest(insertErr.message);
     }
 
     return created({ id: data.id, event_blueprint: publicUrlData.publicUrl });
   } catch (err: unknown) {
-    console.error("[events/create] unexpected error");
+    logger.error("[events/create] unexpected error");
     return serverError(err instanceof Error ? err.message : "Unexpected error");
   }
 }

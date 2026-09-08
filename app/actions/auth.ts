@@ -1,4 +1,5 @@
 "use server";
+import logger from "@/lib/logger";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -24,7 +25,7 @@ export async function createOrUpdateUser(profile: UserProfile) {
       .maybeSingle();
 
     if (fetchError) {
-      console.error(
+      logger.error(
         "[Supabase] createOrUpdateUser: fetch error",
         fetchError.message
       );
@@ -44,7 +45,7 @@ export async function createOrUpdateUser(profile: UserProfile) {
         .from("users")
         .insert([{ ...userData, created_at: new Date().toISOString() }]);
       if (insertError) {
-        console.error(
+        logger.error(
           "[Supabase] createOrUpdateUser: insert error",
           insertError.message
         );
@@ -56,7 +57,7 @@ export async function createOrUpdateUser(profile: UserProfile) {
         .update(userData)
         .eq("id", profile.id);
       if (updateError) {
-        console.error(
+        logger.error(
           "[Supabase] createOrUpdateUser: update error",
           updateError.message
         );
@@ -67,7 +68,7 @@ export async function createOrUpdateUser(profile: UserProfile) {
     return { success: true };
   } catch (err) {
     const error = err instanceof Error ? err.message : "Unexpected exception";
-    console.error("[Supabase] createOrUpdateUser: unexpected exception", error);
+    logger.error("[Supabase] createOrUpdateUser: unexpected exception", error);
     return { success: false, error };
   }
 }

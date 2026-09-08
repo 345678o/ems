@@ -14,12 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
 import { useClubEvents } from "@/components/club/useClubEvents";
-import AddEventCard from "@/components/club/AddEventCard";
-import SelfEventCard from "@/components/club/SelfEventCard";
-import IICCard from "@/components/club/IICCard";
-import CreateEventDialog from "@/components/club/CreateEventDialog";
-import IICEventDetailDialog from "@/components/club/IICEventDetailDialog";
-import CalendarTable from "@/components/club/CalendarTable";
+import AddEventCard from "@/components/club/add-event-card";
+import SelfEventCard from "@/components/club/self-event-card";
+import IICCard from "@/components/club/iic-card";
+import CreateEventDialog from "@/components/club/create-event-dialog";
+import IICEventDetailDialog from "@/components/club/iic-event-detail-dialog";
+import CalendarTable from "@/components/club/calendar-table";
 import type { ClubEvent } from "@/components/club/types";
 
 export default function EventsPage() {

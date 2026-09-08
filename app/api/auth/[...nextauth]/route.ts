@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { createOrUpdateUser } from "@/app/actions/auth";
@@ -66,7 +67,7 @@ export const authOptions: NextAuthOptions = {
           .maybeSingle();
 
         if (error) {
-          console.error("[NextAuth] DB lookup error during authorize");
+          logger.error("[NextAuth] DB lookup error during authorize");
           return null;
         }
 
@@ -94,12 +95,12 @@ export const authOptions: NextAuthOptions = {
             image: user.image,
           });
           if (!result.success) {
-            console.warn(
+            logger.warn(
               `[NextAuth] createOrUpdateUser failed for user ${user.id}: ${result.error}. Continuing sign-in.`
             );
           }
         } catch (err) {
-          console.warn(
+          logger.warn(
             `[NextAuth] createOrUpdateUser threw an unexpected error for user ${user.id}. Continuing sign-in.`,
             err
           );

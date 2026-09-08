@@ -1,9 +1,10 @@
 "use client";
+import logger from "@/lib/logger";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { supabase } from "@/lib/supabase/browserClient";
-import ProfilePage from "./ProfilePage"; // 👈 move your full UI here
+import ProfilePage from "./profile-page"; // 👈 move your full UI here
 
 export default function Profile() {
   const { data: session, status } = useSession();
@@ -25,7 +26,7 @@ export default function Profile() {
         .single();
 
       if (error) {
-        console.error("Error fetching role:", error);
+        logger.error("Error fetching role:", error);
         setLoading(false);
         return;
       }

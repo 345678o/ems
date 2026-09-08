@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase/browserClient";
@@ -70,7 +71,7 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
         .order("registration_date", { ascending: false });
 
       if (error) {
-        console.error("Error loading participants:", error);
+        logger.error("Error loading participants:", error);
         return;
       }
 
@@ -97,7 +98,7 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
       setAttendees(attendeesList);
       setWaitlist(waitlistList);
     } catch (error) {
-      console.error("Error loading participants:", error);
+      logger.error("Error loading participants:", error);
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +133,7 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
         .eq("id", participantId);
 
       if (error) {
-        console.error("Error approving participant:", error);
+        logger.error("Error approving participant:", error);
         alert("Error approving participant. Please try again.");
         return;
       }
@@ -141,7 +142,7 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
       loadParticipants();
       alert("Participant approved successfully!");
     } catch (error) {
-      console.error("Error approving participant:", error);
+      logger.error("Error approving participant:", error);
       alert("Error approving participant. Please try again.");
     }
   };
@@ -154,7 +155,7 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
         .eq("id", participantId);
 
       if (error) {
-        console.error("Error rejecting participant:", error);
+        logger.error("Error rejecting participant:", error);
         alert("Error rejecting participant. Please try again.");
         return;
       }
@@ -163,7 +164,7 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
       loadParticipants();
       alert("Participant rejected successfully!");
     } catch (error) {
-      console.error("Error rejecting participant:", error);
+      logger.error("Error rejecting participant:", error);
       alert("Error rejecting participant. Please try again.");
     }
   };
@@ -356,3 +357,5 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
     </div>
   );
 }
+
+export default ParticipantsPage;
