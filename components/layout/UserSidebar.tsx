@@ -20,7 +20,8 @@ import {
   type PillSidebarItem,
 } from "@/components/ui/pill-sidebar";
 
-const NAV_ITEMS: (PillSidebarItem & { href: string })[] = [
+/** Shared with `ParticipantMenu` (the mobile nav) so the two never drift apart. */
+export const NAV_ITEMS: (PillSidebarItem & { href: string })[] = [
   {
     id: "dashboard",
     label: "Dashboard",

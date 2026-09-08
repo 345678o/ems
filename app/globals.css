@@ -217,8 +217,14 @@
 
 /* ---------------------------------------------------------------- */
 /* Scrapbook design system: paper grain, torn edges, marker accents  */
+/*                                                                    */
+/* Wrapped in @layer utilities so these participate in the normal    */
+/* cascade instead of always beating Tailwind utilities regardless   */
+/* of order (unlayered CSS wins over any @layer rule unconditionally,*/
+/* which previously made `.paper-grain`'s `position: relative` break */
+/* `fixed`-positioned elements like dialogs it was combined with).    */
 /* ---------------------------------------------------------------- */
-
+@layer utilities {
 .font-display {
   font-family: var(--font-display);
 }
@@ -370,3 +376,4 @@
     0 1px 2px rgb(0 0 0 / 0.08),
     0 12px 24px -8px rgb(0 0 0 / 0.25);
 }
+} /* end @layer utilities */
