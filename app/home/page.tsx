@@ -40,7 +40,7 @@ function Page() {
               typeof e.banners === "string"
                 ? JSON.parse(e.banners)
                 : (e.banners ?? {});
-          } catch (_) {
+          } catch {
             logger.warn("Invalid banners JSON:", e.banners);
           }
           return (

@@ -2,6 +2,7 @@
 import logger from "@/lib/logger";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Separator } from "@/components/ui/separator";
@@ -82,14 +83,18 @@ export default function RegisterPage() {
 
           {/* Left Side — Logos */}
           <div className="flex-1 p-12 flex flex-col justify-center items-center gap-8 relative z-10">
-            <img
+            <Image
               src="/logos/mlrit.svg"
               alt="MLRIT Logo"
+              width={160}
+              height={80}
               className="h-20 w-auto object-contain"
             />
-            <img
+            <Image
               src="/logos/iic.svg"
               alt="Institution's Innovation Council Logo"
+              width={160}
+              height={96}
               className="h-24 w-auto object-contain"
             />
           </div>

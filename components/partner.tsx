@@ -25,7 +25,7 @@ export default function Partner() {
       // success → go to /club
       router.replace("/club");
     } catch (e) {
-      logger.error(e);
+      logger.error("Failed to convert account:", e);
       alert("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

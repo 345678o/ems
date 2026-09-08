@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { gsap } from "gsap";
 import "./accordion-gallery.css";
 
@@ -295,10 +296,13 @@ export default function AccordionGallery({
                   mediaRefs.current[i] = el;
                 }}
               >
-                <img
+                <Image
                   src={item.image}
                   alt={item.alt || item.label || ""}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 320px"
                   draggable={false}
+                  unoptimized
                 />
               </span>
               <span className="ag-panel__overlay" aria-hidden="true" />

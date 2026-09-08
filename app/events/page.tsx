@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import LogoLoop from "@/components/logo-loop";
@@ -73,12 +74,15 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
       <div className="relative h-full flex items-center justify-center gap-6 px-6">
         {/* Left Card - Half visible */}
         <div className="w-[20%] h-[350px] flex-shrink-0 opacity-60 scale-90 transition-all duration-700">
-          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
+          <div className="relative w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
             {items[leftIndex]?.image && (
-              <img
+              <Image
                 src={items[leftIndex].image}
                 alt={items[leftIndex].caption || ""}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 768px) 100vw, 300px"
+                className="object-cover"
+                unoptimized
               />
             )}
           </div>
@@ -88,10 +92,13 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
         <div className="w-[55%] h-[480px] flex-shrink-0 transition-all duration-700 group">
           <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden shadow-2xl shadow-black/50 relative transition-transform duration-300 group-hover:scale-110 group-hover:z-50">
             {items[centerIndex]?.image && (
-              <img
+              <Image
                 src={items[centerIndex].image}
                 alt={items[centerIndex].caption || ""}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 768px) 100vw, 600px"
+                className="object-cover"
+                unoptimized
               />
             )}
             {/* Caption overlay */}
@@ -107,12 +114,15 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
 
         {/* Right Card - Half visible */}
         <div className="w-[20%] h-[350px] flex-shrink-0 opacity-60 scale-90 transition-all duration-700">
-          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
+          <div className="relative w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
             {items[rightIndex]?.image && (
-              <img
+              <Image
                 src={items[rightIndex].image}
                 alt={items[rightIndex].caption || ""}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 768px) 100vw, 300px"
+                className="object-cover"
+                unoptimized
               />
             )}
           </div>
@@ -279,10 +289,13 @@ function EventCard({ image, title }: { image?: string; title?: string }) {
     <div className="group relative aspect-[3/4] bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-black/50 hover:z-50">
       {image ? (
         <>
-          <img
+          <Image
             src={image}
             alt={title || "Event"}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            sizes="(max-width: 768px) 100vw, 300px"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            unoptimized
           />
           {title && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity duration-300">

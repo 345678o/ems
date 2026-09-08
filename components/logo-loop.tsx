@@ -8,6 +8,7 @@ import {
   ReactNode,
   CSSProperties,
 } from "react";
+import Image from "next/image";
 import "./logo-loop.css";
 
 const ANIMATION_CONFIG = {
@@ -280,20 +281,17 @@ export const LogoLoop = memo<LogoLoopProps>(
         >
           {item.node}
         </span>
-      ) : (
-        <img
+      ) : item.src ? (
+        <Image
           src={item.src}
-          srcSet={item.srcSet}
-          sizes={item.sizes}
-          width={item.width}
-          height={item.height}
+          width={typeof item.width === "number" ? item.width : 48}
+          height={typeof item.height === "number" ? item.height : 48}
           alt={item.alt ?? ""}
           title={item.title}
-          loading="lazy"
-          decoding="async"
           draggable={false}
+          unoptimized
         />
-      );
+      ) : null;
 
       const itemAriaLabel = isNodeItem
         ? (item.ariaLabel ?? item.title)

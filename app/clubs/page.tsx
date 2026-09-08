@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { ArrowUpRight, Search, Users } from "lucide-react";
 import Link from "next/link";
 
@@ -50,10 +51,17 @@ function ClubMark({ club, large = false }: { club: Club; large?: boolean }) {
 
   return (
     <div
-      className={`grid shrink-0 place-items-center overflow-hidden rounded-2xl border border-black/10 bg-white ${large ? "h-20 w-20" : "h-14 w-14"}`}
+      className={`relative grid shrink-0 place-items-center overflow-hidden rounded-2xl border border-black/10 bg-white ${large ? "h-20 w-20" : "h-14 w-14"}`}
     >
       {image ? (
-        <img src={image} alt="" className="h-full w-full object-contain p-2" />
+        <Image
+          src={image}
+          alt=""
+          fill
+          sizes={large ? "80px" : "56px"}
+          className="object-contain p-2"
+          unoptimized
+        />
       ) : (
         <span className="text-lg font-semibold text-neutral-500">
           {club.name.slice(0, 2).toUpperCase()}

@@ -48,7 +48,7 @@ export function useClubEvents(sessionUserId: string | null) {
           `id, event_id, club_id, added_at, report_status, reviewer_comment, review_request,
           events (
             id, name, start_datetime, end_datetime, event_type, status,
-            description, semester, quarter, date_range, hosted
+            created_at, description, semester, quarter, date_range, hosted
           )`
         )
         .eq("club_id", sessionUserId)
@@ -65,15 +65,22 @@ export function useClubEvents(sessionUserId: string | null) {
             .eq("submitted_by", sessionUserId)
             .maybeSingle();
           // Extract the first event from the array (or undefined if empty/null)
-          const eventData =
+          const eventData = (
             Array.isArray(item.events) && item.events.length > 0
               ? item.events[0]
-              : (item.events ?? undefined);
+              : (item.events ?? undefined)
+          ) as ClubEvent | undefined;
           return {
-            ...item,
+            id: item.id,
+            event_id: item.event_id,
+            club_id: item.club_id,
+            added_at: item.added_at,
+            report_status: item.report_status,
+            reviewer_comment: item.reviewer_comment,
+            review_request: item.review_request,
             event: eventData,
-            after_event_report: reportData || null,
-          };
+            after_event_report: reportData || undefined,
+          } as CalendarEvent;
         })
       );
       setCalendarEvents(enriched);

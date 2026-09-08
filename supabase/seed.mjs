@@ -1,9 +1,12 @@
-// Seed script - run with: node supabase/seed.js
-const { createClient } = require("@supabase/supabase-js");
-const fs = require("fs");
-const path = require("path");
+// Seed script - run with: node supabase/seed.mjs
+import { createClient } from "@supabase/supabase-js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { v5 as uuidv5 } from "uuid";
 
 // Load env
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const envPath = path.join(__dirname, "../.env");
 const envContent = fs.readFileSync(envPath, "utf8");
 const env = {};
@@ -29,7 +32,6 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 // ─── Demo IDs ────────────────────────────────────────────────────────────────
 // Must match lib/utils/id.ts googleSubToUuid(email) exactly, since that's what
 // the credentials login flow uses as the user's real id (clubs.id === session.user.id).
-const { v5: uuidv5 } = require("uuid");
 const ID_NAMESPACE = "1e1eb861-ee4f-4c5e-bed1-04ee744e8559";
 const DEMO_USER_ID = uuidv5("demo@example.com", ID_NAMESPACE);
 const DEMO_USER2_ID = uuidv5("techclub@mlrit.ac.in", ID_NAMESPACE);

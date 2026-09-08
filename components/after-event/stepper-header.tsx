@@ -11,14 +11,11 @@ interface StepperHeaderProps {
 
 export default function StepperHeader({
   steps,
-  isStepCompleted,
+  isStepCompleted: _isStepCompleted,
   isStepActive,
 }: StepperHeaderProps) {
   // Find the active step
   const activeStep = steps.find((step) => isStepActive(step.id));
-  const completedCount = steps.filter((step) =>
-    isStepCompleted(step.id)
-  ).length;
 
   // Calculate progress as %
   // Formula: Each step represents (100 / steps.length) percentage
