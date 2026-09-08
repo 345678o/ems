@@ -1,5 +1,5 @@
-﻿"use client";
-
+"use client";
+import logger from "@/lib/logger";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Edit, Trash2, Info } from "lucide-react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
-import OptionWheel from "@/components/OptionWheel";
+import OptionWheel from "@/components/option-wheel";
 
 const EVENT_THEMES = [
   "Hackathon",
@@ -130,7 +130,7 @@ export function EventCreationPage() {
         .select();
 
       if (error) {
-        console.error("Error creating event:", error);
+        logger.error("Error creating event:", error);
         alert("Error creating event. Please try again.");
         return;
       }
@@ -141,7 +141,7 @@ export function EventCreationPage() {
       router.push("/club");
       router.refresh();
     } catch (error) {
-      console.error("Error creating event:", error);
+      logger.error("Error creating event:", error);
       alert("Error creating event. Please try again.");
     } finally {
       setIsLoading(false);

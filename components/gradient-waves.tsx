@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Renderer, Program, Mesh, Triangle } from "ogl";
-import "./GradientWaves.css";
+import "./gradient-waves.css";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -184,7 +184,7 @@ export interface GradientWavesProps {
 // Component
 // ---------------------------------------------------------------------------
 
-const GradientWaves = ({
+export const GradientWaves = ({
   horizonColor = "#5227FF",
   waveColor = "#FF9FFC",
   crestColor = "#FFFFFF",
@@ -435,5 +435,7 @@ const GradientWaves = ({
     />
   );
 };
+
+GradientWaves.displayName = "GradientWaves";
 
 export default GradientWaves;

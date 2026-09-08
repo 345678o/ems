@@ -1,11 +1,12 @@
 "use client";
+import logger from "@/lib/logger";
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Anton } from "next/font/google";
 import { MapPin, CalendarDays } from "lucide-react";
 import { FocusCardsRow } from "@/components/ui/focus-cards";
-import FadeContent from "@/components/FadeContent";
-import LogoLoop from "@/components/LogoLoop";
+import FadeContent from "@/components/fade-content";
+import LogoLoop from "@/components/logo-loop";
 import {
   Carousel,
   CarouselContent,
@@ -53,7 +54,7 @@ function Page() {
           .order("created_at", { ascending: false });
 
         if (error) {
-          console.error("[home] events fetch error:", error.message);
+          logger.error("[home] events fetch error:", error.message);
           setEvents([]);
           return;
         }
@@ -76,8 +77,8 @@ function Page() {
                 typeof e.banners === "string"
                   ? JSON.parse(e.banners)
                   : (e.banners ?? {});
-            } catch (_) {
-              console.warn("Invalid banners JSON:", e.banners);
+            } catch {
+              logger.warn("Invalid banners JSON:", e.banners);
             }
             return (
               Boolean(b?.["1x1"]) &&
@@ -95,7 +96,7 @@ function Page() {
           }))
         );
       } catch (err: unknown) {
-        console.error(
+        logger.error(
           "[home] events fetch error:",
           err instanceof Error ? err.message : err
         );
@@ -145,16 +146,32 @@ function Page() {
 
   useEffect(() => {
     const loadClubs = async () => {
-      const { data, error } = await supabase
-        .from("clubs")
-        .select("id,name,avatar_url")
-        .order("name");
-      if (error) {
-        console.error("[home] clubs fetch error:", error.message);
+      try {
+        const { data, error } = await supabase
+          .from("clubs")
+          .select("id,name,avatar_url")
+          .order("name", { ascending: true });
+
+        if (error) {
+          logger.error("[home] clubs fetch error:", error.message);
+          setClubs([]);
+          return;
+        }
+
+        setClubs(
+          (data || []).map((club) => ({
+            id: club.id,
+            name: club.name || "Unnamed Club",
+            avatar_url: club.avatar_url,
+          }))
+        );
+      } catch (err: unknown) {
+        logger.error(
+          "[home] clubs fetch error:",
+          err instanceof Error ? err.message : err
+        );
         setClubs([]);
-        return;
       }
-      setClubs((data || []) as any);
     };
     loadClubs();
   }, []);

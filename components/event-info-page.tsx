@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Anton } from "next/font/google";
 import { ReceiptText, FileText, Ticket as TicketIcon, Percent } from "lucide-react";
 import { cn } from "@/lib/utils";
-import DetailsTab from "@/components/event-info/DetailsTab";
-import FormsTab from "@/components/event-info/FormsTab";
-import CouponsTab from "@/components/event-info/CouponsTab";
-import TicketsTab from "@/components/event-info/TicketsTab";
+import DetailsTab from "@/components/event-info/details-tab";
+import FormsTab from "@/components/event-info/forms-tab";
+import CouponsTab from "@/components/event-info/coupons-tab";
+import TicketsTab from "@/components/event-info/tickets-tab";
 import { useEventInfoData } from "@/components/event-info/useEventInfoData";
 import type { TabType, Event } from "@/components/event-info/types";
 
@@ -138,3 +138,5 @@ export function EventInfoPage({ event, onEventUpdate }: EventInfoPageProps) {
     </div>
   );
 }
+
+export default EventInfoPage;

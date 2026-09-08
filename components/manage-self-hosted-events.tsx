@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -47,30 +48,37 @@ export function ManageSelfHostedEvents() {
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<DBEvent | null>(null);
 
-  const fetchEvents = async () => {
-    // Fetch ALL self-hosted events that are pending approval (global view)
-    const { data, error } = await supabase
-      .from("events")
-      .select(
-        "id, name, status, start_datetime, end_datetime, theme, event_type, additional_details, estimated_budget, estimated_participants, event_blueprint, club_id, clubs(name, avatar_url, email)"
-      )
-      .eq("hosted", "self")
-      .eq("status", "pending_approval")
-      .order("created_at", { ascending: false });
-    if (error) {
-      console.error("Failed to load events:", error.message);
-      setEvents([]);
-    } else {
-      // Supabase typing sometimes infers related tables as arrays; cast safely
-      setEvents(data as unknown as DBEvent[]);
-    }
-  };
-
   useEffect(() => {
-    fetchEvents();
-    const onFocus = () => fetchEvents();
+    let ignore = false;
+    const loadEvents = async () => {
+      // Fetch ALL self-hosted events that are pending approval (global view)
+      const { data, error } = await supabase
+        .from("events")
+        .select(
+          "id, name, status, start_datetime, end_datetime, theme, event_type, additional_details, estimated_budget, estimated_participants, event_blueprint, club_id, clubs(name, avatar_url, email)"
+        )
+        .eq("hosted", "self")
+        .eq("status", "pending_approval")
+        .order("created_at", { ascending: false });
+      if (ignore) return;
+      if (error) {
+        logger.error("Failed to load events:", error.message);
+        setEvents([]);
+      } else {
+        // Supabase typing sometimes infers related tables as arrays; cast safely
+        setEvents(data as unknown as DBEvent[]);
+      }
+    };
+
+    void loadEvents();
+    const onFocus = () => {
+      void loadEvents();
+    };
     window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
+    return () => {
+      ignore = true;
+      window.removeEventListener("focus", onFocus);
+    };
   }, []);
 
   const handleApprove = async (eventId: string) => {
@@ -79,7 +87,7 @@ export function ManageSelfHostedEvents() {
       .update({ status: "approved" })
       .eq("id", eventId);
     if (error) {
-      console.error("Approve failed:", error.message);
+      logger.error("Approve failed:", error.message);
       return;
     }
     setEvents((prev) =>
@@ -93,7 +101,7 @@ export function ManageSelfHostedEvents() {
       .update({ status: "rejected" })
       .eq("id", eventId);
     if (error) {
-      console.error("Reject failed:", error.message);
+      logger.error("Reject failed:", error.message);
       return;
     }
     setEvents((prev) =>

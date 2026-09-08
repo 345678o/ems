@@ -10,11 +10,11 @@
 The club dashboard at `/club` is built from focused sub-components under
 `components/club/` and composes three tabs:
 
-| Tab | Value | Description |
-|---|---|---|
-| IIC Activities | `iic` | IIC-hosted events assigned to this club |
-| Self Driven Activities | `self-hosted` | Events created by the club itself |
-| My Calendar Activities | `calendar` | IIC events the club has added to its calendar |
+| Tab                    | Value         | Description                                   |
+| ---------------------- | ------------- | --------------------------------------------- |
+| IIC Activities         | `iic`         | IIC-hosted events assigned to this club       |
+| Self Driven Activities | `self-hosted` | Events created by the club itself             |
+| My Calendar Activities | `calendar`    | IIC events the club has added to its calendar |
 
 ---
 
@@ -26,13 +26,13 @@ components/club/
 ├── types.ts                     ClubEvent, CalendarEvent interfaces
 ├── useClubEvents.ts             Data-fetching hook (all Supabase logic)
 ├── utils.ts                     getDateRangeDisplay, getReportStatus, formatEventDate
-├── DateTimePicker.tsx           Date + time popover picker
-├── AddEventCard.tsx             "Add New Event" placeholder card
-├── SelfEventCard.tsx            Self-hosted event card
-├── IICCard.tsx                  IIC event card with calendar buttons
-├── IICEventDetailDialog.tsx     Read-only IIC event details dialog
-├── CreateEventDialog.tsx        Create event form + API submission
-└── CalendarTable.tsx            "My Calendar Activities" full table
+├── date-time-picker.tsx         Date + time popover picker
+├── add-event-card.tsx           "Add New Event" placeholder card
+├── self-event-card.tsx          Self-hosted event card
+├── iic-card.tsx                 IIC event card with calendar buttons
+├── iic-event-detail-dialog.tsx  Read-only IIC event details dialog
+├── create-event-dialog.tsx      Create event form + API submission
+└── calendar-table.tsx           "My Calendar Activities" full table
 ```
 
 ---
@@ -52,28 +52,28 @@ Two nested tabs: **Current** (end date ≥ today) and **Past** (end date < today
 
 ## My Calendar Activities Tab
 
-A full-width table (`CalendarTable.tsx`) with columns:
+A full-width table (`calendar-table.tsx`) with columns:
 
-| Column | Description |
-|---|---|
-| S.No. | Row index |
-| Title of Activity | Name, semester/quarter, free/paid badge |
-| View Activity Details | Opens `IICEventDetailDialog` |
-| Upload Activity Report | Routes to `/club/event/[id]#after-event` |
-| Report Status | Badge: Not Started / Report Submitted / Media Uploaded / Completed |
-| Reviewer's Comment | Text or "NA" |
-| Review for Request | Text or "NA" |
-| Download Report | Disabled (not yet implemented) |
-| Action | Delete row from calendar |
+| Column                 | Description                                                        |
+| ---------------------- | ------------------------------------------------------------------ |
+| S.No.                  | Row index                                                          |
+| Title of Activity      | Name, semester/quarter, free/paid badge                            |
+| View Activity Details  | Opens `IICEventDetailDialog`                                       |
+| Upload Activity Report | Routes to `/club/event/[id]#after-event`                           |
+| Report Status          | Badge: Not Started / Report Submitted / Media Uploaded / Completed |
+| Reviewer's Comment     | Text or "NA"                                                       |
+| Review for Request     | Text or "NA"                                                       |
+| Download Report        | Disabled (not yet implemented)                                     |
+| Action                 | Delete row from calendar                                           |
 
 ### Report status logic (`utils.ts → getReportStatus`)
 
-| Condition | Label |
-|---|---|
-| No `after_event_report` row | Not Started |
-| `report_submitted = true` | Report Submitted |
-| `report_submitted + media_uploaded` | Media Uploaded |
-| All three flags true | Completed |
+| Condition                           | Label            |
+| ----------------------------------- | ---------------- |
+| No `after_event_report` row         | Not Started      |
+| `report_submitted = true`           | Report Submitted |
+| `report_submitted + media_uploaded` | Media Uploaded   |
+| All three flags true                | Completed        |
 
 ---
 

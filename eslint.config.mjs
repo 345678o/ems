@@ -99,6 +99,7 @@ export default tseslint.config(
       "*.config.js",
       "postcss.config.mjs",
       "tailwind.config.js",
+      "next-env.d.ts",
     ],
   }
 );

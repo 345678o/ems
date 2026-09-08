@@ -1,6 +1,7 @@
 "use client";
+import logger from "@/lib/logger";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -140,7 +141,10 @@ export default function ProfilePage() {
     experience: "",
   });
 
-  const plugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
+  const autoplayPlugin = useMemo(
+    () => [Autoplay({ delay: 4000, stopOnInteraction: true })],
+    []
+  );
 
   const sessionUserId = session?.user?.id ?? null;
 
@@ -168,13 +172,13 @@ export default function ProfilePage() {
       ]);
 
       if (clubError) {
-        console.error("Error fetching club profile:", clubError);
+        logger.error("Error fetching club profile:", clubError);
       } else if (club) {
         setProfileData(club as ClubData);
       }
 
       if (eventsError) {
-        console.error("Error fetching events for stats:", eventsError);
+        logger.error("Error fetching events for stats:", eventsError);
       }
 
       if (events && events.length > 0) {
@@ -201,7 +205,7 @@ export default function ProfilePage() {
         });
       }
     } catch (error) {
-      console.error("Error fetching profile data:", error);
+      logger.error("Error fetching profile data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -266,7 +270,7 @@ export default function ProfilePage() {
       .eq("club_id", sessionUserId);
 
     if (error) {
-      console.error("Error fetching student council:", error);
+      logger.error("Error fetching student council:", error);
     } else {
       setStudentCouncil(data || []);
     }
@@ -329,7 +333,7 @@ export default function ProfilePage() {
       await fetchStudentCouncil();
       setIsStudentModalOpen(false);
     } catch (error: unknown) {
-      console.error(
+      logger.error(
         "Error saving student:",
         error instanceof Error ? error.message : error
       );
@@ -354,7 +358,7 @@ export default function ProfilePage() {
 
       await fetchStudentCouncil();
     } catch (error: unknown) {
-      console.error(
+      logger.error(
         "Error deleting student:",
         error instanceof Error ? error.message : error
       );
@@ -370,7 +374,7 @@ export default function ProfilePage() {
       .eq("club_id", sessionUserId);
 
     if (error) {
-      console.error("Error fetching faculty council:", error);
+      logger.error("Error fetching faculty council:", error);
     } else {
       setFacultyCouncil(data || []);
     }
@@ -450,7 +454,7 @@ export default function ProfilePage() {
       await fetchFacultyCouncil();
       setIsFacultyModalOpen(false);
     } catch (error: unknown) {
-      console.error(
+      logger.error(
         "Error saving faculty:",
         error instanceof Error ? error.message : error
       );
@@ -475,7 +479,7 @@ export default function ProfilePage() {
 
       await fetchFacultyCouncil();
     } catch (error: unknown) {
-      console.error(
+      logger.error(
         "Error deleting faculty:",
         error instanceof Error ? error.message : error
       );
@@ -635,7 +639,7 @@ export default function ProfilePage() {
                   <Carousel
                     opts={{ align: "center", loop: true }}
 
-                    plugins={[plugin.current]}
+                    plugins={autoplayPlugin}
                   >
                     <CarouselContent>
                       {stats.banners.map((bannerUrl, index) => (

@@ -10,12 +10,12 @@
 
 ## Required Storage Buckets
 
-| Bucket | Used for |
-|---|---|
-| `event-blueprints` | PDF event blueprints uploaded at event creation |
-| `event-images` | Event photos for after-event reports |
-| `event-reports` | PDF/Word activity reports |
-| `permission-letters` | Permission letter images/PDFs |
+| Bucket               | Used for                                        |
+| -------------------- | ----------------------------------------------- |
+| `event-blueprints`   | PDF event blueprints uploaded at event creation |
+| `event-images`       | Event photos for after-event reports            |
+| `event-reports`      | PDF/Word activity reports                       |
+| `permission-letters` | Permission letter images/PDFs                   |
 
 Create each bucket in the Supabase dashboard: **Storage → New Bucket**.
 Set **Public bucket = ON** for all of them.
@@ -111,9 +111,9 @@ NextAuth sessions use the anon key — `auth.uid()` returns null.
 
 ## File Limits
 
-| Type | Max size |
-|---|---|
-| Event blueprint (PDF) | 200 KB |
-| Event images | 3 MB each, max 3 images |
-| Activity report (PDF/Word) | 200 KB |
-| Permission letter (image/PDF) | 5 MB |
+| Type                          | Max size                |
+| ----------------------------- | ----------------------- |
+| Event blueprint (PDF)         | 200 KB                  |
+| Event images                  | 3 MB each, max 3 images |
+| Activity report (PDF/Word)    | 200 KB                  |
+| Permission letter (image/PDF) | 5 MB                    |

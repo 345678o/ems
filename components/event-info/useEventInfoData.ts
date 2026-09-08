@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/browserClient";
@@ -178,7 +179,7 @@ export function useEventInfoData(
         }
         setBanners((prev) => ({ ...prev, ...found }));
       } catch (e) {
-        console.error("Error loading banners:", e);
+        logger.error("Error loading banners:", e);
       }
     };
     loadBanners();
@@ -212,14 +213,14 @@ export function useEventInfoData(
         })
         .eq("id", event.id);
       if (error) {
-        console.error("Error updating event:", error);
+        logger.error("Error updating event:", error);
         alert("Error updating event. Please try again.");
         return;
       }
       alert("Event updated successfully!");
       onEventUpdate();
     } catch (error) {
-      console.error("Error updating event:", error);
+      logger.error("Error updating event:", error);
       alert("Error updating event. Please try again.");
     } finally {
       setIsSaving(false);
@@ -242,7 +243,7 @@ export function useEventInfoData(
         .eq("event_id", event.id)
         .order("field_order");
       if (error) {
-        console.error("Error loading form fields:", error);
+        logger.error("Error loading form fields:", error);
         return;
       }
       setFormFields(
@@ -255,7 +256,7 @@ export function useEventInfoData(
         })) || []
       );
     } catch (e) {
-      console.error("Error loading form fields:", e);
+      logger.error("Error loading form fields:", e);
     }
   };
 
@@ -277,7 +278,7 @@ export function useEventInfoData(
         .select()
         .single();
       if (error) {
-        console.error("Error adding form field:", error);
+        logger.error("Error adding form field:", error);
         alert("Error adding form field. Please try again.");
         return;
       }
@@ -293,7 +294,7 @@ export function useEventInfoData(
       ]);
       setNewField({ type: "text", label: "", required: false });
     } catch (e) {
-      console.error("Error adding form field:", e);
+      logger.error("Error adding form field:", e);
       alert("Error adding form field. Please try again.");
     }
   };
@@ -305,13 +306,13 @@ export function useEventInfoData(
         .delete()
         .eq("id", id);
       if (error) {
-        console.error("Error removing form field:", error);
+        logger.error("Error removing form field:", error);
         alert("Error removing form field. Please try again.");
         return;
       }
       setFormFields(formFields.filter((f) => f.id !== id));
     } catch (e) {
-      console.error("Error removing form field:", e);
+      logger.error("Error removing form field:", e);
       alert("Error removing form field. Please try again.");
     }
   };
@@ -332,7 +333,7 @@ export function useEventInfoData(
         .select("*")
         .eq("event_id", event.id);
       if (error) {
-        console.error("Error loading coupons:", error);
+        logger.error("Error loading coupons:", error);
         return;
       }
       setCoupons(
@@ -347,7 +348,7 @@ export function useEventInfoData(
         })) || []
       );
     } catch (e) {
-      console.error("Error loading coupons:", e);
+      logger.error("Error loading coupons:", e);
     }
   };
 
@@ -370,7 +371,7 @@ export function useEventInfoData(
         .select()
         .single();
       if (error) {
-        console.error("Error adding coupon:", error);
+        logger.error("Error adding coupon:", error);
         alert("Error adding coupon. Please try again.");
         return;
       }
@@ -388,7 +389,7 @@ export function useEventInfoData(
       ]);
       setNewCoupon({ code: "", discount: 0, type: "percentage", maxUses: 100 });
     } catch (e) {
-      console.error("Error adding coupon:", e);
+      logger.error("Error adding coupon:", e);
       alert("Error adding coupon. Please try again.");
     }
   };
@@ -402,7 +403,7 @@ export function useEventInfoData(
         .update({ is_active: !coupon.active })
         .eq("id", id);
       if (error) {
-        console.error("Error toggling coupon:", error);
+        logger.error("Error toggling coupon:", error);
         alert("Error updating coupon. Please try again.");
         return;
       }
@@ -410,7 +411,7 @@ export function useEventInfoData(
         coupons.map((c) => (c.id === id ? { ...c, active: !c.active } : c))
       );
     } catch (e) {
-      console.error("Error toggling coupon:", e);
+      logger.error("Error toggling coupon:", e);
       alert("Error updating coupon. Please try again.");
     }
   };
@@ -422,13 +423,13 @@ export function useEventInfoData(
         .delete()
         .eq("id", id);
       if (error) {
-        console.error("Error removing coupon:", error);
+        logger.error("Error removing coupon:", error);
         alert("Error removing coupon. Please try again.");
         return;
       }
       setCoupons(coupons.filter((c) => c.id !== id));
     } catch (e) {
-      console.error("Error removing coupon:", e);
+      logger.error("Error removing coupon:", e);
       alert("Error removing coupon. Please try again.");
     }
   };
@@ -450,7 +451,7 @@ export function useEventInfoData(
         .select("*")
         .eq("event_id", event.id);
       if (error) {
-        console.error("Error loading tickets:", error);
+        logger.error("Error loading tickets:", error);
         return;
       }
       setTickets(
@@ -464,7 +465,7 @@ export function useEventInfoData(
         })) || []
       );
     } catch (e) {
-      console.error("Error loading tickets:", e);
+      logger.error("Error loading tickets:", e);
     }
   };
 
@@ -487,7 +488,7 @@ export function useEventInfoData(
         .select()
         .single();
       if (error) {
-        console.error("Error adding ticket:", error);
+        logger.error("Error adding ticket:", error);
         alert("Error adding ticket. Please try again.");
         return;
       }
@@ -510,7 +511,7 @@ export function useEventInfoData(
         available: 100,
       });
     } catch (e) {
-      console.error("Error adding ticket:", e);
+      logger.error("Error adding ticket:", e);
       alert("Error adding ticket. Please try again.");
     }
   };
@@ -522,13 +523,13 @@ export function useEventInfoData(
         .delete()
         .eq("id", id);
       if (error) {
-        console.error("Error removing ticket:", error);
+        logger.error("Error removing ticket:", error);
         alert("Error removing ticket. Please try again.");
         return;
       }
       setTickets(tickets.filter((t) => t.id !== id));
     } catch (e) {
-      console.error("Error removing ticket:", e);
+      logger.error("Error removing ticket:", e);
       alert("Error removing ticket. Please try again.");
     }
   };

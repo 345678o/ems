@@ -1,9 +1,10 @@
 "use client";
+import logger from "@/lib/logger";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function PartnerPage() {
+export default function Partner() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +25,7 @@ export default function PartnerPage() {
       // success → go to /club
       router.replace("/club");
     } catch (e) {
-      console.error(e);
+      logger.error("Failed to convert account:", e);
       alert("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

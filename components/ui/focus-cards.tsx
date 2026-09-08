@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,20 +28,21 @@ export const Card = React.memo(function Card({
   hovered,
   setHovered,
 }: CardProps) {
-  const isHovered = hovered === index;
   const [phase, setPhase] = useState<SpinPhase>("idle");
 
-  useEffect(() => {
-    if (isHovered) {
-      if (phase === "idle" || phase === "spinning-out") {
-        setPhase("spinning-in");
-      }
-    } else {
-      if (phase === "ring" || phase === "spinning-in") {
-        setPhase("spinning-out");
-      }
-    }
-  }, [isHovered]); // eslint-disable-line react-hooks/exhaustive-deps
+  const handleHoverStart = () => {
+    setHovered(index);
+    setPhase((prev) =>
+      prev === "idle" || prev === "spinning-out" ? "spinning-in" : prev
+    );
+  };
+
+  const handleHoverEnd = () => {
+    setHovered(null);
+    setPhase((prev) =>
+      prev === "ring" || prev === "spinning-in" ? "spinning-out" : prev
+    );
+  };
 
   const handleAnimEnd = () => {
     if (phase === "spinning-in") setPhase("ring");
@@ -52,8 +53,8 @@ export const Card = React.memo(function Card({
 
   const body = (
     <div
-      onMouseEnter={() => setHovered(index)}
-      onMouseLeave={() => setHovered(null)}
+      onMouseEnter={handleHoverStart}
+      onMouseLeave={handleHoverEnd}
       className={cn(
         "group/card rounded-2xl relative overflow-hidden border border-white/10 bg-white/60 dark:bg-neutral-900/80 shadow-sm backdrop-blur",
         "transition-all duration-300 ease-out will-change-transform",

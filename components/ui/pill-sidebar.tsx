@@ -27,21 +27,25 @@ interface PillSidebarProps {
 export const PILL_SIDEBAR_WIDTH = { collapsed: 88, expanded: 248 } as const;
 
 export function useSidebarCollapsed(storageKey: string, defaultValue = false) {
-  const [collapsed, setCollapsed] = React.useState(defaultValue);
-
-  React.useEffect(() => {
+  const [collapsed, setCollapsed] = React.useState(() => {
+    if (typeof window === "undefined") return defaultValue;
     try {
       const stored = window.localStorage.getItem(storageKey);
-      if (stored !== null) setCollapsed(stored === "1");
-    } catch {}
-  }, [storageKey]);
+      return stored !== null ? stored === "1" : defaultValue;
+    } catch {
+      // localStorage unavailable (e.g. private mode) — fall back to default
+      return defaultValue;
+    }
+  });
 
   const toggle = React.useCallback(() => {
     setCollapsed((prev) => {
       const next = !prev;
       try {
         window.localStorage.setItem(storageKey, next ? "1" : "0");
-      } catch {}
+      } catch {
+        // ignore storage write failures
+      }
       return next;
     });
   }, [storageKey]);

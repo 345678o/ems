@@ -1,3 +1,11 @@
+/**
+ * lib/supabase/browserClient.ts
+ *
+ * Browser-side Supabase client singleton using public anonymous credentials. Respects
+ * Row Level Security (RLS) policies and includes a development-only logging fetch wrapper
+ * to trace Supabase REST requests and responses.
+ */
+
 import { createClient } from "@supabase/supabase-js";
 import logger from "@/lib/logger";
 

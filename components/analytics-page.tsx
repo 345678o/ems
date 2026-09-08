@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useEffect, useMemo, useState } from "react";
 import { Anton } from "next/font/google";
@@ -79,8 +80,8 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
               .order("created_at", { ascending: false }),
           ]);
 
-        if (tErr) console.error("Error loading tickets:", tErr);
-        if (cErr) console.error("Error loading coupons:", cErr);
+        if (tErr) logger.error("Error loading tickets:", tErr);
+        if (cErr) logger.error("Error loading coupons:", cErr);
 
         setTickets((tix as DbTicket[]) || []);
         setCoupons((cps as DbCoupon[]) || []);
@@ -321,3 +322,5 @@ export function AnalyticsPage({ event }: AnalyticsPageProps) {
     </div>
   );
 }
+
+export default AnalyticsPage;

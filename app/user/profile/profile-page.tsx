@@ -1,11 +1,12 @@
 "use client";
+import logger from "@/lib/logger";
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { UserProfile } from "@/components/user-profile";
 import MyBookings from "@/components/my-bookings";
 import Certificates from "@/components/certificates";
 import { useSession } from "next-auth/react";
-import Partner from "@/components/Partner";
+import Partner from "@/components/partner";
 import { supabase } from "@/lib/supabase/browserClient"; // ✅ make sure your supabase client path is correct
 
 const VALID_TABS = ["profile", "my-bookings", "certificates", "partner"];
@@ -40,7 +41,7 @@ export default function ProfilePage() {
         .single();
 
       if (error) {
-        console.error("Error fetching role:", error);
+        logger.error("Error fetching role:", error);
         return;
       }
 

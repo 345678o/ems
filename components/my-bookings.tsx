@@ -1,10 +1,10 @@
-// app/components/tickets/MyBookings.tsx
 "use client";
+// app/components/tickets/MyBookings.tsx
 
 import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { TicketCard } from "./tickets/TicketCard"; // ← your card with the "View Ticket" button
+import { TicketCard } from "./tickets/ticket-card"; // ← your card with the "View Ticket" button
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 

@@ -6,7 +6,7 @@
  * we test that the redirect function is called correctly.
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ── Hoist mocks before any imports ───────────────────────────────────────────
 // vi.mock is automatically hoisted to the top of the file by Vitest.
