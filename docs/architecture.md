@@ -17,14 +17,14 @@ hosting models:
 
 ## Tech Stack
 
-| Layer     | Choice                                        |
-| --------- | --------------------------------------------- |
-| Frontend  | Next.js 15 (App Router), React 19, TypeScript |
-| UI        | Tailwind CSS 4, Radix UI, shadcn/ui           |
-| Database  | Supabase (PostgreSQL)                         |
+| Layer     | Choice                                                        |
+| --------- | ------------------------------------------------------------- |
+| Frontend  | Next.js 15 (App Router), React 19, TypeScript                 |
+| UI        | Tailwind CSS 4, Radix UI, shadcn/ui                           |
+| Database  | Supabase (PostgreSQL)                                         |
 | Auth      | NextAuth.js v4 (Credentials provider, domain-trust allowlist) |
-| Animation | Motion (Framer Motion successor)              |
-| Icons     | Lucide React, Tabler Icons                    |
+| Animation | Motion (Framer Motion successor)                              |
+| Icons     | Lucide React, Tabler Icons                                    |
 
 ---
 
