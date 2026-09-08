@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { ArrowLeft, CalendarDays, Search } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -89,10 +90,15 @@ function EventRingGallery({
     const poster = posters[index % posters.length];
     return {
       ...poster,
-      image: index < placeholderEventDetails.length ? poster.image : blankPlaceholder,
+      image:
+        index < placeholderEventDetails.length
+          ? poster.image
+          : blankPlaceholder,
     };
   });
-  const [selectedPoster, setSelectedPoster] = useState<(typeof ringPosters)[number] | null>(null);
+  const [selectedPoster, setSelectedPoster] = useState<
+    (typeof ringPosters)[number] | null
+  >(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedDetails =
     selectedIndex < placeholderEventDetails.length
@@ -123,20 +129,20 @@ function EventRingGallery({
         }}
         style={{ width: "100%", height: "520px" }}
       />
-      <div
-        className="pointer-events-none absolute left-1/2 top-1/2 z-[500000] grid h-40 w-40 -translate-x-1/2 -translate-y-1/2 place-items-center overflow-hidden rounded-full border border-white/10 bg-[#121212] shadow-2xl shadow-black/50 sm:h-52 sm:w-52"
-      >
+      <div className="pointer-events-none absolute left-1/2 top-1/2 z-[500000] grid h-40 w-40 -translate-x-1/2 -translate-y-1/2 place-items-center overflow-hidden rounded-full border border-white/10 bg-[#121212] shadow-2xl shadow-black/50 sm:h-52 sm:w-52">
         {clubImage ? (
-          <div className="flex h-full w-full items-center justify-center overflow-hidden p-2 sm:p-3">
-            <img
+          <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-2 sm:p-3">
+            <Image
               src={clubImage}
               alt=""
-              className="h-full w-full scale-[1.16] object-contain"
+              fill
+              sizes="(max-width: 640px) 160px, 208px"
+              className="scale-[1.16] object-contain"
               style={{
-                display: "block",
                 objectPosition: "center",
                 filter: "drop-shadow(0 8px 10px rgba(0,0,0,0.28))",
               }}
+              unoptimized
             />
           </div>
         ) : (
@@ -167,10 +173,13 @@ function EventRingGallery({
             onClick={() => setSelectedPoster(null)}
             className="group relative flex items-center justify-center bg-white/90 text-black shadow-2xl transition-transform duration-500 animate-in slide-in-from-left-8 hover:bg-white"
           >
-            <img
+            <Image
               src={selectedDetails.image}
               alt={selectedPoster.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="absolute inset-0 h-full w-full object-cover"
+              unoptimized
             />
             <span className="absolute inset-0 bg-black/25" />
             <span className="relative text-2xl font-semibold uppercase tracking-tight text-white sm:text-4xl">
@@ -181,11 +190,15 @@ function EventRingGallery({
             </span>
           </button>
           <div className="flex flex-col justify-center bg-white/90 px-6 text-black shadow-2xl animate-in slide-in-from-right-8 sm:px-10">
-            <span className="text-xs uppercase tracking-[0.2em] text-black/45">Event details</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-black/45">
+              Event details
+            </span>
             <span className="mt-3 text-2xl font-semibold uppercase tracking-tight sm:text-4xl">
               {selectedPoster.name}
             </span>
-            <span className="mt-5 text-sm text-black/60">{selectedDetails.description}</span>
+            <span className="mt-5 text-sm text-black/60">
+              {selectedDetails.description}
+            </span>
             <span className="mt-6 text-xs uppercase tracking-[0.16em] text-black/50">
               {selectedDetails.date} | {selectedDetails.venue}
             </span>
@@ -269,7 +282,9 @@ export default function ClubPage() {
               <div className="mb-5 flex items-center justify-between">
                 <div className="flex items-center gap-3 text-white/70">
                   <CalendarDays className="h-5 w-5" />
-                  <h2 className="text-sm font-medium uppercase tracking-[0.2em]">Events</h2>
+                  <h2 className="text-sm font-medium uppercase tracking-[0.2em]">
+                    Events
+                  </h2>
                 </div>
                 <span className="text-sm text-white/40">Hover to explore</span>
               </div>
@@ -285,7 +300,9 @@ export default function ClubPage() {
           <section className="rounded-3xl bg-white p-12 text-center text-black">
             <Search className="mx-auto mb-4 h-8 w-8 text-neutral-400" />
             <h1 className="text-2xl font-semibold">Club not found</h1>
-            <p className="mt-2 text-neutral-500">Return to the clubs directory to choose another community.</p>
+            <p className="mt-2 text-neutral-500">
+              Return to the clubs directory to choose another community.
+            </p>
           </section>
         )}
       </main>

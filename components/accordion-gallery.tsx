@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useRef, useEffect, useState, useCallback } from 'react';
-import { gsap } from 'gsap';
-import './AccordionGallery.css';
+import { useRef, useEffect, useState, useCallback } from "react";
+import Image from "next/image";
+import { gsap } from "gsap";
+import "./accordion-gallery.css";
 
 interface GalleryItem {
   image: string;
@@ -21,47 +22,67 @@ interface AccordionGalleryProps {
   gap?: number;
   radius?: number;
   expandRatio?: number;
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: "horizontal" | "vertical";
   duration?: number;
   ease?: string;
   parallax?: number;
   tilt?: number;
   stagger?: number;
-  trigger?: 'hover' | 'click';
+  trigger?: "hover" | "click";
   showLabels?: boolean;
   grayscale?: boolean;
   className?: string;
 }
 
 const DEFAULT_ITEMS: GalleryItem[] = [
-  { image: 'https://picsum.photos/id/1015/900/1200', label: 'Canyon', link: '#' },
-  { image: 'https://picsum.photos/id/1018/900/1200', label: 'Ridgeline', link: '#' },
-  { image: 'https://picsum.photos/id/1039/900/1200', label: 'Falls', link: '#' },
-  { image: 'https://picsum.photos/id/1043/900/1200', label: 'Harbour', link: '#' },
-  { image: 'https://picsum.photos/id/1044/900/1200', label: 'Skyline', link: '#' },
+  {
+    image: "https://picsum.photos/id/1015/900/1200",
+    label: "Canyon",
+    link: "#",
+  },
+  {
+    image: "https://picsum.photos/id/1018/900/1200",
+    label: "Ridgeline",
+    link: "#",
+  },
+  {
+    image: "https://picsum.photos/id/1039/900/1200",
+    label: "Falls",
+    link: "#",
+  },
+  {
+    image: "https://picsum.photos/id/1043/900/1200",
+    label: "Harbour",
+    link: "#",
+  },
+  {
+    image: "https://picsum.photos/id/1044/900/1200",
+    label: "Skyline",
+    link: "#",
+  },
 ];
 
-const AccordionGallery = ({
+export default function AccordionGallery({
   items = DEFAULT_ITEMS,
   defaultIndex = 2,
-  accentColor = '#ffffff',
-  overlayColor = '#060010',
-  textColor = '#ffffff',
+  accentColor = "#ffffff",
+  overlayColor = "#060010",
+  textColor = "#ffffff",
   height = 460,
   gap = 10,
   radius = 16,
   expandRatio = 0.52,
-  orientation = 'horizontal',
+  orientation = "horizontal",
   duration = 0.6,
-  ease = 'power3.out',
+  ease = "power3.out",
   parallax = 0.5,
   tilt = 8,
   stagger = 0.06,
-  trigger = 'hover',
+  trigger = "hover",
   showLabels = true,
   grayscale = true,
-  className = '',
-}: AccordionGalleryProps) => {
+  className = "",
+}: AccordionGalleryProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRefs = useRef<(HTMLElement | null)[]>([]);
   const mediaRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -70,13 +91,15 @@ const AccordionGallery = ({
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const firstRunRef = useRef(true);
   const mediaSizeRef = useRef(320);
-  const vertical = orientation === 'vertical';
+  const vertical = orientation === "vertical";
   const count = items.length;
-  const [active, setActive] = useState(Math.min(Math.max(defaultIndex, 0), count - 1));
+  const [active, setActive] = useState(
+    Math.min(Math.max(defaultIndex, 0), count - 1)
+  );
 
   const prefersReduced =
-    typeof window !== 'undefined' && window.matchMedia
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
       : false;
 
   const applyLayout = useCallback(
@@ -103,7 +126,11 @@ const AccordionGallery = ({
         const rot = isActive ? 0 : i < active ? tilt : -tilt;
         const rotProp = vertical ? { rotateX: -rot } : { rotateY: rot };
 
-        tl.to(panel, { flexGrow: isActive ? grow : 1, ...rotProp, duration: dur, ease }, 0);
+        tl.to(
+          panel,
+          { flexGrow: isActive ? grow : 1, ...rotProp, duration: dur, ease },
+          0
+        );
 
         if (media) {
           const drift = Math.max(-1.5, Math.min(1.5, active - i));
@@ -117,8 +144,8 @@ const AccordionGallery = ({
               yPercent: -50,
               x: vertical ? 0 : isActive ? 0 : shift,
               y: vertical ? (isActive ? 0 : shift) : 0,
-              '--ag-gray': gray,
-              '--ag-dim': isActive ? 0 : 0.35,
+              "--ag-gray": gray,
+              "--ag-dim": isActive ? 0 : 0.35,
               duration: dur,
               ease,
             },
@@ -130,18 +157,41 @@ const AccordionGallery = ({
           if (isActive) {
             tl.to(
               [bar, text],
-              { opacity: 1, x: 0, duration: dur, ease, stagger: prefersReduced ? 0 : stagger },
+              {
+                opacity: 1,
+                x: 0,
+                duration: dur,
+                ease,
+                stagger: prefersReduced ? 0 : stagger,
+              },
               0
             );
           } else {
-            tl.to([bar, text], { opacity: 0, x: -14, duration: dur * 0.6, ease }, 0);
+            tl.to(
+              [bar, text],
+              { opacity: 0, x: -14, duration: dur * 0.6, ease },
+              0
+            );
           }
         }
       });
 
       tlRef.current = tl;
     },
-    [active, count, expandRatio, duration, ease, vertical, tilt, parallax, grayscale, showLabels, stagger, prefersReduced]
+    [
+      active,
+      count,
+      expandRatio,
+      duration,
+      ease,
+      vertical,
+      tilt,
+      parallax,
+      grayscale,
+      showLabels,
+      stagger,
+      prefersReduced,
+    ]
   );
 
   useEffect(() => {
@@ -152,9 +202,12 @@ const AccordionGallery = ({
       const rect = el.getBoundingClientRect();
       const total = vertical ? rect.height : rect.width;
       const usable = Math.max(total - gap * (count - 1), 120);
-      const size = Math.max(140, usable * Math.min(Math.max(expandRatio, 0.2), 0.9) * 1.22);
+      const size = Math.max(
+        140,
+        usable * Math.min(Math.max(expandRatio, 0.2), 0.9) * 1.22
+      );
       mediaSizeRef.current = size;
-      el.style.setProperty('--ag-media-size', `${size}px`);
+      el.style.setProperty("--ag-media-size", `${size}px`);
       applyLayout(!firstRunRef.current);
     };
 
@@ -169,10 +222,15 @@ const AccordionGallery = ({
     firstRunRef.current = false;
   }, [applyLayout]);
 
-  useEffect(() => () => { tlRef.current?.kill(); }, []);
+  useEffect(
+    () => () => {
+      tlRef.current?.kill();
+    },
+    []
+  );
 
   const handleEnter = (i: number) => {
-    if (trigger === 'hover') setActive(i);
+    if (trigger === "hover") setActive(i);
   };
 
   const handleClick = (i: number, e: React.MouseEvent) => {
@@ -183,10 +241,10 @@ const AccordionGallery = ({
   };
 
   const handleKeyDown = (i: number, e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
       e.preventDefault();
       setActive((i + 1) % count);
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
       e.preventDefault();
       setActive((i - 1 + count) % count);
     }
@@ -195,27 +253,31 @@ const AccordionGallery = ({
   return (
     <div
       ref={rootRef}
-      className={`accordion-gallery${vertical ? ' accordion-gallery--vertical' : ''}${className ? ` ${className}` : ''}`}
-      style={{
-        '--ag-accent': accentColor,
-        '--ag-overlay': overlayColor,
-        '--ag-text': textColor,
-        '--ag-gap': `${gap}px`,
-        '--ag-radius': `${radius}px`,
-        height: vertical ? `${Math.round(height * 1.6)}px` : `${height}px`,
-      } as React.CSSProperties}
+      className={`accordion-gallery${vertical ? " accordion-gallery--vertical" : ""}${className ? ` ${className}` : ""}`}
+      style={
+        {
+          "--ag-accent": accentColor,
+          "--ag-overlay": overlayColor,
+          "--ag-text": textColor,
+          "--ag-gap": `${gap}px`,
+          "--ag-radius": `${radius}px`,
+          height: vertical ? `${Math.round(height * 1.6)}px` : `${height}px`,
+        } as React.CSSProperties
+      }
       role="list"
       aria-label="Image accordion gallery"
     >
       {items.map((item, i) => {
         const isActive = i === active;
-        const Tag = item.link ? 'a' : 'div';
+        const Tag = item.link ? "a" : "div";
 
         return (
           <Tag
             key={i}
-            ref={(el: HTMLElement | null) => { panelRefs.current[i] = el; }}
-            className={`ag-panel${isActive ? ' ag-panel--active' : ''}`}
+            ref={(el: HTMLElement | null) => {
+              panelRefs.current[i] = el;
+            }}
+            className={`ag-panel${isActive ? " ag-panel--active" : ""}`}
             style={{ borderRadius: `${radius}px` }}
             {...(item.link ? { href: item.link } : {})}
             onClick={(e: React.MouseEvent) => handleClick(i, e)}
@@ -224,22 +286,41 @@ const AccordionGallery = ({
             onKeyDown={(e: React.KeyboardEvent) => handleKeyDown(i, e)}
             role="listitem"
             tabIndex={0}
-            aria-current={isActive ? 'true' : undefined}
+            aria-current={isActive ? "true" : undefined}
             aria-label={item.label}
           >
             <span className="ag-panel__frame">
               <span
                 className="ag-panel__media"
-                ref={(el) => { mediaRefs.current[i] = el; }}
+                ref={(el) => {
+                  mediaRefs.current[i] = el;
+                }}
               >
-                <img src={item.image} alt={item.alt || item.label || ''} draggable={false} />
+                <Image
+                  src={item.image}
+                  alt={item.alt || item.label || ""}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 320px"
+                  draggable={false}
+                  unoptimized
+                />
               </span>
               <span className="ag-panel__overlay" aria-hidden="true" />
             </span>
             {showLabels && (
               <span className="ag-panel__label" aria-hidden="true">
-                <span className="ag-panel__bar" ref={(el) => { barRefs.current[i] = el; }} />
-                <span className="ag-panel__text" ref={(el) => { textRefs.current[i] = el; }}>
+                <span
+                  className="ag-panel__bar"
+                  ref={(el) => {
+                    barRefs.current[i] = el;
+                  }}
+                />
+                <span
+                  className="ag-panel__text"
+                  ref={(el) => {
+                    textRefs.current[i] = el;
+                  }}
+                >
                   {item.label}
                 </span>
               </span>
@@ -249,6 +330,4 @@ const AccordionGallery = ({
       })}
     </div>
   );
-};
-
-export default AccordionGallery;
+}

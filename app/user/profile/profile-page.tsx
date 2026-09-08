@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
@@ -18,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { signOut, useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Partner from "@/components/Partner";
+import Partner from "@/components/partner";
 import { supabase } from "@/lib/supabase/browserClient"; // ✅ make sure your supabase client path is correct
 
 export default function ProfilePage() {
@@ -39,7 +40,7 @@ export default function ProfilePage() {
         .single();
 
       if (error) {
-        console.error("Error fetching role:", error);
+        logger.error("Error fetching role:", error);
         return;
       }
 

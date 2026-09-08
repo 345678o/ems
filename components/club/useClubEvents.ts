@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase/browserClient";
@@ -25,7 +26,7 @@ export function useClubEvents(sessionUserId: string | null) {
         .eq("club_id", sessionUserId)
         .eq("status", "approved")
         .order("created_at", { ascending: false });
-      if (iicErr) console.error("IIC error:", iicErr.message);
+      if (iicErr) logger.error("IIC error:", iicErr.message);
       setIicEvents((iicData || []) as ClubEvent[]);
 
       // Self-hosted events
@@ -37,7 +38,7 @@ export function useClubEvents(sessionUserId: string | null) {
         .eq("hosted", "self")
         .eq("club_id", sessionUserId)
         .order("created_at", { ascending: false });
-      if (selfErr) console.error("Self-hosted error:", selfErr.message);
+      if (selfErr) logger.error("Self-hosted error:", selfErr.message);
       setSelfEvents((selfData || []) as ClubEvent[]);
 
       // Calendar events with nested event data
@@ -47,38 +48,44 @@ export function useClubEvents(sessionUserId: string | null) {
           `id, event_id, club_id, added_at, report_status, reviewer_comment, review_request,
           events (
             id, name, start_datetime, end_datetime, event_type, status,
-            description, semester, quarter, date_range, hosted
+            created_at, description, semester, quarter, date_range, hosted
           )`
         )
         .eq("club_id", sessionUserId)
         .order("added_at", { ascending: false });
-      if (calendarErr) console.error("Calendar error:", calendarErr.message);
+      if (calendarErr) logger.error("Calendar error:", calendarErr.message);
 
       // Enrich each calendar entry with its after_event_report
       const enriched = await Promise.all(
-        (calendarData || []).map(
-          async (item) => {
-            const { data: reportData } = await supabase
-              .from("after_event_reports")
-              .select("report_submitted, media_uploaded, social_media_promoted")
-              .eq("event_id", item.event_id)
-              .eq("submitted_by", sessionUserId)
-              .maybeSingle();
-            // Extract the first event from the array (or undefined if empty/null)
-            const eventData = Array.isArray(item.events) && item.events.length > 0
+        (calendarData || []).map(async (item) => {
+          const { data: reportData } = await supabase
+            .from("after_event_reports")
+            .select("report_submitted, media_uploaded, social_media_promoted")
+            .eq("event_id", item.event_id)
+            .eq("submitted_by", sessionUserId)
+            .maybeSingle();
+          // Extract the first event from the array (or undefined if empty/null)
+          const eventData = (
+            Array.isArray(item.events) && item.events.length > 0
               ? item.events[0]
-              : (item.events ?? undefined);
-            return {
-              ...item,
-              event: eventData,
-              after_event_report: reportData || null,
-            };
-          }
-        )
+              : (item.events ?? undefined)
+          ) as ClubEvent | undefined;
+          return {
+            id: item.id,
+            event_id: item.event_id,
+            club_id: item.club_id,
+            added_at: item.added_at,
+            report_status: item.report_status,
+            reviewer_comment: item.reviewer_comment,
+            review_request: item.review_request,
+            event: eventData,
+            after_event_report: reportData || undefined,
+          } as CalendarEvent;
+        })
       );
       setCalendarEvents(enriched);
     } catch (error) {
-      console.error("Error fetching events:", error);
+      logger.error("Error fetching events:", error);
       setIicEvents([]);
       setSelfEvents([]);
       setCalendarEvents([]);
@@ -126,7 +133,7 @@ export function useClubEvents(sessionUserId: string | null) {
       report_status: "Not Submitted",
     });
     if (error) {
-      console.error("Error adding to calendar:", error);
+      logger.error("Error adding to calendar:", error);
       alert("Failed to add event to calendar");
       return;
     }
@@ -150,7 +157,7 @@ export function useClubEvents(sessionUserId: string | null) {
       .delete()
       .eq("id", entry.id);
     if (error) {
-      console.error("Error removing from calendar:", error);
+      logger.error("Error removing from calendar:", error);
       alert("Failed to remove event from calendar");
       return;
     }

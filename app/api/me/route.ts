@@ -1,4 +1,13 @@
-import { getServerSession } from "next-auth";
+/**
+ * app/api/me/route.ts
+ *
+ * Profile management API endpoints for the authenticated user. Provides GET to retrieve
+ * user profile information from Supabase, and PATCH to validate and update user contact details
+ * and display information.
+ */
+
+import logger from "@/lib/logger";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createClient } from "@/lib/supabase/server";
 import { patchMeSchema } from "@/lib/api/schemas";
@@ -25,7 +34,7 @@ export async function GET() {
     .maybeSingle();
 
   if (error) {
-    console.error("[/api/me] GET error:", error.message);
+    logger.error("[/api/me] GET error:", error.message);
     return serverError("DB error");
   }
 
@@ -57,7 +66,7 @@ export async function PATCH(req: Request) {
     .eq("email", session.user.email);
 
   if (error) {
-    console.error("[/api/me] PATCH error:", error.message);
+    logger.error("[/api/me] PATCH error:", error.message);
     return serverError("Update failed");
   }
 

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import GradientButton from "@/components/ui/gradient-button";
-import DateTimePicker from "./DateTimePicker";
+import DateTimePicker from "./date-time-picker";
 
 interface CreateEventDialogProps {
   open: boolean;

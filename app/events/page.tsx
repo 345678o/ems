@@ -1,43 +1,44 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import LogoLoop from "@/components/LogoLoop";
+import LogoLoop from "@/components/logo-loop";
 
 // Event images data
 const heroItems = [
   {
-    image: '/events/equniox.png',
-    caption: 'Equinox'
+    image: "/events/equniox.png",
+    caption: "Equinox",
   },
   {
-    image: '/events/hustle mania.png',
-    caption: 'Hustle Mania'
+    image: "/events/hustle mania.png",
+    caption: "Hustle Mania",
   },
   {
-    image: '/events/wc 2.0.png',
-    caption: 'Welcome 2.0'
+    image: "/events/wc 2.0.png",
+    caption: "Welcome 2.0",
   },
   {
-    image: '/events/metaloop.png',
-    caption: 'Metaloop'
+    image: "/events/metaloop.png",
+    caption: "Metaloop",
   },
   {
-    image: '/events/B2B.png',
-    caption: 'B2B'
-  }
+    image: "/events/B2B.png",
+    caption: "B2B",
+  },
 ];
 
 const liveEvents = [
-  { image: '/events/equniox.png', title: 'Equinox' },
-  { image: '/events/hustle mania.png', title: 'Hustle Mania' },
-  { image: '/events/wc 2.0.png', title: 'Welcome 2.0' },
-  { image: '/events/metaloop.png', title: 'Metaloop' },
-  { image: '/events/B2B.png', title: 'B2B' },
-  { image: '/events/gi.png', title: 'GI' },
-  { image: '/events/wc.png', title: 'Welcome' },
-  { image: '/events/welcome-gate.jpg', title: 'Welcome Gate' },
+  { image: "/events/equniox.png", title: "Equinox" },
+  { image: "/events/hustle mania.png", title: "Hustle Mania" },
+  { image: "/events/wc 2.0.png", title: "Welcome 2.0" },
+  { image: "/events/metaloop.png", title: "Metaloop" },
+  { image: "/events/B2B.png", title: "B2B" },
+  { image: "/events/gi.png", title: "GI" },
+  { image: "/events/wc.png", title: "Welcome" },
+  { image: "/events/welcome-gate.jpg", title: "Welcome Gate" },
 ];
 
 // ============================================================================
@@ -73,12 +74,15 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
       <div className="relative h-full flex items-center justify-center gap-6 px-6">
         {/* Left Card - Half visible */}
         <div className="w-[20%] h-[350px] flex-shrink-0 opacity-60 scale-90 transition-all duration-700">
-          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
+          <div className="relative w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
             {items[leftIndex]?.image && (
-              <img 
-                src={items[leftIndex].image} 
-                alt={items[leftIndex].caption || ''}
-                className="w-full h-full object-cover"
+              <Image
+                src={items[leftIndex].image}
+                alt={items[leftIndex].caption || ""}
+                fill
+                sizes="(max-width: 768px) 100vw, 300px"
+                className="object-cover"
+                unoptimized
               />
             )}
           </div>
@@ -88,16 +92,21 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
         <div className="w-[55%] h-[480px] flex-shrink-0 transition-all duration-700 group">
           <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden shadow-2xl shadow-black/50 relative transition-transform duration-300 group-hover:scale-110 group-hover:z-50">
             {items[centerIndex]?.image && (
-              <img 
-                src={items[centerIndex].image} 
-                alt={items[centerIndex].caption || ''}
-                className="w-full h-full object-cover"
+              <Image
+                src={items[centerIndex].image}
+                alt={items[centerIndex].caption || ""}
+                fill
+                sizes="(max-width: 768px) 100vw, 600px"
+                className="object-cover"
+                unoptimized
               />
             )}
             {/* Caption overlay */}
             {items[centerIndex]?.caption && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                <h3 className="text-2xl font-bold text-white">{items[centerIndex].caption}</h3>
+                <h3 className="text-2xl font-bold text-white">
+                  {items[centerIndex].caption}
+                </h3>
               </div>
             )}
           </div>
@@ -105,12 +114,15 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
 
         {/* Right Card - Half visible */}
         <div className="w-[20%] h-[350px] flex-shrink-0 opacity-60 scale-90 transition-all duration-700">
-          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
+          <div className="relative w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden">
             {items[rightIndex]?.image && (
-              <img 
-                src={items[rightIndex].image} 
-                alt={items[rightIndex].caption || ''}
-                className="w-full h-full object-cover"
+              <Image
+                src={items[rightIndex].image}
+                alt={items[rightIndex].caption || ""}
+                fill
+                sizes="(max-width: 768px) 100vw, 300px"
+                className="object-cover"
+                unoptimized
               />
             )}
           </div>
@@ -123,8 +135,18 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
         className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10"
         aria-label="Previous"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
       </button>
       <button
@@ -132,8 +154,18 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
         className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10"
         aria-label="Next"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 5l7 7-7 7"
+          />
         </svg>
       </button>
 
@@ -145,7 +177,9 @@ function HeroCarousel({ items }: { items: typeof heroItems }) {
             onClick={() => setCurrentIndex(i)}
             className={cn(
               "h-2 rounded-full transition-all duration-300",
-              i === currentIndex ? "w-8 bg-white" : "w-2 bg-white/40 hover:bg-white/60"
+              i === currentIndex
+                ? "w-8 bg-white"
+                : "w-2 bg-white/40 hover:bg-white/60"
             )}
             aria-label={`Go to slide ${i + 1}`}
           />
@@ -178,8 +212,18 @@ function TopBar() {
           title="Go back"
           className="w-12 h-10 rounded flex items-center justify-center text-gray-300 hover:bg-white/10 transition-colors"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
         <div className="w-12 h-10 bg-gradient-to-br from-gray-700 to-gray-800 rounded" />
@@ -245,10 +289,13 @@ function EventCard({ image, title }: { image?: string; title?: string }) {
     <div className="group relative aspect-[3/4] bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-black/50 hover:z-50">
       {image ? (
         <>
-          <img 
-            src={image} 
-            alt={title || 'Event'} 
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          <Image
+            src={image}
+            alt={title || "Event"}
+            fill
+            sizes="(max-width: 768px) 100vw, 300px"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            unoptimized
           />
           {title && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity duration-300">
@@ -258,7 +305,12 @@ function EventCard({ image, title }: { image?: string; title?: string }) {
         </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center text-gray-600">
-          <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-16 h-16"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -274,16 +326,16 @@ function EventCard({ image, title }: { image?: string; title?: string }) {
 
 // Club logos data for LogoLoop
 const clubLogos = [
-  { src: '/clubs/apex', alt: 'APEX', title: 'APEX' },
-  { src: '/clubs/areo', alt: 'AREO', title: 'AREO' },
-  { src: '/clubs/came', alt: 'CAME', title: 'CAME' },
-  { src: '/clubs/cie', alt: 'CIE', title: 'CIE' },
-  { src: '/clubs/code', alt: 'CODE', title: 'CODE' },
-  { src: '/clubs/EWB', alt: 'EWB', title: 'EWB' },
-  { src: '/clubs/lit', alt: 'LIT', title: 'LIT' },
-  { src: '/clubs/mun', alt: 'MUN', title: 'MUN' },
-  { src: '/clubs/nss', alt: 'NSS', title: 'NSS' },
-  { src: '/clubs/scope', alt: 'SCOPE', title: 'SCOPE' },
+  { src: "/clubs/apex", alt: "APEX", title: "APEX" },
+  { src: "/clubs/areo", alt: "AREO", title: "AREO" },
+  { src: "/clubs/came", alt: "CAME", title: "CAME" },
+  { src: "/clubs/cie", alt: "CIE", title: "CIE" },
+  { src: "/clubs/code", alt: "CODE", title: "CODE" },
+  { src: "/clubs/EWB", alt: "EWB", title: "EWB" },
+  { src: "/clubs/lit", alt: "LIT", title: "LIT" },
+  { src: "/clubs/mun", alt: "MUN", title: "MUN" },
+  { src: "/clubs/nss", alt: "NSS", title: "NSS" },
+  { src: "/clubs/scope", alt: "SCOPE", title: "SCOPE" },
 ];
 
 // Club Avatar Row Component with LogoLoop

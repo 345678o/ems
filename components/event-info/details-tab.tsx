@@ -1,4 +1,5 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
@@ -272,12 +273,12 @@ export default function DetailsTab(props: DetailsTabProps) {
                             .update({ banners: json })
                             .eq("id", event.id);
                           if (error)
-                            console.error(
+                            logger.error(
                               "Failed to update banners JSON:",
                               error.message
                             );
                         } catch (e) {
-                          console.error(
+                          logger.error(
                             "Unexpected error updating banners JSON:",
                             e
                           );
@@ -352,12 +353,12 @@ export default function DetailsTab(props: DetailsTabProps) {
                             .update({ banners: json })
                             .eq("id", event.id);
                           if (error)
-                            console.error(
+                            logger.error(
                               "Failed to update banners JSON:",
                               error.message
                             );
                         } catch (e) {
-                          console.error(
+                          logger.error(
                             "Unexpected error updating banners JSON:",
                             e
                           );

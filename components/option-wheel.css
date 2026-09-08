@@ -32,7 +32,11 @@
   cursor: pointer;
   will-change: transform, opacity, filter;
   /* --ow-p goes 0 -> 1 as an option approaches the middle of the wheel */
-  color: color-mix(in srgb, var(--ow-active-color) calc(var(--ow-p, 0) * 100%), var(--ow-text-color));
+  color: color-mix(
+    in srgb,
+    var(--ow-active-color) calc(var(--ow-p, 0) * 100%),
+    var(--ow-text-color)
+  );
 }
 
 .option-wheel--right .option-wheel__item {

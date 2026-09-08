@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import "./OptionWheel.css";
+import "./option-wheel.css";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,7 +73,7 @@ const DEFAULT_ITEMS: string[] = [
 // Component
 // ---------------------------------------------------------------------------
 
-const OptionWheel = ({
+export const OptionWheel = ({
   items = DEFAULT_ITEMS,
   defaultSelected = 3,
   onChange,
@@ -119,27 +119,29 @@ const OptionWheel = ({
       ? parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
       : 16;
 
+  const runFrameRef = useRef<(now: number) => void>(() => {});
+
   // Keep refs in sync with the latest props so callbacks always read current values
   // without triggering re-renders. This is the documented ref-as-mutable-value pattern.
-
-  onChangeRef.current = onChange;
-
-  cfgRef.current = {
-    count: items.length,
-    items,
-    rowH: Math.max(fontSize * spacing * remPx, 1),
-    curve,
-    tilt,
-    blur,
-    fade,
-    minOpacity,
-    side,
-    loop,
-    smoothing,
-    draggable,
-    soundUrl,
-    soundVolume,
-  };
+  useEffect(() => {
+    onChangeRef.current = onChange;
+    cfgRef.current = {
+      count: items.length,
+      items,
+      rowH: Math.max(fontSize * spacing * remPx, 1),
+      curve,
+      tilt,
+      blur,
+      fade,
+      minOpacity,
+      side,
+      loop,
+      smoothing,
+      draggable,
+      soundUrl,
+      soundVolume,
+    };
+  });
 
   // ── rAF render loop ────────────────────────────────────────────────────────
   const runFrame = useCallback((now: number) => {
@@ -202,8 +204,12 @@ const OptionWheel = ({
     rafRef.current =
       posRef.current === targetRef.current
         ? null
-        : requestAnimationFrame(runFrame);
+        : requestAnimationFrame(runFrameRef.current);
   }, []);
+
+  useEffect(() => {
+    runFrameRef.current = runFrame;
+  }, [runFrame]);
 
   const startLoop = useCallback(() => {
     if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
@@ -419,5 +425,7 @@ const OptionWheel = ({
     </div>
   );
 };
+
+OptionWheel.displayName = "OptionWheel";
 
 export default OptionWheel;

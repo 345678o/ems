@@ -24,7 +24,7 @@ interface FadeContentProps {
   className?: string;
 }
 
-const FadeContent = ({
+export default function FadeContent({
   children,
   blur = false,
   duration = 1000,
@@ -33,7 +33,7 @@ const FadeContent = ({
   threshold = 0.1,
   initialOpacity = 0,
   className = "",
-}: FadeContentProps) => {
+}: FadeContentProps) {
   const [inView, setInView] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -66,6 +66,4 @@ const FadeContent = ({
       {children}
     </div>
   );
-};
-
-export default FadeContent;
+}

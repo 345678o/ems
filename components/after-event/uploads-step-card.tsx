@@ -15,11 +15,12 @@ import {
   Upload,
   AlertCircle,
   X,
-  Image,
+  Image as ImageIcon,
   Video,
   FileText,
   Link,
 } from "lucide-react";
+import Image from "next/image";
 import type { FileUploads, ValidationErrors } from "./types";
 import React, { RefObject } from "react";
 
@@ -70,10 +71,13 @@ const ImageUploadBox = ({
           {/* Preview for image files */}
           {file.type.startsWith("image/") ? (
             <div className="relative w-full h-full">
-              <img
+              <Image
                 src={URL.createObjectURL(file)}
                 alt="Preview"
-                className="w-full h-full object-cover rounded-md"
+                fill
+                sizes="(max-width: 768px) 100vw, 300px"
+                className="object-cover rounded-md"
+                unoptimized
               />
               <Button
                 variant="ghost"
@@ -86,7 +90,7 @@ const ImageUploadBox = ({
             </div>
           ) : (
             <div className="text-center p-2">
-              <Image className="w-6 h-6 mx-auto mb-1 text-green-500" />
+              <ImageIcon className="w-6 h-6 mx-auto mb-1 text-green-500" />
               <p className="text-xs text-center break-words">{file.name}</p>
               <Button
                 variant="ghost"
@@ -101,7 +105,7 @@ const ImageUploadBox = ({
         </>
       ) : (
         <div className="text-center p-4 cursor-pointer" onClick={onUpload}>
-          <Image className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+          <ImageIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
           <p className="text-xs text-gray-400 mb-2">Image {index + 1}</p>
           <Button
             variant="outline"
@@ -222,7 +226,7 @@ export default function UploadsStepCard({
           {/* Images Upload Section */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Image className="w-4 h-4" />
+              <ImageIcon className="w-4 h-4" />
               <Label className="text-sm font-medium">Images *</Label>
               <span className="text-xs text-gray-400">(Max 3, 3MB each)</span>
             </div>
@@ -320,11 +324,14 @@ export default function UploadsStepCard({
               {fileUploads.permissionLetter ? (
                 <div className="text-center">
                   {fileUploads.permissionLetter.type.startsWith("image/") ? (
-                    <div className="relative w-full h-full">
-                      <img
+                    <div className="relative w-full h-24 mb-2">
+                      <Image
                         src={URL.createObjectURL(fileUploads.permissionLetter)}
                         alt="Permission Letter Preview"
-                        className="w-full h-24 object-contain rounded-md mb-2"
+                        fill
+                        sizes="300px"
+                        className="object-contain rounded-md"
+                        unoptimized
                       />
                     </div>
                   ) : (

@@ -1,8 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
+/**
+ * lib/supabase/admin.ts
+ *
+ * Server-only Supabase client initialized with the service role key. Bypasses Row Level
+ * Security (RLS) for privileged backend operations such as user management, storage admin,
+ * and event approvals. Must never be imported or exposed to client-side code.
+ */
 
-// Server-side Supabase client using the service role key.
-// This bypasses RLS for operations performed on the server.
-// DO NOT expose this client or the service role key to the browser.
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

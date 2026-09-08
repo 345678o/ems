@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { useEffect, useMemo, useRef } from "react";
-import { useMotionValue, animate } from "framer-motion";
+import Image from "next/image";
+import {
+  useMotionValue,
+  animate,
+  type ValueAnimationTransition,
+} from "motion/react";
 
 type Direction = "clockwise" | "anticlockwise";
 type Stack = "firstOnTop" | "lastOnTop";
@@ -77,7 +82,12 @@ const DEFAULT_IMAGES: ImageItem[] = [
   },
 ];
 
-const DEFAULT_RING: Ring = { radiusX: 200, radiusY: 200, tilt: true, repeat: 6 };
+const DEFAULT_RING: Ring = {
+  radiusX: 200,
+  radiusY: 200,
+  tilt: true,
+  repeat: 6,
+};
 
 const DEFAULT_TRANSITION: Transition = {
   type: "tween",
@@ -103,12 +113,6 @@ function resolveImageSrc(item: unknown): string | undefined {
   if (!image) return undefined;
   if (typeof image === "string") return image.trim() || undefined;
   return image.src || undefined;
-}
-
-function resolveSrcSet(item: unknown): string | undefined {
-  const image = (item as ImageItem)?.image;
-  if (!image || typeof image === "string") return undefined;
-  return image.srcSet || undefined;
 }
 
 function focusOf(item: unknown): number {
@@ -160,7 +164,7 @@ export default function CircleImage({
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   const angle = useMotionValue(0);
-  const animationRef = useRef<any>(null);
+  const animationRef = useRef<{ stop: () => void } | null>(null);
 
   const draggingRef = useRef(false);
   const dragStartAngleRef = useRef(0);
@@ -199,11 +203,10 @@ export default function CircleImage({
 
     animationRef.current?.stop();
     const sign = live.direction === "anticlockwise" ? -1 : 1;
-    animationRef.current = animate(
-      angle,
-      angle.get() + Math.PI * 2 * sign,
-      { ...live.transition, repeat: Infinity } as any
-    );
+    animationRef.current = animate(angle, angle.get() + Math.PI * 2 * sign, {
+      ...live.transition,
+      repeat: Infinity,
+    } as ValueAnimationTransition<number>);
   };
 
   const onDragStart = (clientX: number, clientY: number) => {
@@ -240,7 +243,7 @@ export default function CircleImage({
         timeConstant: 700,
         restDelta: 0.01,
         onComplete: spin,
-      } as any);
+      } as ValueAnimationTransition<number>);
     } else {
       spin();
     }
@@ -292,9 +295,15 @@ export default function CircleImage({
 
   useEffect(() => {
     placeCard(angle.get());
-    const unsubscribe = angle.on
-      ? angle.on("change", placeCard)
-      : (angle as any).onChange(placeCard);
+    const unsubscribe =
+      "on" in angle &&
+      typeof (angle as unknown as { on: unknown }).on === "function"
+        ? angle.on("change", placeCard)
+        : (
+            angle as unknown as {
+              onChange: (cb: (v: number) => void) => () => void;
+            }
+          ).onChange(placeCard);
     return () => unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geometry, cards.length]);
@@ -368,21 +377,22 @@ export default function CircleImage({
                   borderRadius: cardRadius,
                   overflow: "hidden",
                   cursor: "pointer",
+                  position: "relative",
                 }}
               >
                 {src ? (
-                  <img
+                  <Image
                     src={src}
-                    srcSet={resolveSrcSet(image)}
                     alt=""
+                    fill
+                    sizes={`${cardWidth}px`}
                     draggable={false}
                     style={{
-                      width: "100%",
-                      height: "100%",
                       objectFit: fit,
                       objectPosition:
-                        fit === "cover" ? `center ${focusOf(image)}%` : "center",
-                      display: "block",
+                        fit === "cover"
+                          ? `center ${focusOf(image)}%`
+                          : "center",
                       pointerEvents: "none",
                     }}
                   />

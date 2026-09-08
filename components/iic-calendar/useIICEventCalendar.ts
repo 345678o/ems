@@ -1,8 +1,9 @@
 "use client";
+import logger from "@/lib/logger";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase/browserClient";
-import type { DbEvent, DbClub } from "@/types/database";
+import type { DbEvent } from "@/types/database";
 import type { AfterEventReportData } from "@/components/event-report-dialog";
 import type { IICEventData, IICClub, CreateIICEventForm } from "./types";
 
@@ -81,7 +82,7 @@ export function useIICEventCalendar() {
         }))
       );
     } catch (e) {
-      console.error("Failed to fetch IIC events", e);
+      logger.error("Failed to fetch IIC events", e);
       setEvents([]);
     }
   }, [selectedSemester, selectedClubId]);
@@ -100,27 +101,40 @@ export function useIICEventCalendar() {
   // ── Clubs ──────────────────────────────────────────────────────────────────
   const [clubs, setClubs] = useState<IICClub[]>([]);
   const [isLoadingClubs, setIsLoadingClubs] = useState(false);
-
-  const fetchClubs = useCallback(async () => {
-    try {
-      setIsLoadingClubs(true);
-      const { data, error } = await supabase
-        .from("clubs")
-        .select("id, name, avatar_url")
-        .order("name", { ascending: true });
-      if (error) throw error;
-      setClubs((data as IICClub[]) || []);
-    } catch (e: unknown) {
-      console.error("Failed to load clubs", e instanceof Error ? e.message : e);
-      setClubs([]);
-    } finally {
-      setIsLoadingClubs(false);
-    }
-  }, []);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
-    void fetchClubs();
-  }, [fetchClubs]);
+    let ignore = false;
+    const loadClubs = async () => {
+      setIsLoadingClubs(true);
+      try {
+        const { data, error } = await supabase
+          .from("clubs")
+          .select("id, name, avatar_url")
+          .order("name", { ascending: true });
+        if (ignore) return;
+        if (error) throw error;
+        setClubs((data as IICClub[]) || []);
+      } catch (e: unknown) {
+        if (!ignore) {
+          logger.error(
+            "Failed to load clubs",
+            e instanceof Error ? e.message : e
+          );
+          setClubs([]);
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoadingClubs(false);
+        }
+      }
+    };
+
+    void loadClubs();
+    return () => {
+      ignore = true;
+    };
+  }, [createDialogOpen]);
 
   // ── Delete event ───────────────────────────────────────────────────────────
   const handleDeleteEvent = async (eventId: string) => {
@@ -130,7 +144,7 @@ export function useIICEventCalendar() {
     if (!ok) return;
     const { error } = await supabase.from("events").delete().eq("id", eventId);
     if (error) {
-      console.error("Failed to delete event:", error.message);
+      logger.error("Failed to delete event:", error.message);
       return;
     }
     setEvents((prev) => prev.filter((e) => e.id !== eventId));
@@ -156,7 +170,7 @@ export function useIICEventCalendar() {
         .limit(1)
         .maybeSingle();
       if (error) {
-        console.error("Failed to load after_event_report:", error.message);
+        logger.error("Failed to load after_event_report:", error.message);
       } else {
         setReportData(data as unknown as AfterEventReportData);
       }
@@ -166,17 +180,9 @@ export function useIICEventCalendar() {
   };
 
   // ── Create event ───────────────────────────────────────────────────────────
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
-
-  // Re-fetch clubs each time the create dialog opens
-  useEffect(() => {
-    if (!createDialogOpen) return;
-
-    void fetchClubs();
-  }, [createDialogOpen, fetchClubs]);
 
   const handleCreateEvent = async (form: CreateIICEventForm) => {
     setSubmitError(null);

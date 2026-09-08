@@ -1,4 +1,11 @@
-// utils/id.ts
+/**
+ * lib/utils/id.ts
+ *
+ * Deterministic UUID generator utility. Derives a consistent, stable RFC 4122 UUIDv5
+ * from an email address or external identifier under a fixed application namespace.
+ */
+
+import logger from "@/lib/logger";
 import { v5 as uuidv5 } from "uuid";
 
 // A fixed namespace UUID. Generate once: `npx uuid`
@@ -11,7 +18,7 @@ export function googleSubToUuid(sub: string): string {
     }
     return uuidv5(sub, NAMESPACE);
   } catch (err) {
-    console.error("[id.ts] googleSubToUuid error:", err);
+    logger.error("[id.ts] googleSubToUuid error:", err);
     return "22222222-2222-4222-8222-222222222222";
   }
 }
