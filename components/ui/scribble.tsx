@@ -45,6 +45,32 @@ export function ScribbleArrow({ className, ...props }: ScribbleProps) {
   );
 }
 
+/** Hand-drawn crown — playful "featured/best-of" accent used near headlines. */
+export function ScribbleCrown({ className, ...props }: ScribbleProps) {
+  return (
+    <svg
+      viewBox="0 0 28 22"
+      fill="none"
+      className={cn("h-5 w-6", className)}
+      {...props}
+    >
+      <path
+        d="M2 19L1 7l5.5 4.5L14 2l7.5 9.5L27 7l-1 12H2Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      <path
+        d="M4 19h20"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /** Wobbly marker underline, meant to sit just beneath a headline word. */
 export function ScribbleUnderline({ className, ...props }: ScribbleProps) {
   return (

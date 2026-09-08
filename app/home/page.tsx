@@ -7,7 +7,11 @@ import LogoLoop from "@/components/logo-loop";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { TornCard } from "@/components/ui/torn-card";
-import { ScribbleStar, ScribbleArrow } from "@/components/ui/scribble";
+import {
+  ScribbleStar,
+  ScribbleArrow,
+  ScribbleCrown,
+} from "@/components/ui/scribble";
 import { CategoryBadge, toEventCategory } from "@/components/ui/category-badge";
 import { supabase } from "@/lib/supabase/browserClient";
 import type { EventTheme } from "@/lib/utils/theme-color";
@@ -44,6 +48,41 @@ function Page() {
     Array<{ id: string; name: string; avatar_url: string | null }>
   >([]);
   const [ticketPrices, setTicketPrices] = useState<Record<string, number>>({});
+  const [stats, setStats] = useState<{
+    events: number | null;
+    clubs: number | null;
+    registrations: number | null;
+  }>({ events: null, clubs: null, registrations: null });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      const [eventsCount, clubsCount, registrationsCount] = await Promise.all([
+        supabase.from("events").select("id", { count: "exact", head: true }),
+        supabase.from("clubs").select("id", { count: "exact", head: true }),
+        supabase
+          .from("event_participants")
+          .select("id", { count: "exact", head: true }),
+      ]);
+      if (eventsCount.error) {
+        logger.error("[home] events count error:", eventsCount.error.message);
+      }
+      if (clubsCount.error) {
+        logger.error("[home] clubs count error:", clubsCount.error.message);
+      }
+      if (registrationsCount.error) {
+        logger.error(
+          "[home] registrations count error:",
+          registrationsCount.error.message
+        );
+      }
+      setStats({
+        events: eventsCount.count ?? null,
+        clubs: clubsCount.count ?? null,
+        registrations: registrationsCount.count ?? null,
+      });
+    };
+    loadStats();
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -203,6 +242,7 @@ function Page() {
               Same campus.
               <br />
               Different perspective.
+              <ScribbleCrown className="ml-1.5 -mt-2 inline-block h-6 w-7 rotate-6 align-middle" />
             </p>
 
             <h1 className="font-display text-5xl leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-7xl">
@@ -255,6 +295,11 @@ function Page() {
                     zIndex: i,
                   }}
                 >
+                  {i === 0 && (
+                    <span className="washi-tape absolute -top-2 left-1/2 z-10 -translate-x-1/2 -rotate-3 rounded-sm px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+                      Live now
+                    </span>
+                  )}
                   <div className="relative aspect-[4/5] w-full overflow-hidden bg-paper-dim">
                     <img
                       src={e.banners?.["1x1"]}
@@ -269,6 +314,26 @@ function Page() {
               ))
             )}
           </div>
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Stats bar                                                         */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="bg-ink py-8">
+        <div className="mx-auto grid w-[92%] max-w-4xl grid-cols-3 divide-x divide-paper/15 sm:w-[88%]">
+          {[
+            { label: "Events hosted", value: stats.events },
+            { label: "Registrations", value: stats.registrations },
+            { label: "Clubs & departments", value: stats.clubs },
+          ].map((s) => (
+            <div key={s.label} className="px-2 text-center sm:px-6">
+              <p className="font-display text-3xl text-paper sm:text-4xl">
+                {s.value === null ? "—" : `${s.value}+`}
+              </p>
+              <p className="mt-1 text-xs text-paper/60 sm:text-sm">{s.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -309,9 +374,14 @@ function Page() {
                 ).join(", ");
 
                 return (
-                  <Link key={e.id} href={`/events/${e.id}`} className="group block">
+                  <Link
+                    key={e.id}
+                    href={`/events/${e.id}`}
+                    className="group block"
+                  >
                     <TornCard
                       rotate={cardTilts[i % cardTilts.length]}
+                      variant={i === 0 ? "both" : "bottom"}
                       className="overflow-hidden transition-transform group-hover:-translate-y-1"
                     >
                       <div className="relative aspect-[16/10] w-full overflow-hidden">

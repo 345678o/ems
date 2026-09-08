@@ -4,23 +4,60 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
+  LayoutDashboard,
   Compass,
   CalendarDays,
   Ticket,
+  Bell,
   Award,
   UserRound,
   Users,
   Handshake,
   LogOut,
 } from "lucide-react";
-import { PillSidebar, type PillSidebarItem } from "@/components/ui/pill-sidebar";
+import {
+  PillSidebar,
+  type PillSidebarItem,
+} from "@/components/ui/pill-sidebar";
 
 const NAV_ITEMS: (PillSidebarItem & { href: string })[] = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+  },
   { id: "browse", label: "Browse Events", href: "/home", icon: Compass },
-  { id: "calendar", label: "Events Calendar", href: "/events", icon: CalendarDays },
-  { id: "bookings", label: "My Bookings", href: "/user/profile?tab=my-bookings", icon: Ticket },
-  { id: "certificates", label: "Certificates", href: "/user/profile?tab=certificates", icon: Award },
-  { id: "profile", label: "My Profile", href: "/user/profile?tab=profile", icon: UserRound },
+  {
+    id: "calendar",
+    label: "Events Calendar",
+    href: "/events",
+    icon: CalendarDays,
+  },
+  {
+    id: "bookings",
+    label: "My Bookings",
+    href: "/user/profile?tab=my-bookings",
+    icon: Ticket,
+  },
+  {
+    id: "notifications",
+    label: "Notifications",
+    href: "/notifications",
+    icon: Bell,
+  },
+  {
+    id: "certificates",
+    label: "Certificates",
+    href: "/user/profile?tab=certificates",
+    icon: Award,
+  },
+  {
+    id: "profile",
+    label: "My Profile",
+    href: "/user/profile?tab=profile",
+    icon: UserRound,
+  },
   { id: "clubs", label: "Club Directory", href: "/clubs", icon: Users },
 ];
 
