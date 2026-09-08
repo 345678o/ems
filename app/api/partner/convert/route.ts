@@ -1,3 +1,10 @@
+/**
+ * app/api/partner/convert/route.ts
+ *
+ * Club partner account conversion endpoint. Upgrades the authenticated user's role to
+ * "club" and creates a corresponding entry in the clubs table if one does not already exist.
+ */
+
 import logger from "@/lib/logger";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";

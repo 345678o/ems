@@ -1,3 +1,11 @@
+/**
+ * app/api/storage/upload/route.ts
+ *
+ * Secure storage upload endpoint. Accepts a base64 payload and destination path, verifies
+ * session authentication, enforces event-level path ownership, and writes the asset to
+ * Supabase Storage via the admin client.
+ */
+
 import logger from "@/lib/logger";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";

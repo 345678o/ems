@@ -1,5 +1,11 @@
+/**
+ * lib/utils/id.ts
+ *
+ * Deterministic UUID generator utility. Derives a consistent, stable RFC 4122 UUIDv5
+ * from an email address or external identifier under a fixed application namespace.
+ */
+
 import logger from "@/lib/logger";
-// utils/id.ts
 import { v5 as uuidv5 } from "uuid";
 
 // A fixed namespace UUID. Generate once: `npx uuid`

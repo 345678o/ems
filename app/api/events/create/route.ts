@@ -1,3 +1,11 @@
+/**
+ * app/api/events/create/route.ts
+ *
+ * Event creation API endpoint. Handles multipart form data containing event details
+ * and an optional blueprint PDF. Enforces user authentication, verifies club ownership,
+ * uploads the blueprint file to Supabase Storage, and inserts a new event record.
+ */
+
 import logger from "@/lib/logger";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";

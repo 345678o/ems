@@ -1,3 +1,11 @@
+/**
+ * app/api/auth/register/route.ts
+ *
+ * User registration endpoint. Validates registration payloads against registerSchema,
+ * computes a deterministic UUIDv5 from the provided email, and inserts or updates the user
+ * record in the database using the Supabase admin client.
+ */
+
 import logger from "@/lib/logger";
 import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";

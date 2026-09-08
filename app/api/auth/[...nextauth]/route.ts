@@ -1,3 +1,12 @@
+/**
+ * app/api/auth/[...nextauth]/route.ts
+ *
+ * NextAuth.js catch-all API route handler. Configures the authentication provider,
+ * JWT callbacks, and session handling. Validates allowable email domains (gmail.com,
+ * mlrit.ac.in), creates/updates the user in Supabase upon successful sign-in, and embeds
+ * the user's stable UUID in the session token.
+ */
+
 import logger from "@/lib/logger";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";

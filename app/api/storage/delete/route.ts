@@ -1,3 +1,10 @@
+/**
+ * app/api/storage/delete/route.ts
+ *
+ * Secure storage deletion endpoint. Verifies user authentication and checks ownership
+ * of the associated event prefix before deleting the specified file from Supabase Storage.
+ */
+
 import logger from "@/lib/logger";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";

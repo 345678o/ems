@@ -22,7 +22,7 @@ hosting models:
 | Frontend  | Next.js 15 (App Router), React 19, TypeScript |
 | UI        | Tailwind CSS 4, Radix UI, shadcn/ui           |
 | Database  | Supabase (PostgreSQL)                         |
-| Auth      | NextAuth.js v4 (Credentials provider, bcrypt) |
+| Auth      | NextAuth.js v4 (Credentials provider, domain-trust allowlist) |
 | Animation | Motion (Framer Motion successor)              |
 | Icons     | Lucide React, Tabler Icons                    |
 
@@ -69,7 +69,7 @@ types/
 
 ### Authentication flow
 
-- NextAuth `CredentialsProvider` with **bcrypt** password verification.
+- NextAuth `CredentialsProvider` with **domain-trust allowlist** (`gmail.com`, `mlrit.ac.in`) verification (see [docs/auth-decision-needed.md](auth-decision-needed.md)).
 - User's UUID is a deterministic `uuidv5` of their email (`lib/utils/id.ts`).
 - `session.user.id` is typed in `types/next-auth.d.ts` — no casts needed.
 - All API routes guard with `getServerSession(authOptions)`.
@@ -122,6 +122,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
 LOG_LEVEL=debug           # debug | info | warn | error | silent
+NEXT_PUBLIC_LOG_LEVEL=debug # debug | info | warn | error | silent
 ```
 
 ---
@@ -132,6 +133,7 @@ LOG_LEVEL=debug           # debug | info | warn | error | silent
 npm run dev       # dev server (Turbopack)
 npm run build     # production build (Turbopack)
 npm run lint      # ESLint
+npm test          # Unit tests (Vitest)
 ```
 
 ---

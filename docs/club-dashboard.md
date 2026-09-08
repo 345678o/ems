@@ -26,13 +26,13 @@ components/club/
 ├── types.ts                     ClubEvent, CalendarEvent interfaces
 ├── useClubEvents.ts             Data-fetching hook (all Supabase logic)
 ├── utils.ts                     getDateRangeDisplay, getReportStatus, formatEventDate
-├── DateTimePicker.tsx           Date + time popover picker
-├── AddEventCard.tsx             "Add New Event" placeholder card
-├── SelfEventCard.tsx            Self-hosted event card
-├── IICCard.tsx                  IIC event card with calendar buttons
-├── IICEventDetailDialog.tsx     Read-only IIC event details dialog
-├── CreateEventDialog.tsx        Create event form + API submission
-└── CalendarTable.tsx            "My Calendar Activities" full table
+├── date-time-picker.tsx         Date + time popover picker
+├── add-event-card.tsx           "Add New Event" placeholder card
+├── self-event-card.tsx          Self-hosted event card
+├── iic-card.tsx                 IIC event card with calendar buttons
+├── iic-event-detail-dialog.tsx  Read-only IIC event details dialog
+├── create-event-dialog.tsx      Create event form + API submission
+└── calendar-table.tsx           "My Calendar Activities" full table
 ```
 
 ---
@@ -52,7 +52,7 @@ Two nested tabs: **Current** (end date ≥ today) and **Past** (end date < today
 
 ## My Calendar Activities Tab
 
-A full-width table (`CalendarTable.tsx`) with columns:
+A full-width table (`calendar-table.tsx`) with columns:
 
 | Column                 | Description                                                        |
 | ---------------------- | ------------------------------------------------------------------ |
