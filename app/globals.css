@@ -4,6 +4,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-volcanic-orange: var(--volcanic-orange);
+  --color-volcanic-purple: var(--volcanic-purple);
+  --color-volcanic-ash: var(--volcanic-ash);
+  --color-volcanic-mist: var(--volcanic-mist);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -45,71 +49,78 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+
+  /* Volcanic Ash palette */
+  --volcanic-orange: #fb5607;
+  --volcanic-purple: #8338ec;
+  --volcanic-ash: #212529;
+  --volcanic-mist: #e9ecef;
+
+  --background: var(--volcanic-mist);
+  --foreground: var(--volcanic-ash);
+  --card: #ffffff;
+  --card-foreground: var(--volcanic-ash);
+  --popover: #ffffff;
+  --popover-foreground: var(--volcanic-ash);
+  --primary: var(--volcanic-purple);
+  --primary-foreground: var(--volcanic-mist);
+  --secondary: var(--volcanic-ash);
+  --secondary-foreground: var(--volcanic-mist);
+  --muted: color-mix(in oklab, var(--volcanic-mist) 60%, white);
+  --muted-foreground: color-mix(in oklab, var(--volcanic-ash) 55%, transparent);
+  --accent: var(--volcanic-orange);
+  --accent-foreground: var(--volcanic-mist);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --border: color-mix(in oklab, var(--volcanic-ash) 12%, transparent);
+  --input: color-mix(in oklab, var(--volcanic-ash) 15%, transparent);
+  --ring: var(--volcanic-purple);
+  --chart-1: var(--volcanic-orange);
+  --chart-2: var(--volcanic-purple);
+  --chart-3: var(--volcanic-ash);
+  --chart-4: color-mix(in oklab, var(--volcanic-purple) 60%, var(--volcanic-orange));
+  --chart-5: color-mix(in oklab, var(--volcanic-ash) 40%, var(--volcanic-mist));
+  --sidebar: var(--volcanic-ash);
+  --sidebar-foreground: var(--volcanic-mist);
+  --sidebar-primary: var(--volcanic-purple);
+  --sidebar-primary-foreground: var(--volcanic-mist);
+  --sidebar-accent: var(--volcanic-orange);
+  --sidebar-accent-foreground: var(--volcanic-ash);
+  --sidebar-border: color-mix(in oklab, var(--volcanic-mist) 12%, transparent);
+  --sidebar-ring: var(--volcanic-purple);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: var(--volcanic-ash);
+  --foreground: var(--volcanic-mist);
+  --card: color-mix(in oklab, var(--volcanic-ash) 85%, white);
+  --card-foreground: var(--volcanic-mist);
+  --popover: color-mix(in oklab, var(--volcanic-ash) 85%, white);
+  --popover-foreground: var(--volcanic-mist);
+  --primary: var(--volcanic-purple);
+  --primary-foreground: var(--volcanic-mist);
+  --secondary: color-mix(in oklab, var(--volcanic-ash) 70%, white);
+  --secondary-foreground: var(--volcanic-mist);
+  --muted: color-mix(in oklab, var(--volcanic-ash) 70%, white);
+  --muted-foreground: color-mix(in oklab, var(--volcanic-mist) 60%, transparent);
+  --accent: var(--volcanic-orange);
+  --accent-foreground: var(--volcanic-ash);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: color-mix(in oklab, var(--volcanic-mist) 10%, transparent);
+  --input: color-mix(in oklab, var(--volcanic-mist) 15%, transparent);
+  --ring: var(--volcanic-purple);
+  --chart-1: var(--volcanic-orange);
+  --chart-2: var(--volcanic-purple);
+  --chart-3: var(--volcanic-mist);
+  --chart-4: color-mix(in oklab, var(--volcanic-purple) 60%, var(--volcanic-orange));
+  --chart-5: color-mix(in oklab, var(--volcanic-mist) 40%, var(--volcanic-ash));
+  --sidebar: color-mix(in oklab, var(--volcanic-ash) 92%, black);
+  --sidebar-foreground: var(--volcanic-mist);
+  --sidebar-primary: var(--volcanic-purple);
+  --sidebar-primary-foreground: var(--volcanic-mist);
+  --sidebar-accent: var(--volcanic-orange);
+  --sidebar-accent-foreground: var(--volcanic-ash);
+  --sidebar-border: color-mix(in oklab, var(--volcanic-mist) 10%, transparent);
+  --sidebar-ring: var(--volcanic-purple);
 }
 
 @layer utilities {
