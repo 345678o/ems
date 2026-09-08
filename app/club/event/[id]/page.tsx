@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -99,8 +99,40 @@ export default function EventDashboard() {
   }, [eventId]);
 
   useEffect(() => {
-    if (eventId) fetchEvent();
-  }, [eventId, fetchEvent]);
+    let ignore = false;
+
+    async function loadEvent() {
+      if (!eventId) return;
+      try {
+        const { data, error } = await supabase
+          .from("events")
+          .select("*")
+          .eq("id", eventId)
+          .single();
+
+        if (error) {
+          console.error("Error fetching event:", error);
+          return;
+        }
+
+        if (!ignore) {
+          setEvent(data);
+        }
+      } catch (error) {
+        console.error("Error fetching event:", error);
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadEvent();
+
+    return () => {
+      ignore = true;
+    };
+  }, [eventId]);
 
   const links = [
     {

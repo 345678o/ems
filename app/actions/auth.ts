@@ -28,6 +28,7 @@ export async function createOrUpdateUser(profile: UserProfile) {
         "[Supabase] createOrUpdateUser: fetch error",
         fetchError.message
       );
+      return { success: false, error: fetchError.message };
     }
 
     const userData = {
@@ -47,6 +48,7 @@ export async function createOrUpdateUser(profile: UserProfile) {
           "[Supabase] createOrUpdateUser: insert error",
           insertError.message
         );
+        return { success: false, error: insertError.message };
       }
     } else {
       const { error: updateError } = await supabase
@@ -58,11 +60,14 @@ export async function createOrUpdateUser(profile: UserProfile) {
           "[Supabase] createOrUpdateUser: update error",
           updateError.message
         );
+        return { success: false, error: updateError.message };
       }
     }
-  } catch (_) {
-    console.error("[Supabase] createOrUpdateUser: unexpected exception");
-  }
 
-  return { success: true };
+    return { success: true };
+  } catch (err) {
+    const error = err instanceof Error ? err.message : "Unexpected exception";
+    console.error("[Supabase] createOrUpdateUser: unexpected exception", error);
+    return { success: false, error };
+  }
 }

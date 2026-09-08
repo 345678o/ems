@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -140,7 +140,10 @@ export default function ProfilePage() {
     experience: "",
   });
 
-  const plugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
+  const autoplayPlugin = useMemo(
+    () => [Autoplay({ delay: 4000, stopOnInteraction: true })],
+    []
+  );
 
   const sessionUserId = session?.user?.id ?? null;
 
@@ -635,7 +638,7 @@ export default function ProfilePage() {
                   <Carousel
                     opts={{ align: "center", loop: true }}
 
-                    plugins={[plugin.current]}
+                    plugins={autoplayPlugin}
                   >
                     <CarouselContent>
                       {stats.banners.map((bannerUrl, index) => (

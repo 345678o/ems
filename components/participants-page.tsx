@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,11 +60,8 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
 
   // Load participants from Supabase
 
-  useEffect(() => {
-    if (event) loadParticipants();
-  }, [event]);
-
-  const loadParticipants = async () => {
+  const loadParticipants = useCallback(async () => {
+    if (!event?.id) return;
     try {
       const { data, error } = await supabase
         .from("event_participants")
@@ -104,7 +101,20 @@ export function ParticipantsPage({ event }: ParticipantsPageProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [event]);
+
+  useEffect(() => {
+    let ignore = false;
+    async function init() {
+      if (event && !ignore) {
+        await loadParticipants();
+      }
+    }
+    init();
+    return () => {
+      ignore = true;
+    };
+  }, [event, loadParticipants]);
 
   const tabs = [
     { id: "attendees", label: "Attendees" },

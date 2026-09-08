@@ -1,4 +1,4 @@
-﻿import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { createOrUpdateUser } from "@/app/actions/auth";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -87,14 +87,22 @@ export const authOptions: NextAuthOptions = {
       // as they contain PII (email, name, avatar URL).
       if (user?.id && user?.email) {
         try {
-          await createOrUpdateUser({
+          const result = await createOrUpdateUser({
             id: user.id,
             email: user.email,
             name: user.name ?? user.email.split("@")[0] ?? "User",
             image: user.image,
           });
-        } catch (_) {
-          console.error("[NextAuth] createOrUpdateUser failed");
+          if (!result.success) {
+            console.warn(
+              `[NextAuth] createOrUpdateUser failed for user ${user.id}: ${result.error}. Continuing sign-in.`
+            );
+          }
+        } catch (err) {
+          console.warn(
+            `[NextAuth] createOrUpdateUser threw an unexpected error for user ${user.id}. Continuing sign-in.`,
+            err
+          );
           // Returning false would block sign-in; log and continue so the
           // user is not silently locked out by a transient DB error.
         }
