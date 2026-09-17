@@ -4,7 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { DM_Sans, Space_Grotesk, Big_Shoulders, Caveat } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import Footer from "@/components/ui/footer";
+import ConditionalFooter from "@/components/ui/conditional-footer";
 
 export const metadata: Metadata = {
   title: "Club Event Dashboard",
@@ -67,7 +67,7 @@ export default function RootLayout({
             {children}
           </main>
         </Providers>
-        <Footer />
+        <ConditionalFooter />
       </body>
     </html>
   );
