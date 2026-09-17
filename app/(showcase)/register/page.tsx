@@ -1,11 +1,9 @@
 "use client";
-import logger from "@/lib/logger";
 
+import logger from "@/lib/logger";
 import React, { useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { ScribbleArrow } from "@/components/ui/scribble";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -75,118 +73,107 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-3xl">
-        <div className="grid overflow-hidden rounded-[28px] bg-card shadow-2xl md:grid-cols-2">
-          {/* Left Side — photo panel, hidden on small screens */}
-          <div className="relative hidden md:block">
-            <Image
-              src="/events/welcome-gate.jpg"
-              alt=""
-              fill
-              sizes="400px"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-ink/35" />
-            <div className="absolute top-6 left-6 flex items-center gap-3">
-              <Image
-                src="/logos/mlrit.svg"
-                alt="MLRIT Logo"
-                width={80}
-                height={40}
-                className="h-8 w-auto object-contain brightness-0 invert"
-              />
-            </div>
-            <p className="font-marker absolute bottom-6 left-6 right-6 flex items-center gap-2 text-3xl leading-none text-white">
-              Good + things ahead
-              <ScribbleArrow className="h-6 w-10 text-hotpink" />
-            </p>
-          </div>
-
-          {/* Right Side — Register Form */}
-          <div className="paper-grain flex flex-col justify-center p-8 sm:p-10">
-            <div className="w-full">
-              <h1 className="font-display text-2xl text-ink sm:text-3xl">
-                Join EMS
-              </h1>
-              <p className="mt-1 mb-6 text-sm text-muted-foreground">
-                Create your account to start registering for events.
-              </p>
-
-              {error && (
-                <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-center text-xs text-destructive">
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-ink/70">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="John Doe"
-                    className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-ink transition-all placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-hotpink"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-ink/70">
-                    Email address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="user@example.com"
-                    className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-ink transition-all placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-hotpink"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-ink/70">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full rounded-xl border border-border bg-secondary px-4 py-2.5 text-sm text-ink transition-all placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-hotpink"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Min. 8 characters
-                  </p>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full rounded-full bg-primary py-3 px-6 text-sm font-semibold text-primary-foreground shadow-md transition-opacity hover:opacity-90 disabled:opacity-50"
-                >
-                  {isLoading ? "Creating account..." : "Sign Up"}
-                </button>
-              </form>
-
-              <p className="mt-4 text-center text-xs text-muted-foreground">
-                Already have an account?{" "}
-                <button
-                  onClick={() => router.push("/")}
-                  className="font-semibold text-hotpink hover:underline"
-                >
-                  Sign In
-                </button>
-              </p>
-            </div>
-          </div>
+    <main className="grid min-h-svh md:grid-cols-2">
+      {/* ── Left panel — purple background, white text ── */}
+      <div
+        className="relative min-h-80"
+        style={{ background: "var(--clr-purple)", color: "var(--clr-white)" }}
+      >
+        <div className="page-gutter absolute bottom-12">
+          <p className="meta" style={{ color: "var(--clr-orange)" }}>
+            Your campus pass
+          </p>
+          <h1 className="mt-4 text-5xl font-semibold md:text-7xl" style={{ color: "var(--clr-white)" }}>
+            Step into
+            <br />
+            what&apos;s next.
+          </h1>
         </div>
       </div>
-    </div>
+
+      {/* ── Right panel — off-white background, dark text ── */}
+      <div className="flex items-center justify-center p-6 md:p-14" style={{ background: "var(--clr-white)" }}>
+        <div className="w-full max-w-md">
+          <p className="meta" style={{ color: "var(--clr-purple)" }}>
+            EMS.MLRIT account
+          </p>
+          <h2 className="mt-4 text-4xl font-semibold" style={{ color: "var(--clr-black)" }}>
+            Join the community.
+          </h2>
+
+          {error && (
+            <p className="mt-6 text-sm" style={{ color: "#dc2626" }}>
+              {error}
+            </p>
+          )}
+
+          <form onSubmit={handleRegister} className="mt-8 space-y-5">
+            <label className="block">
+              <span className="meta" style={{ color: "var(--clr-black)" }}>
+                Full name
+              </span>
+              <input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                type="text"
+                required
+                placeholder="John Doe"
+                className="mt-2 h-12 w-full border border-input bg-transparent px-4 outline-none focus:border-primary"
+                style={{ color: "var(--clr-black)" }}
+              />
+            </label>
+            <label className="block">
+              <span className="meta" style={{ color: "var(--clr-black)" }}>
+                Email
+              </span>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                required
+                placeholder="you@gmail.com"
+                className="mt-2 h-12 w-full border border-input bg-transparent px-4 outline-none focus:border-primary"
+                style={{ color: "var(--clr-black)" }}
+              />
+            </label>
+            <label className="block">
+              <span className="meta" style={{ color: "var(--clr-black)" }}>
+                Password
+              </span>
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                required
+                minLength={8}
+                className="mt-2 h-12 w-full border border-input bg-transparent px-4 outline-none focus:border-primary"
+                style={{ color: "var(--clr-black)" }}
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="inline-flex h-12 w-full items-center justify-center font-display text-sm font-bold uppercase tracking-wide transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50"
+              style={{ background: "var(--clr-purple)", color: "var(--clr-white)" }}
+            >
+              {isLoading ? "Creating account..." : "Create account"}
+            </button>
+          </form>
+
+          <p className="mt-7 text-sm" style={{ color: "rgba(33,37,41,0.6)" }}>
+            Only @gmail.com or @mlrit.ac.in email addresses are accepted.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="mt-7 font-display text-sm font-semibold underline underline-offset-4"
+            style={{ color: "var(--clr-black)" }}
+          >
+            Already registered? Sign in
+          </button>
+        </div>
+      </div>
+    </main>
   );
 }
