@@ -1,218 +1,264 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import { ArrowUpRight, Search, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-
-import TopBar from "@/components/top-bar";
+import dynamic from "next/dynamic";
+import { ArrowUpRight } from "lucide-react";
+import { SiteFooter } from "@/components/ems/site-shell";
 import { supabase } from "@/lib/supabase/browserClient";
 
-const eventClubNames = [
-  "APEX",
-  "AREO",
-  "CAME",
-  "CIE",
-  "CODE",
-  "EWB",
-  "LIT",
-  "MUN",
-  "NSS",
-  "SCOPE",
-];
+// GalleryTunnel is raw three.js — load it client-only.
+const GalleryTunnel = dynamic(
+  () => import("@/components/ems/GalleryTunnel").then((m) => m.GalleryTunnel),
+  { ssr: false }
+);
 
-const clubImages: Record<string, string> = {
-  APEX: "/clubs/apex",
-  AREO: "/clubs/areo",
-  CAME: "/clubs/came",
-  CIE: "/clubs/cie",
-  CODE: "/clubs/code",
-  EWB: "/clubs/EWB",
-  LIT: "/clubs/lit",
-  MUN: "/clubs/mun",
-  NSS: "/clubs/nss",
-  SCOPE: "/clubs/scope",
-};
+const EVENT_IMAGES = [
+  "/events/welcome-gate.jpg",
+  "/events/B2B.png",
+  "/events/equniox.png",
+  "/events/gi.png",
+  "/events/hustle mania.png",
+  "/events/metaloop.png",
+  "/events/wc 2.0.png",
+  "/events/wc.png",
+];
 
 type Club = {
   id: string;
   name: string;
-  avatar_url: string | null;
+  focus: string | null;
 };
 
-const fallbackClubs: Club[] = eventClubNames.map((name) => ({
-  id: name.toLowerCase(),
-  name,
-  avatar_url: clubImages[name],
-}));
-
-function ClubMark({ club, large = false }: { club: Club; large?: boolean }) {
-  const image = club.avatar_url || clubImages[club.name.toUpperCase()];
-
-  return (
-    <div
-      className={`relative grid shrink-0 place-items-center overflow-hidden rounded-2xl border border-black/10 bg-white ${large ? "h-20 w-20" : "h-14 w-14"}`}
-    >
-      {image ? (
-        <Image
-          src={image}
-          alt=""
-          fill
-          sizes={large ? "80px" : "56px"}
-          className="object-contain p-2"
-          unoptimized
-        />
-      ) : (
-        <span className="text-lg font-semibold text-neutral-500">
-          {club.name.slice(0, 2).toUpperCase()}
-        </span>
-      )}
-    </div>
-  );
-}
-
 export default function ClubsPage() {
-  const [clubs, setClubs] = useState<Club[]>(fallbackClubs);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [clubs, setClubs] = useState<Club[]>([]);
 
   useEffect(() => {
     const loadClubs = async () => {
       const { data, error } = await supabase
         .from("clubs")
-        .select("id,name,avatar_url")
+        .select("id,name,about")
         .order("name", { ascending: true });
 
-      if (!error && data?.length) {
-        const clubsByName = new Map<string, Club>();
-        [...fallbackClubs, ...(data as Club[])].forEach((club) => {
-          const key = club.name.trim().toLowerCase();
-          if (key && !clubsByName.has(key)) clubsByName.set(key, club);
-        });
-        setClubs([...clubsByName.values()]);
+      if (error) {
+        console.error("[clubs] fetch error:", error.message);
+        return;
       }
-    };
 
+      setClubs((data || []).map((c) => ({ id: c.id, name: c.name, focus: c.about })));
+    };
     void loadClubs();
   }, []);
 
-  const filteredClubs = useMemo(
-    () =>
-      clubs.filter((club) =>
-        club.name.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    [clubs, searchTerm]
-  );
-
-  const featuredClub = filteredClubs[0] ?? clubs[0];
+  useEffect(() => {
+    const cards = document.querySelectorAll<HTMLElement>(".club-card");
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const el = entry.target as HTMLElement;
+            const d = el.dataset.delay ?? "0";
+            setTimeout(() => {
+              el.style.opacity = "1";
+              el.style.transform = "translateY(0)";
+            }, parseInt(d));
+            obs.unobserve(el);
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+    cards.forEach((c) => obs.observe(c));
+    return () => obs.disconnect();
+  }, [clubs]);
 
   return (
-    <div className="min-h-screen bg-[#121212] font-poppins text-white">
-      <TopBar />
-      <main className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8 lg:px-12">
-        <section className="grid gap-8 border-b border-white/10 pb-12 lg:grid-cols-[1fr_0.85fr] lg:items-end">
-          <div>
-            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.28em] text-white/45">
-              Campus clubs
+    <>
+      {/* ── Hero ── GalleryTunnel full bleed */}
+      <div
+        style={{
+          position: "relative",
+          height: "60vh",
+          minHeight: "500px",
+          overflow: "hidden",
+          display: "block",
+          width: "100%",
+          background: "#212529",
+        }}
+      >
+        <GalleryTunnel
+          images={EVENT_IMAGES}
+          colors={["#212529", "#1a1d21", "#2d3748", "#E9ECEF"]}
+          background="#212529"
+          lineColor="#ffffff"
+          lineOpacity={25}
+          grid={3}
+          speed={40}
+          fade={70}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to top, rgba(33,37,41,0.9) 30%, transparent 100%)",
+            zIndex: 1,
+          }}
+        />
+        <div
+          className="page-gutter"
+          style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, paddingBottom: "3rem" }}
+        >
+          <div className="mx-auto max-w-[1400px]">
+            <p className="meta mb-4" style={{ color: "var(--clr-orange)" }}>
+              Campus communities
             </p>
-            <h1 className="max-w-xl text-5xl font-semibold tracking-[-0.06em] sm:text-7xl">
-              Browse clubs.
+            <h1 className="display-lg uppercase" style={{ color: "var(--clr-white)" }}>
+              Find your
+              <br />
+              circle.
             </h1>
-            <p className="mt-5 max-w-md text-base leading-7 text-white/60">
-              Explore student communities and open a club page to see its
-              events.
+            <p className="mt-6 max-w-xl text-lg" style={{ color: "rgba(233,236,239,0.7)" }}>
+              {clubs.length} active clubs and communities across campus.
             </p>
           </div>
+        </div>
+      </div>
 
-          <label className="relative block w-full max-w-lg justify-self-end">
-            <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search clubs"
-              aria-label="Search clubs"
-              className="h-16 w-full rounded-2xl border border-white/15 bg-white/5 pl-14 pr-5 text-base text-white outline-none transition placeholder:text-white/35 focus:border-white/40 focus:ring-4 focus:ring-white/10"
-            />
-          </label>
-        </section>
-
-        {featuredClub && (
-          <section className="grid gap-5 py-12 lg:grid-cols-[1.5fr_0.7fr_0.7fr]">
-            <Link
-              href={`/clubs/view/${featuredClub.name.toLowerCase()}`}
-              className="group relative flex min-h-[290px] flex-col justify-between overflow-hidden rounded-xl border border-white/10 bg-[#242424] p-7 text-white transition-transform hover:-translate-y-1 sm:p-10"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <ClubMark club={featuredClub} large />
-                <ArrowUpRight className="h-6 w-6 text-white/60 transition group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-white" />
-              </div>
+      <main style={{ background: "var(--clr-white)" }}>
+        {/* ── All Clubs ── */}
+        <div className="page-gutter py-20" style={{ background: "var(--clr-white)" }}>
+          <div className="mx-auto max-w-[1400px]">
+            <div className="mb-10 flex items-end justify-between">
               <div>
-                <p className="mb-2 text-xs uppercase tracking-[0.22em] text-white/50">
-                  Featured club
+                <p className="meta mb-2" style={{ color: "var(--clr-purple)" }}>
+                  Student communities
                 </p>
-                <h2 className="text-3xl font-semibold tracking-[-0.04em]">
-                  {featuredClub.name}
+                <h2 className="text-4xl font-semibold" style={{ color: "var(--clr-black)" }}>
+                  All clubs
                 </h2>
-                <p className="mt-2 text-sm text-white/60">View club events</p>
               </div>
-            </Link>
-
-            <div className="rounded-xl border border-white/10 bg-[#1d3027] p-7 sm:p-8">
-              <Users className="mb-16 h-7 w-7 text-[#9cc7a8]" />
-              <p className="text-4xl font-semibold tracking-[-0.05em] text-white">
-                {clubs.length}
-              </p>
-              <p className="mt-2 text-sm text-[#9cc7a8]">active communities</p>
+              <span className="meta" style={{ color: "var(--clr-black)", opacity: 0.3 }}>
+                {clubs.length} clubs
+              </span>
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-[#342b22] p-7 text-white sm:p-8">
-              <p className="mb-16 text-xs font-semibold uppercase tracking-[0.22em] text-orange-300/70">
-                Find a club
-              </p>
-              <p className="text-lg font-medium leading-7 text-white/85">
-                Open a community and discover what is next.
-              </p>
-            </div>
-          </section>
-        )}
-
-        <section>
-          <div className="mb-7 flex items-end justify-between gap-4">
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-white/45">
-                Browse your clubs
-              </p>
-              <h2 className="text-3xl font-semibold tracking-[-0.04em] text-white">
-                All clubs
-              </h2>
-            </div>
-            <span className="text-sm text-white/40">
-              {filteredClubs.length} results
-            </span>
+            {clubs.length === 0 ? (
+              <p style={{ color: "rgba(33,37,41,0.5)" }}>No clubs yet.</p>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                  gap: "1px",
+                  background: "var(--border)",
+                }}
+              >
+                {clubs.map((c, i) => (
+                  <ClubCard
+                    key={c.id}
+                    club={c}
+                    delay={i * 60}
+                    accent={i % 2 === 0 ? "var(--clr-purple)" : "var(--clr-orange)"}
+                  />
+                ))}
+              </div>
+            )}
           </div>
+        </div>
 
-          {filteredClubs.length ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredClubs.map((club) => (
-                <Link
-                  key={club.id}
-                  href={`/clubs/view/${club.name.toLowerCase()}`}
-                  className="group flex items-center gap-4 rounded-xl border border-white/10 bg-[#1d1d1d] p-4 transition hover:border-white/30 hover:bg-[#242424] hover:shadow-lg hover:shadow-black/20"
-                >
-                  <ClubMark club={club} />
-                  <span className="min-w-0 flex-1 truncate font-medium text-white">
-                    {club.name}
-                  </span>
-                  <ArrowUpRight className="h-4 w-4 text-white/35 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white" />
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <p className="rounded-xl border border-dashed border-white/20 p-10 text-center text-white/50">
-              No clubs match your search.
-            </p>
-          )}
-        </section>
+        <SiteFooter />
       </main>
-    </div>
+    </>
+  );
+}
+
+function ClubCard({
+  club,
+  delay,
+  accent,
+}: {
+  club: Club;
+  delay: number;
+  accent: string;
+}) {
+  const abbr = club.name.slice(0, 4).toUpperCase();
+  return (
+    <Link
+      href={`/clubs/${club.name.toLowerCase()}`}
+      className="club-card group"
+      data-delay={delay}
+      style={{
+        background: "#fff",
+        padding: "2rem",
+        display: "flex",
+        flexDirection: "column",
+        gap: "1.25rem",
+        opacity: 0,
+        transform: "translateY(32px)",
+        transition:
+          "opacity 0.65s ease, transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94), background 0.2s ease",
+        textDecoration: "none",
+        position: "relative",
+        overflow: "hidden",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.background =
+          accent === "var(--clr-purple)" ? "rgba(131,56,236,0.06)" : "rgba(251,86,7,0.06)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "#fff";
+      }}
+    >
+      <div
+        style={{
+          width: "3.5rem",
+          height: "3.5rem",
+          borderRadius: "50%",
+          background: accent === "var(--clr-purple)" ? "rgba(131,56,236,0.1)" : "rgba(251,86,7,0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "var(--font-display)",
+          fontWeight: 800,
+          fontSize: "0.9rem",
+          letterSpacing: "0.05em",
+          color: accent,
+          flexShrink: 0,
+        }}
+      >
+        {abbr}
+      </div>
+
+      <div style={{ flex: 1 }}>
+        <h3
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "1.35rem",
+            fontWeight: 700,
+            color: "var(--clr-black)",
+            margin: 0,
+            lineHeight: 1.15,
+            transition: "color 0.2s ease",
+          }}
+          className="group-hover:text-[var(--clr-purple)]"
+        >
+          {club.name}
+        </h3>
+        <p
+          style={{
+            marginTop: "0.4rem",
+            fontSize: "0.78rem",
+            color: "rgba(33,37,41,0.5)",
+            lineHeight: 1.4,
+          }}
+        >
+          {club.focus || "Student community at MLRIT."}
+        </p>
+      </div>
+
+      <ArrowUpRight className="club-card-arrow size-4" style={{ color: accent }} />
+
+      <div className="club-card-bar" style={{ background: accent }} />
+    </Link>
   );
 }
