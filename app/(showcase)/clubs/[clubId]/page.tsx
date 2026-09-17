@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ArrowLeft, CalendarDays, Search } from "lucide-react";
+import { ArrowLeft, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import TopBar from "@/components/top-bar";
+import { SiteFooter } from "@/components/ems/site-shell";
 import RingGallery from "@/components/originkit/ui/ring-gallery";
 import { supabase } from "@/lib/supabase/browserClient";
 
@@ -251,61 +251,89 @@ export default function ClubPage() {
     void loadClub();
   }, [clubId]);
 
-  return (
-    <div className="min-h-screen bg-[#121212] font-poppins text-white">
-      <TopBar />
-      <main className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8 lg:px-12">
-        <Link
-          href="/home"
-          className="mb-10 inline-flex items-center gap-2 text-sm text-white/50 transition hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Home
+  if (isLoading) {
+    return (
+      <div className="event-world flex min-h-screen items-center justify-center bg-background">
+        <p style={{ color: "var(--clr-white)" }}>Loading club...</p>
+      </div>
+    );
+  }
+
+  if (!club) {
+    return (
+      <div className="event-world flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
+        <p style={{ color: "var(--clr-white)" }}>Club not found.</p>
+        <Link href="/clubs" className="meta flex items-center gap-2" style={{ color: "var(--clr-orange)" }}>
+          <ArrowLeft className="size-4" />
+          All clubs
         </Link>
+      </div>
+    );
+  }
 
-        {isLoading ? (
-          <div className="h-64 animate-pulse rounded-3xl bg-neutral-200" />
-        ) : club ? (
-          <>
-            <section className="mb-10 border-b border-white/10 pb-8">
-              <p className="mb-3 text-xs uppercase tracking-[0.28em] text-white/45">
-                Club events
+  return (
+    <main>
+      <section className="relative min-h-[75svh]" style={{ background: "var(--clr-purple)", color: "var(--clr-white)" }}>
+        <div className="page-gutter mx-auto grid min-h-[75svh] max-w-[1400px] items-end gap-10 pb-16 pt-32 md:grid-cols-12">
+          <div className="md:col-span-8">
+            <Link href="/clubs" className="meta flex items-center gap-2" style={{ color: "var(--clr-orange)" }}>
+              <ArrowLeft className="size-4" />
+              All clubs
+            </Link>
+            <h1 className="display-lg mt-8 uppercase" style={{ color: "var(--clr-white)" }}>
+              {club.name}
+            </h1>
+            {club.about && (
+              <p className="mt-6 text-xl" style={{ color: "rgba(233,236,239,0.7)" }}>
+                {club.about}
               </p>
-              <div className="flex items-end gap-4">
-                <h1 className="text-4xl font-semibold tracking-[-0.05em] sm:text-7xl">
-                  {club.name}
-                </h1>
-              </div>
-            </section>
+            )}
+          </div>
+          <div
+            className="flex aspect-square w-full items-center justify-center rounded-3xl text-7xl font-black tracking-[0.2em] md:col-span-3 md:col-start-10"
+            style={{
+              border: "1px solid rgba(233,236,239,0.2)",
+              background: "rgba(233,236,239,0.07)",
+              color: "var(--clr-white)",
+            }}
+          >
+            {club.name.slice(0, 2).toUpperCase()}
+          </div>
+        </div>
+      </section>
 
-            <section>
+      <section className="section-pad page-gutter" style={{ background: "var(--clr-white)" }}>
+        <div className="mx-auto grid max-w-[1400px] gap-10 md:grid-cols-12">
+          <h2 className="text-5xl font-semibold md:col-span-4" style={{ color: "var(--clr-black)" }}>
+            Built by students,
+            <br />
+            open to ideas.
+          </h2>
+          <div className="md:col-span-7 md:col-start-6">
+            <p className="text-2xl leading-relaxed" style={{ color: "rgba(33,37,41,0.75)" }}>
+              {club.name} is part of the MLRIT student community
+              {club.about ? `, bringing people together through ${club.about.toLowerCase()}` : ""}.
+            </p>
+            <div className="mt-16">
               <div className="mb-5 flex items-center justify-between">
-                <div className="flex items-center gap-3 text-white/70">
-                  <CalendarDays className="h-5 w-5" />
-                  <h2 className="text-sm font-medium uppercase tracking-[0.2em]">
-                    Events
-                  </h2>
-                </div>
-                <span className="text-sm text-white/40">Hover to explore</span>
+                <h3 className="meta flex items-center gap-2" style={{ color: "var(--clr-purple)" }}>
+                  <CalendarDays className="size-4" />
+                  Events
+                </h3>
+                <span className="meta" style={{ color: "rgba(33,37,41,0.4)" }}>
+                  Hover to explore
+                </span>
               </div>
               <EventRingGallery
                 events={events}
-                clubImage={
-                  club.avatar_url || clubImages[club.name.toUpperCase()]
-                }
+                clubImage={club.avatar_url || clubImages[club.name.toUpperCase()]}
               />
-            </section>
-          </>
-        ) : (
-          <section className="rounded-3xl bg-white p-12 text-center text-black">
-            <Search className="mx-auto mb-4 h-8 w-8 text-neutral-400" />
-            <h1 className="text-2xl font-semibold">Club not found</h1>
-            <p className="mt-2 text-neutral-500">
-              Return to the clubs directory to choose another community.
-            </p>
-          </section>
-        )}
-      </main>
-    </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
+    </main>
   );
 }
