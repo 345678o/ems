@@ -90,11 +90,11 @@ export default function ProfilePage() {
     session?.user?.name || session?.user?.email || "Your Profile";
 
   return (
-    <div className="paper-grain min-h-screen w-full bg-background">
+    <div className="min-h-screen w-full bg-background">
       <div className="mx-auto max-w-5xl px-4 py-10 md:px-6 md:py-14">
         {/* Header */}
         <div className="mb-8 flex flex-wrap items-center gap-4">
-          <Avatar className="h-16 w-16 border-2 border-ink shadow-sm">
+          <Avatar className="h-16 w-16 border-2 border-foreground shadow-sm">
             <AvatarImage
               src={session?.user?.image ?? undefined}
               alt={displayName}
@@ -105,9 +105,9 @@ export default function ProfilePage() {
           </Avatar>
 
           <div className="min-w-0">
-            <h1 className="font-display truncate text-3xl leading-tight text-ink sm:text-4xl">
+            <h1 className="font-display truncate text-3xl leading-tight text-foreground sm:text-4xl">
               {displayName}
-              <ScribbleStar className="ml-2 -mt-2 inline h-4 w-4 text-hotpink" />
+              <ScribbleStar className="ml-2 -mt-2 inline h-4 w-4 text-accent" />
             </h1>
             {session?.user?.email && session?.user?.name && (
               <p className="mt-1 truncate text-sm text-foreground/60">
@@ -129,8 +129,8 @@ export default function ProfilePage() {
                 className={cn(
                   "rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
                   isActive
-                    ? "border-ink bg-ink text-background"
-                    : "border-border bg-card text-foreground hover:border-ink/40"
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-card text-foreground hover:border-foreground/40"
                 )}
               >
                 {TAB_LABELS[tab]}
