@@ -1,307 +1,238 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import LogoLoop from "@/components/logo-loop";
-import { ParticipantMenu } from "@/components/ui/participant-menu";
-import { ScribbleStar, ScribbleUnderline } from "@/components/ui/scribble";
-import {
-  CategoryBadge,
-  type EventCategory,
-} from "@/components/ui/category-badge";
-import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowUpRight, MoveDown } from "lucide-react";
+import logger from "@/lib/logger";
+import { supabase } from "@/lib/supabase/browserClient";
+import { toEventCategory } from "@/components/ui/category-badge";
+import { SpacePanel } from "@/components/ems/SpacePanel";
 
-// ============================================================================
-// PLACEHOLDER EVENT DATA
-// ============================================================================
-
-type LiveEvent = {
-  image: string;
-  title: string;
-  category: EventCategory;
-  venue: string;
-  month: string;
-  day: string;
+type EventRow = {
+  id: string;
+  name: string;
+  description: string | null;
+  event_type: string | null;
+  venue: string | null;
+  city: string | null;
+  start_datetime: string | null;
+  club: { name: string } | null;
 };
 
-const liveEvents: LiveEvent[] = [
-  {
-    image: "/events/equniox.png",
-    title: "Equinox",
-    category: "tech",
-    venue: "Main Auditorium",
-    month: "APR",
-    day: "26",
-  },
-  {
-    image: "/events/hustle mania.png",
-    title: "Hustle Mania",
-    category: "sports",
-    venue: "College Grounds",
-    month: "APR",
-    day: "28",
-  },
-  {
-    image: "/events/wc 2.0.png",
-    title: "Welcome 2.0",
-    category: "cultural",
-    venue: "Main Auditorium",
-    month: "MAY",
-    day: "03",
-  },
-  {
-    image: "/events/metaloop.png",
-    title: "Metaloop",
-    category: "tech",
-    venue: "CSE Block",
-    month: "MAY",
-    day: "10",
-  },
-  {
-    image: "/events/B2B.png",
-    title: "B2B",
-    category: "workshop",
-    venue: "Seminar Hall",
-    month: "MAY",
-    day: "15",
-  },
-  {
-    image: "/events/gi.png",
-    title: "GI",
-    category: "cultural",
-    venue: "Open Grounds",
-    month: "MAY",
-    day: "18",
-  },
-  {
-    image: "/events/wc.png",
-    title: "Welcome",
-    category: "cultural",
-    venue: "Main Auditorium",
-    month: "MAY",
-    day: "22",
-  },
-  {
-    image: "/events/welcome-gate.jpg",
-    title: "Welcome Gate",
-    category: "other",
-    venue: "Front Lawn",
-    month: "MAY",
-    day: "25",
-  },
-];
-
-const FILTERS: { id: "all" | EventCategory; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "cultural", label: "Cultural" },
-  { id: "tech", label: "Tech" },
-  { id: "sports", label: "Sports" },
-  { id: "workshop", label: "Workshops" },
-  { id: "other", label: "Others" },
-];
-
-// Club logos data for LogoLoop
-const clubLogos = [
-  { src: "/clubs/apex", alt: "APEX", title: "APEX" },
-  { src: "/clubs/areo", alt: "AREO", title: "AREO" },
-  { src: "/clubs/came", alt: "CAME", title: "CAME" },
-  { src: "/clubs/cie", alt: "CIE", title: "CIE" },
-  { src: "/clubs/code", alt: "CODE", title: "CODE" },
-  { src: "/clubs/EWB", alt: "EWB", title: "EWB" },
-  { src: "/clubs/lit", alt: "LIT", title: "LIT" },
-  { src: "/clubs/mun", alt: "MUN", title: "MUN" },
-  { src: "/clubs/nss", alt: "NSS", title: "NSS" },
-  { src: "/clubs/scope", alt: "SCOPE", title: "SCOPE" },
-];
-
-// ============================================================================
-// SUB-COMPONENTS
-// ============================================================================
-
-function TopBar() {
-  return (
-    <div className="sticky top-0 z-[60] border-b border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3 md:px-6">
-        <div className="md:hidden">
-          <ParticipantMenu />
-        </div>
-        <p className="font-marker hidden shrink-0 text-xl text-hotpink md:block">
-          EMS <ScribbleStar className="-mt-1 inline h-3 w-3" />
-        </p>
-        <div className="ml-auto w-full max-w-sm">
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
-            <input
-              type="text"
-              placeholder="Search events..."
-              className="h-10 w-full rounded-full border border-border bg-card pl-10 pr-4 text-sm text-foreground placeholder:text-foreground/40 focus:border-hotpink focus:outline-none"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+function eventLocation(e: Pick<EventRow, "venue" | "city">) {
+  return Array.from(
+    new Set([e.venue, e.city].filter((v): v is string => v != null && v.trim().toLowerCase() !== "tbd"))
+  ).join(", ");
 }
 
-function EventRow({ event }: { event: LiveEvent }) {
-  return (
-    <a
-      href="#"
-      className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-3 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-12px_rgb(0_0_0_/_0.25)] sm:p-4"
-    >
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 border-ink/80 shadow-sm sm:h-20 sm:w-20">
-        <Image
-          src={event.image}
-          alt={event.title}
-          fill
-          sizes="80px"
-          className="object-cover"
-          unoptimized
-        />
-      </div>
-
-      <div className="flex shrink-0 flex-col items-center justify-center rounded-xl bg-paper-dim px-3 py-1.5 text-center leading-none">
-        <span className="text-[10px] font-bold uppercase tracking-wide text-hotpink">
-          {event.month}
-        </span>
-        <span className="font-display text-lg text-ink">{event.day}</span>
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="mb-1.5 flex items-center gap-2">
-          <CategoryBadge category={event.category} />
-        </div>
-        <h3 className="truncate font-display text-base text-foreground sm:text-lg">
-          {event.title}
-        </h3>
-        <p className="truncate text-sm text-foreground/60">{event.venue}</p>
-      </div>
-
-      <span
-        aria-hidden
-        className="hidden shrink-0 text-2xl text-foreground/30 transition-transform group-hover:translate-x-1 group-hover:text-hotpink sm:block"
-      >
-        →
-      </span>
-    </a>
-  );
+function formatEventTime(iso: string | null) {
+  if (!iso) return "Time TBA";
+  return new Date(iso).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
 }
-
-function ClubAvatarRow() {
-  return (
-    <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
-      <LogoLoop
-        logos={clubLogos}
-        speed={100}
-        direction="left"
-        logoHeight={64}
-        gap={56}
-        pauseOnHover
-        scaleOnHover
-        fadeOut
-        fadeOutColor="#f3ede1"
-        ariaLabel="College clubs"
-      />
-    </div>
-  );
-}
-
-// ============================================================================
-// MAIN EVENTS PAGE COMPONENT
-// ============================================================================
 
 export default function EventsPage() {
-  const [activeFilter, setActiveFilter] = useState<"all" | EventCategory>(
-    "all"
-  );
-  const [query, setQuery] = useState("");
+  const [events, setEvents] = useState<EventRow[]>([]);
+  const [participants, setParticipants] = useState<number | null>(null);
 
-  const filtered = useMemo(() => {
-    return liveEvents.filter((e) => {
-      const matchesFilter =
-        activeFilter === "all" || e.category === activeFilter;
-      const matchesQuery = e.title.toLowerCase().includes(query.toLowerCase());
-      return matchesFilter && matchesQuery;
-    });
-  }, [activeFilter, query]);
+  useEffect(() => {
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("id,name,description,event_type,venue,city,start_datetime,clubs(name)")
+        .order("start_datetime", { ascending: true });
+
+      if (error) {
+        logger.error("[events] fetch error:", error.message);
+        setEvents([]);
+        return;
+      }
+
+      type RawEvent = {
+        id: string;
+        name: string;
+        description: string | null;
+        event_type: string | null;
+        venue: string | null;
+        city: string | null;
+        start_datetime: string | null;
+        clubs: { name: string } | { name: string }[] | null;
+      };
+
+      setEvents(
+        ((data as unknown as RawEvent[]) || []).map((e) => ({
+          ...e,
+          club: Array.isArray(e.clubs) ? (e.clubs[0] ?? null) : e.clubs,
+        }))
+      );
+    };
+    load();
+
+    supabase
+      .from("event_participants")
+      .select("id", { count: "exact", head: true })
+      .then(({ count, error }) => {
+        if (error) {
+          logger.error("[events] participants count error:", error.message);
+          return;
+        }
+        setParticipants(count ?? null);
+      });
+  }, []);
+
+  useEffect(() => {
+    const rows = document.querySelectorAll<HTMLElement>(".event-row-reveal");
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const el = entry.target as HTMLElement;
+            const delay = el.style.getPropertyValue("--row-delay") || "0ms";
+            setTimeout(() => el.classList.add("is-visible"), parseInt(delay));
+            obs.unobserve(el);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    rows.forEach((r) => obs.observe(r));
+    return () => obs.disconnect();
+  }, [events]);
+
+  const now = new Date();
+  const nextEvent =
+    events.find((e) => e.start_datetime && new Date(e.start_datetime) >= now) ?? events[0];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <TopBar />
-
-      <div className="mx-auto max-w-5xl px-4 py-10 md:px-6 md:py-14">
-        {/* Headline */}
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div>
-            <h1 className="font-display text-4xl leading-none text-ink sm:text-5xl">
-              All Events
-            </h1>
-            <ScribbleUnderline className="mt-2 h-3 w-32 text-hotpink" />
+    <main className="event-world bg-background text-foreground">
+      <div className="event-frame page-gutter">
+        <aside className="event-rail event-panel event-purple">
+          <div className="event-mark" aria-hidden="true">
+            <span />
+            <span />
           </div>
-          <ScribbleStar className="mb-1 hidden h-6 w-6 text-hotpink sm:block" />
-        </div>
+          <p className="event-rail-kicker">EMS / MLRIT</p>
+          <nav className="event-rail-nav" aria-label="Event sections">
+            <a href="#about">About</a>
+            <a href="#schedule">Events</a>
+            <a href="#community">Community</a>
+            <a href="#contact">Contact</a>
+          </nav>
+          <a href="#schedule" className="event-cta event-orange">
+            Explore schedule <ArrowUpRight />
+          </a>
+        </aside>
 
-        {/* Filters */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setActiveFilter(f.id)}
-              className={cn(
-                "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
-                activeFilter === f.id
-                  ? "border-ink bg-ink text-paper"
-                  : "border-border bg-card text-foreground/70 hover:border-ink/40"
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Search (mobile-visible, mirrors the top bar's on larger screens) */}
-        <div className="relative mb-8 md:hidden">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search events..."
-            className="h-10 w-full rounded-full border border-border bg-card pl-10 pr-4 text-sm text-foreground placeholder:text-foreground/40 focus:border-hotpink focus:outline-none"
-          />
-        </div>
-        <div className="mb-8 hidden md:block">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search events..."
-            className="h-10 w-full max-w-sm rounded-full border border-border bg-card px-4 text-sm text-foreground placeholder:text-foreground/40 focus:border-hotpink focus:outline-none"
-          />
-        </div>
-
-        {/* Event list */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          {filtered.map((event) => (
-            <EventRow key={event.title} event={event} />
-          ))}
-          {filtered.length === 0 && (
-            <p className="col-span-full py-10 text-center text-sm text-foreground/50">
-              No events match that search.
-            </p>
-          )}
-        </div>
-
-        {/* Browse by Club */}
-        <section className="mt-16 pb-10">
-          <h2 className="font-display mb-6 text-2xl text-ink sm:text-3xl">
-            Browse by club
-          </h2>
-          <ClubAvatarRow />
+        <section id="about" className="event-intro">
+          <p className="event-kicker event-purple-text">Campus experiences / 2026</p>
+          <h1 className="event-display">
+            Make room
+            <br />
+            <span>for what&apos;s next.</span>
+          </h1>
+          <p className="event-intro-copy">
+            A living programme of workshops, challenges, summits and showcases for the people
+            building the next chapter of campus.
+          </p>
+          <a className="event-scroll-cue" href="#schedule">
+            <MoveDown /> Scroll to explore
+          </a>
         </section>
+
+        <div className="event-schedule-pair">
+          <section id="schedule" className="event-schedule">
+            <div className="event-section-heading">
+              <p className="event-kicker">Upcoming schedule</p>
+              <h2>
+                Meetups &<br />
+                workshops
+              </h2>
+            </div>
+            {events.length === 0 ? (
+              <p className="event-row-description">No events on the schedule yet.</p>
+            ) : (
+              events.map((event, index) => {
+                const d = event.start_datetime ? new Date(event.start_datetime) : null;
+                return (
+                  <Link
+                    key={event.id}
+                    href={`/events/${event.id}`}
+                    className="event-row event-panel event-purple event-row-reveal"
+                    style={{ "--row-delay": `${index * 80}ms` } as React.CSSProperties}
+                  >
+                    <div className="event-date event-white">
+                      <strong>{d ? String(d.getDate()).padStart(2, "0") : "—"}</strong>
+                      <span>{d ? d.toLocaleDateString("en-IN", { month: "short" }).toUpperCase() : "TBA"}</span>
+                    </div>
+                    <div className="event-row-content">
+                      <ArrowUpRight className="event-row-arrow" />
+                      <p className="event-kicker">{toEventCategory(event.name).toUpperCase()}</p>
+                      <h3>{event.name}</h3>
+                      <p className="event-row-description">{event.description}</p>
+                      <div className="event-row-meta">
+                        <span>{event.club?.name ?? "EMS"}</span>
+                        <span>{formatEventTime(event.start_datetime)}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
+          </section>
+          <SpacePanel />
+        </div>
+
+        <section id="community" className="event-community">
+          <div className="event-panel event-orange event-stat">
+            <strong>{participants === null ? "—" : `${participants}+`}</strong>
+            <span>active participants</span>
+          </div>
+          <div className="event-panel event-white event-stat">
+            <strong>06</strong>
+            <span>ways to get involved</span>
+          </div>
+          <div className="event-panel event-purple event-community-copy">
+            <p className="event-kicker">The EMS spirit</p>
+            <h2>
+              Bring an idea.
+              <br />
+              Leave with momentum.
+            </h2>
+            <p>Meet curious people, learn in public, and turn campus energy into something real.</p>
+          </div>
+        </section>
+
+        <footer id="contact" className="event-footer">
+          <div className="event-panel event-purple">
+            <p className="event-kicker">Get in touch</p>
+            <h2>
+              See you
+              <br />
+              at EMS.
+            </h2>
+            <a href="mailto:hello@ems.mlrit.in">
+              hello@ems.mlrit.in <ArrowUpRight />
+            </a>
+          </div>
+          {nextEvent && (
+            <div className="event-panel event-orange event-footer-next">
+              <p className="event-kicker">Next event</p>
+              <h3>{nextEvent.name}</h3>
+              <p>
+                {nextEvent.start_datetime
+                  ? new Date(nextEvent.start_datetime).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                    })
+                  : "TBA"}{" "}
+                · {eventLocation(nextEvent) || "Venue TBA"}
+              </p>
+              <Link href={`/events/${nextEvent.id}`}>
+                View event <ArrowUpRight />
+              </Link>
+            </div>
+          )}
+        </footer>
       </div>
-    </div>
+    </main>
   );
 }
