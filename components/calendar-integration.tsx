@@ -12,7 +12,7 @@ export function CalendarIntegration() {
     <div className="w-full">
       <Tabs defaultValue="enhanced" className="w-full">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Event Management Calendar</h1>
+          <h1 className="font-display text-3xl font-bold">Event Management Calendar</h1>
           <TabsList className="grid w-fit grid-cols-2">
             <TabsTrigger value="enhanced" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
