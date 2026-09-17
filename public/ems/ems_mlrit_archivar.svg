@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 848 192" width="848" height="192" fill="none">
+  <path d="M 0 0 L 0 191 L 80 191 L 80 134 L 29 134 L 26 131 L 26 117 L 31 113 L 70 113 L 70 79 L 30 79 L 26 76 L 26 61 L 30 58 L 80 58 L 80 0 Z" fill="currentColor" fill-rule="evenodd" />
+  <path d="M 93 1 L 94 178 L 93 191 L 119 191 L 120 89 L 122 93 L 123 98 L 125 101 L 135 131 L 135 191 L 171 191 L 170 175 L 170 132 L 178 104 L 184 87 L 185 191 L 211 191 L 211 0 L 185 0 L 185 3 L 183 8 L 173 59 L 171 64 L 135 64 L 133 62 L 119 0 Z" fill="currentColor" fill-rule="evenodd" />
+  <path d="M 246 1 L 238 4 L 235 6 L 228 14 L 225 22 L 224 27 L 224 87 L 225 92 L 229 101 L 235 106 L 242 109 L 246 110 L 280 110 L 284 111 L 287 114 L 287 130 L 283 134 L 227 134 L 227 191 L 289 191 L 294 190 L 301 187 L 307 182 L 310 177 L 312 170 L 312 99 L 311 96 L 308 91 L 304 87 L 295 83 L 283 81 L 252 81 L 250 79 L 249 76 L 249 63 L 250 60 L 252 58 L 256 57 L 265 58 L 274 57 L 295 57 L 306 58 L 307 36 L 306 0 L 251 0 Z" fill="currentColor" fill-rule="evenodd" />
+  <rect x="347" y="83" width="26" height="26" rx="4" fill="currentColor" />
+  <path d="M 395 1 L 396 178 L 395 191 L 421 191 L 422 89 L 424 93 L 425 98 L 427 101 L 437 131 L 437 191 L 473 191 L 472 175 L 472 132 L 480 104 L 486 87 L 487 191 L 513 191 L 513 0 L 487 0 L 487 3 L 485 8 L 475 59 L 473 64 L 437 64 L 435 62 L 421 0 Z" fill="currentColor" fill-rule="evenodd" />
+  <path d="M 526 0 L 526 191 L 604 191 L 604 134 L 556 134 L 552 130 L 552 0 Z" fill="currentColor" fill-rule="evenodd" />
+  <path d="M 617 0 L 617 191 L 642 191 L 643 130 L 655 131 L 660 142 L 668 164 L 674 176 L 676 183 L 680 191 L 707 191 L 696 162 L 688 145 L 682 130 L 686 128 L 689 128 L 698 123 L 702 118 L 705 110 L 706 104 L 706 30 L 704 19 L 700 11 L 695 6 L 684 1 L 679 0 Z M 645 58 L 658 57 L 663 58 L 671 57 L 679 59 L 680 98 L 678 100 L 675 101 L 647 101 L 643 98 L 642 96 L 642 61 Z" fill="currentColor" fill-rule="evenodd" />
+  <path d="M 720 0 L 720 191 L 745 191 L 745 0 Z" fill="currentColor" fill-rule="evenodd" />
+  <path d="M 758 0 L 758 37 L 790 38 L 790 191 L 815 191 L 816 37 L 846 37 L 847 34 L 847 0 Z" fill="currentColor" fill-rule="evenodd" />
+</svg>
