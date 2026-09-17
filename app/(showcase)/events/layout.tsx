@@ -1,6 +1,5 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { UserAppShell } from "@/components/layout/UserAppShell";
 
 export const metadata: Metadata = {
   title: "Events | Event Management System",
@@ -12,5 +11,5 @@ export default function EventsLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <UserAppShell>{children}</UserAppShell>;
+  return children;
 }
