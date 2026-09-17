@@ -19,8 +19,14 @@
   --color-badge-workshop-foreground: var(--badge-workshop-foreground);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-display: var(--font-archivo-black), var(--font-geist-sans), sans-serif;
+  --color-ems-orange: var(--clr-orange);
+  --color-ems-purple: var(--clr-purple);
+  --color-ems-black: var(--clr-black);
+  --color-ems-white: var(--clr-white);
+  --color-ems-cream: var(--clr-cream);
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-space-grotesk), var(--font-dm-sans), sans-serif;
+  --font-heading: var(--font-big-shoulders), var(--font-space-grotesk), sans-serif;
   --font-marker: var(--font-caveat), cursive;
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -61,14 +67,16 @@
 :root {
   --radius: 0.375rem;
 
-  /* Scrapbook palette — kraft-paper cream, ink black, marker pink,
-     plus one color per event category badge. */
+  /* Legacy scrapbook palette — kept (unchanged) so pages not yet ported
+     to the EMS-NEW-AG visual system (raw --paper/--ink/--hotpink classes,
+     the paper-grain, torn-edge, washi-tape, polaroid and marker-highlight
+     utilities below) keep rendering exactly as before until they're
+     restyled. Do not repaint these — only the semantic tokens below move
+     to the new palette. */
   --paper: #f5f1e8;
   --paper-dim: #eae2d1;
   --ink: #17150f;
   --hotpink: #ff2f7e;
-  /* Soft secondary pink — restrained use only (a wash behind a badge,
-     a decorative dot), never a dominant fill. */
   --pink-soft: #ffb7c9;
   --badge-cultural: #ffd4e6;
   --badge-cultural-foreground: #a3134f;
@@ -79,78 +87,84 @@
   --badge-workshop: #e6d9ff;
   --badge-workshop-foreground: #5b2fa3;
 
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: #fbf8f1;
-  --card-foreground: var(--ink);
-  --popover: #fbf8f1;
-  --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: var(--paper);
-  --secondary: #ffffff;
-  --secondary-foreground: var(--ink);
-  --muted: var(--paper-dim);
-  --muted-foreground: color-mix(in oklab, var(--ink) 55%, transparent);
-  --accent: var(--hotpink);
-  --accent-foreground: #ffffff;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: color-mix(in oklab, var(--ink) 14%, transparent);
-  --input: color-mix(in oklab, var(--ink) 18%, transparent);
-  --ring: var(--hotpink);
-  --chart-1: var(--hotpink);
-  --chart-2: var(--badge-tech-foreground);
-  --chart-3: var(--badge-sports-foreground);
+  /* EMS-NEW-AG palette — Volcanic Orange / Electric Purple / Charcoal
+     Black / Off White / Cream. */
+  --clr-orange: #fb5607;
+  --clr-purple: #8338ec;
+  --clr-black: #212529;
+  --clr-white: #e9ecef;
+  --clr-cream: #faf7ee;
+
+  --background: var(--clr-white);
+  --foreground: var(--clr-black);
+  --card: #ffffff;
+  --card-foreground: var(--clr-black);
+  --popover: #ffffff;
+  --popover-foreground: var(--clr-black);
+  --primary: var(--clr-purple);
+  --primary-foreground: var(--clr-white);
+  --secondary: var(--clr-black);
+  --secondary-foreground: var(--clr-white);
+  --muted: #d4d7db;
+  --muted-foreground: #5a5f66;
+  --accent: var(--clr-orange);
+  --accent-foreground: var(--clr-white);
+  --destructive: #dc2626;
+  --border: rgb(33 37 41 / 15%);
+  --input: rgb(33 37 41 / 20%);
+  --ring: var(--clr-purple);
+  --chart-1: var(--clr-purple);
+  --chart-2: var(--clr-orange);
+  --chart-3: var(--badge-tech-foreground);
   --chart-4: var(--badge-workshop-foreground);
-  --chart-5: var(--ink);
-  --sidebar: var(--ink);
-  --sidebar-foreground: var(--paper);
-  --sidebar-primary: var(--hotpink);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--paper);
-  --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: color-mix(in oklab, var(--paper) 12%, transparent);
-  --sidebar-ring: var(--hotpink);
+  --chart-5: var(--clr-black);
+  --sidebar: var(--clr-black);
+  --sidebar-foreground: var(--clr-white);
+  --sidebar-primary: var(--clr-purple);
+  --sidebar-primary-foreground: var(--clr-white);
+  --sidebar-accent: var(--clr-cream);
+  --sidebar-accent-foreground: var(--clr-black);
+  --sidebar-border: color-mix(in oklab, var(--clr-white) 12%, transparent);
+  --sidebar-ring: var(--clr-purple);
 }
 
-/* The scrapbook design is a light, cream-paper look with no dark variant
-   in any of the reference mockups. Several components use the raw
-   --ink/--paper colors directly (not the semantic --foreground/--background
-   tokens), so letting .dark repaint --background to near-black while text
-   stays --ink makes copy unreadable. Until the whole design is audited to
-   use semantic tokens everywhere, keep .dark identical to :root so the
-   look stays correct regardless of the visitor's system/theme preference. */
+/* Neither the EMS-NEW-AG source nor the prior scrapbook design defines a
+   real dark variant, and several components still use raw --ink/--paper/
+   --hotpink colors directly rather than semantic tokens. Keep .dark
+   identical to :root so the look stays correct regardless of the
+   visitor's system/theme preference. */
 .dark {
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: #fbf8f1;
-  --card-foreground: var(--ink);
-  --popover: #fbf8f1;
-  --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: var(--paper);
-  --secondary: #ffffff;
-  --secondary-foreground: var(--ink);
-  --muted: var(--paper-dim);
-  --muted-foreground: color-mix(in oklab, var(--ink) 55%, transparent);
-  --accent: var(--hotpink);
-  --accent-foreground: #ffffff;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: color-mix(in oklab, var(--ink) 14%, transparent);
-  --input: color-mix(in oklab, var(--ink) 18%, transparent);
-  --ring: var(--hotpink);
-  --chart-1: var(--hotpink);
-  --chart-2: var(--badge-tech-foreground);
-  --chart-3: var(--badge-sports-foreground);
+  --background: var(--clr-white);
+  --foreground: var(--clr-black);
+  --card: #ffffff;
+  --card-foreground: var(--clr-black);
+  --popover: #ffffff;
+  --popover-foreground: var(--clr-black);
+  --primary: var(--clr-purple);
+  --primary-foreground: var(--clr-white);
+  --secondary: var(--clr-black);
+  --secondary-foreground: var(--clr-white);
+  --muted: #d4d7db;
+  --muted-foreground: #5a5f66;
+  --accent: var(--clr-orange);
+  --accent-foreground: var(--clr-white);
+  --destructive: #dc2626;
+  --border: rgb(33 37 41 / 15%);
+  --input: rgb(33 37 41 / 20%);
+  --ring: var(--clr-purple);
+  --chart-1: var(--clr-purple);
+  --chart-2: var(--clr-orange);
+  --chart-3: var(--badge-tech-foreground);
   --chart-4: var(--badge-workshop-foreground);
-  --chart-5: var(--ink);
-  --sidebar: var(--ink);
-  --sidebar-foreground: var(--paper);
-  --sidebar-primary: var(--hotpink);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--paper);
-  --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: color-mix(in oklab, var(--paper) 12%, transparent);
-  --sidebar-ring: var(--hotpink);
+  --chart-5: var(--clr-black);
+  --sidebar: var(--clr-black);
+  --sidebar-foreground: var(--clr-white);
+  --sidebar-primary: var(--clr-purple);
+  --sidebar-primary-foreground: var(--clr-white);
+  --sidebar-accent: var(--clr-cream);
+  --sidebar-accent-foreground: var(--clr-black);
+  --sidebar-border: color-mix(in oklab, var(--clr-white) 12%, transparent);
+  --sidebar-ring: var(--clr-purple);
 }
 
 @layer utilities {
@@ -212,6 +226,72 @@
 
 @plugin 'tailwind-scrollbar';
 
+/* EMS-NEW-AG utilities/keyframes, ported for the showcase pages. */
+@utility display-xl {
+  font-size: clamp(3.4rem, 10.5vw, 9rem);
+  line-height: 0.84;
+  font-weight: 600;
+}
+
+@utility display-lg {
+  font-size: clamp(2.6rem, 7vw, 6.5rem);
+  line-height: 0.88;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+@utility section-pad {
+  padding-block: clamp(5rem, 10vw, 9rem);
+}
+
+@keyframes image-focus {
+  from {
+    filter: blur(16px);
+    transform: scale(1.07);
+  }
+
+  to {
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+@keyframes nav-drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes line-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .club-ring-gallery > div > div > div > div {
   background: #242424 !important;
   border: 1px solid rgb(255 255 255 / 10%);
@@ -231,6 +311,10 @@
 @layer utilities {
 .font-display {
   font-family: var(--font-display);
+}
+
+.font-heading {
+  font-family: var(--font-heading);
 }
 
 .font-marker {

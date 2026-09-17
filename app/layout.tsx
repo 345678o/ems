@@ -1,8 +1,7 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Figtree, Archivo_Black, Caveat } from "next/font/google";
+import { DM_Sans, Space_Grotesk, Big_Shoulders, Caveat } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import Footer from "@/components/ui/footer";
@@ -13,14 +12,20 @@ export const metadata: Metadata = {
   generator: "v0.app",
 };
 
-const figtree = Figtree({
+const dmSans = DM_Sans({
   subsets: ["latin"],
+  variable: "--font-dm-sans",
 });
 
-const archivoBlack = Archivo_Black({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-archivo-black",
+  variable: "--font-space-grotesk",
+});
+
+const bigShouldersDisplay = Big_Shoulders({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-big-shoulders",
 });
 
 const caveat = Caveat({
@@ -54,7 +59,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${archivoBlack.variable} ${caveat.variable} ${figtree.className}`}
+        className={`font-sans ${GeistMono.variable} ${dmSans.variable} ${spaceGrotesk.variable} ${bigShouldersDisplay.variable} ${caveat.variable} ${dmSans.className}`}
       >
         <Providers>
           {/* Spacer to offset the fixed top bar height */}
