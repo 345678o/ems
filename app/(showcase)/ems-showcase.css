@@ -1037,6 +1037,7 @@ select {
 }
 
 .event-related-card {
+  display: block;
   transition: transform 0.4s ease;
 }
 
