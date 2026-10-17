@@ -1,0 +1,280 @@
+/* EMS public UI — dark product theme.
+   Elevation: bg → surface-1 (panels) → surface-2 (raised/inputs) → surface-3 (hover).
+   Radius:    8px controls · 12px cards · 16px panels/hero.
+   Glass is reserved for the sticky nav and chips sitting on top of artwork. */
+.dz {
+  --dz-bg: #0b0b0d;
+  --dz-surface-1: #141417;
+  --dz-surface-2: #1c1c21;
+  --dz-surface-3: #26262c;
+  --dz-border: rgba(255, 255, 255, 0.08);
+  --dz-border-strong: rgba(255, 255, 255, 0.14);
+  --dz-text: #f4f4f5;
+  --dz-muted: #a1a1aa;
+  --dz-faint: #8b8b94;
+  --dz-accent: #ff7a50;
+  --dz-r-sm: var(--radius-control);
+  --dz-r-md: var(--radius-card);
+  --dz-r-lg: var(--radius-panel);
+  min-height: 100svh;
+  color: var(--dz-text);
+  background:
+    radial-gradient(
+      1200px 600px at 70% -10%,
+      rgba(255, 122, 80, 0.07),
+      transparent 60%
+    ),
+    var(--dz-bg);
+  font-family: var(--font-dz), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Component classes live in the components layer so Tailwind utilities
+   (e.g. `max-sm:hidden`, `w-full`) can still override them. */
+@layer components {
+  /* Surfaces */
+  .dz-panel {
+    background: var(--dz-surface-1);
+    border: 1px solid var(--dz-border);
+    border-radius: var(--dz-r-lg);
+  }
+  .dz-card {
+    background: var(--dz-surface-1);
+    border: 1px solid var(--dz-border);
+    border-radius: var(--dz-r-md);
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .dz-card:hover {
+    border-color: var(--dz-border-strong);
+    background: var(--dz-surface-2);
+  }
+  /* Popovers/menus floating over content */
+  .dz-glass {
+    background: rgba(28, 28, 33, 0.92);
+    border: 1px solid var(--dz-border-strong);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Controls */
+  .dz-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: var(--dz-r-sm);
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      opacity 0.15s ease;
+  }
+  .dz-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .dz-btn--primary {
+    background: #ffffff;
+    color: #111113;
+  }
+  .dz-btn--primary:hover {
+    background: #e7e7ea;
+  }
+  .dz-btn--ghost {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--dz-border-strong);
+    color: var(--dz-text);
+  }
+  .dz-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .dz-icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--dz-r-sm);
+    color: var(--dz-muted);
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+  }
+  .dz-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--dz-text);
+  }
+  .dz-input {
+    height: 36px;
+    border-radius: var(--dz-r-sm);
+    background: var(--dz-surface-2);
+    border: 1px solid var(--dz-border);
+    color: var(--dz-text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .dz-input::placeholder {
+    color: var(--dz-faint);
+  }
+  .dz-input:focus,
+  .dz-input:focus-within {
+    border-color: rgba(255, 122, 80, 0.7);
+    box-shadow: 0 0 0 3px rgba(255, 122, 80, 0.2);
+  }
+  .dz :focus-visible {
+    outline: 2px solid rgba(255, 122, 80, 0.7);
+    outline-offset: 2px;
+  }
+
+  /* Labels */
+  .dz-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--dz-border);
+    font-size: 12px;
+    color: var(--dz-muted);
+    white-space: nowrap;
+  }
+  /* Chip sitting on top of artwork */
+  .dz-dark-chip {
+    background: rgba(11, 11, 13, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff;
+  }
+  .dz-play {
+    display: grid;
+    place-items: center;
+    border-radius: 9999px;
+    background: #fff;
+    color: #111113;
+    transition: transform 0.15s ease;
+  }
+
+  /* Image media: img fills the box, bottom gradient keeps captions readable */
+  .dz-media {
+    position: relative;
+    overflow: hidden;
+    background: var(--dz-surface-2);
+  }
+  .dz-media > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .group:hover .dz-media > img {
+    transform: scale(1.04);
+  }
+  .dz-media--caption::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      transparent 30%,
+      rgba(11, 11, 13, 0.55) 60%,
+      rgba(11, 11, 13, 0.92) 100%
+    );
+  }
+
+  /* Hero: strong left scrim for copy, light bottom scrim for the arrows */
+  .dz-hero-shade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(11, 11, 13, 0.92) 0%,
+        rgba(11, 11, 13, 0.72) 35%,
+        rgba(11, 11, 13, 0.15) 70%,
+        transparent 100%
+      ),
+      linear-gradient(180deg, transparent 55%, rgba(11, 11, 13, 0.55) 100%);
+  }
+  @media (max-width: 767px) {
+    .dz-hero-shade {
+      background: linear-gradient(
+        180deg,
+        rgba(11, 11, 13, 0.2) 0%,
+        rgba(11, 11, 13, 0.6) 40%,
+        rgba(11, 11, 13, 0.95) 100%
+      );
+    }
+  }
+
+  .dz-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  }
+  .dz-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .dz-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 9999px;
+  }
+}
+
+/* shadcn tokens for this theme. The global `.dark` theme intentionally
+   mirrors the light palette, so components rendered inside the shell
+   (calendar, selects, popovers) get dark values here. */
+.dz.dark {
+  --background: transparent;
+  --foreground: #f4f4f5;
+  --card: #141417;
+  --card-foreground: #f4f4f5;
+  --popover: #1c1c21;
+  --popover-foreground: #f4f4f5;
+  --primary: #ffffff;
+  --primary-foreground: #111113;
+  --secondary: #1c1c21;
+  --secondary-foreground: #f4f4f5;
+  --muted: #1c1c21;
+  --muted-foreground: #a1a1aa;
+  --accent: #26262c;
+  --accent-foreground: #f4f4f5;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.14);
+  --ring: rgba(255, 122, 80, 0.7);
+
+  /* Design-system tokens (declared in app/globals.css) */
+  --surface-1: var(--dz-surface-1);
+  --surface-2: var(--dz-surface-2);
+  --surface-3: var(--dz-surface-3);
+  --text-faint: var(--dz-faint);
+  --success: #4ade80;
+  --success-soft: rgb(34 197 94 / 0.15);
+  --warning: #fbbf24;
+  --warning-soft: rgb(245 158 11 / 0.15);
+  --info: #60a5fa;
+  --info-soft: rgb(59 130 246 / 0.15);
+  --danger: #f87171;
+  --destructive-soft: rgb(239 68 68 / 0.15);
+}
+
+/* The calendar's own full-screen gradient page wrapper is redundant here. */
+.dz-calendar .min-h-screen {
+  min-height: 0;
+  padding: 0;
+  background: none;
+}
