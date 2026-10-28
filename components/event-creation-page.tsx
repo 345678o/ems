@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Edit, Trash2, Info } from "lucide-react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import OptionWheel from "@/components/option-wheel";
 
 const EVENT_THEMES = [
@@ -41,6 +42,7 @@ interface Ticket {
 
 export function EventCreationPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [eventData, setEventData] = useState({
     name: "",
@@ -103,8 +105,13 @@ export function EventCreationPage() {
 
     setIsLoading(true);
     try {
-      // For now, we'll use a placeholder club_id. In a real app, this would come from the authenticated user's club
-      const clubId = "00000000-0000-0000-0000-000000000000"; // Placeholder UUID
+      // A club's id is its owner's user id, so the event always belongs to
+      // the signed-in club.
+      const clubId = session?.user?.id;
+      if (!clubId) {
+        alert("Please sign in again to create an event.");
+        return;
+      }
 
       // Convert dates to proper format
       const startDateTime = new Date(eventData.startDate).toISOString();
@@ -124,7 +131,9 @@ export function EventCreationPage() {
             city: eventData.eventMode === "offline" ? "TBD" : "Online",
             country: eventData.eventMode === "offline" ? "TBD" : "Online",
             additional_details: `Event Mode: ${eventData.eventMode}, Currency: ${eventData.currency}`,
-            status: "draft",
+            // Goes to the admin approvals queue.
+            status: "pending_approval",
+            hosted: "self",
           },
         ])
         .select();

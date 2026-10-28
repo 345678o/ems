@@ -29,6 +29,7 @@ import Image from "next/image";
 
 interface Event {
   id: string;
+  club_id: string;
   name: string;
   start_datetime: string;
   end_datetime: string;
@@ -168,6 +169,17 @@ export default function EventDashboard() {
       return (
         <div className="flex items-center justify-center h-full">
           <div className="text-red-400">Event not found</div>
+        </div>
+      );
+    }
+
+    // A club's id is its owner's user id; clubs only manage their own events.
+    if (event.club_id !== session?.user?.id) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-red-400">
+            This event belongs to another club.
+          </div>
         </div>
       );
     }

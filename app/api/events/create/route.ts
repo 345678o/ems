@@ -83,13 +83,13 @@ export async function POST(req: Request) {
     }
 
     // ── 4. Club ownership check ────────────────────────────────────────────
-    // ASSUMPTION: clubs.user_id holds the owner's UUID. Adjust if your
-    // schema uses a different column name (e.g. owner_id).
+    // clubs.owner_id holds the owner's user id (see supabase/seed.sql and
+    // the club profile page).
     const { data: club, error: clubErr } = await supabaseAdmin
       .from("clubs")
       .select("id")
       .eq("id", club_id)
-      .eq("user_id", actingUserId)
+      .eq("owner_id", actingUserId)
       .maybeSingle();
 
     if (clubErr) {

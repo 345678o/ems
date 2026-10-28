@@ -178,10 +178,38 @@ const ADMIN_MAIN: Item[] = [
   },
 ];
 
-/** Menu per role. Faculty pages aren't built into this frame yet. */
+// Faculty portal: the IIC calendar plus the shared campus pages.
+const FACULTY_MAIN: Item[] = [
+  {
+    label: "IIC calendar",
+    href: "/faculty",
+    icon: CalendarCheck,
+    isActive: (p) => p.startsWith("/faculty"),
+  },
+  {
+    label: "Campus calendar",
+    href: "/calendar",
+    icon: CalendarDays,
+    isActive: (p) => p.startsWith("/calendar"),
+  },
+  {
+    label: "Events",
+    href: "/events",
+    icon: Ticket,
+    isActive: (p) => p.startsWith("/events"),
+  },
+  {
+    label: "Clubs",
+    href: "/clubs",
+    icon: UsersRound,
+    isActive: (p) => p.startsWith("/clubs"),
+  },
+];
+
+/** Menu per role. */
 const NAV: Record<UserRole, Item[]> = {
   student: MAIN,
-  faculty: MAIN,
+  faculty: FACULTY_MAIN,
   club: CLUB_MAIN,
   admin: ADMIN_MAIN,
 };
@@ -331,7 +359,9 @@ export function Sidebar({
       ? "Club profile"
       : role === "admin"
         ? "Admin console"
-        : "Profile";
+        : role === "faculty"
+          ? "Faculty portal"
+          : "Profile";
   const isStudent = role === "student";
   const profileActive =
     role === "student"
@@ -378,7 +408,11 @@ export function Sidebar({
         <div className="my-2 h-px bg-[var(--dz-border)]" />
         {signedIn && role !== "student" && (
           <p className="dz-sb-label px-[15px] pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-faint">
-            {role === "club" ? "Club workspace" : "Admin console"}
+            {role === "club"
+              ? "Club workspace"
+              : role === "faculty"
+                ? "Faculty portal"
+                : "Admin console"}
           </p>
         )}
         {roleKnown
