@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -104,17 +104,24 @@ const ImageUploadBox = ({
           )}
         </>
       ) : (
-        <div className="text-center p-4 cursor-pointer" onClick={onUpload}>
+        <button
+          type="button"
+          onClick={onUpload}
+          className="block w-full rounded-md p-4 text-center focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
           <ImageIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
           <p className="text-xs text-gray-400 mb-2">Image {index + 1}</p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs border-neutral-700 hover:bg-neutral-800 bg-transparent"
+          <span
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className:
+                "text-xs border-neutral-700 hover:bg-neutral-800 bg-transparent",
+            })}
           >
             Browse
-          </Button>
-        </div>
+          </span>
+        </button>
       )}
     </div>
   );

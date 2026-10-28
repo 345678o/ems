@@ -2,18 +2,16 @@
  * app/api/auth/[...nextauth]/route.ts
  *
  * NextAuth.js catch-all API route handler. Configures the authentication provider,
- * JWT callbacks, and session handling. Validates allowable email domains (gmail.com,
- * mlrit.ac.in), creates/updates the user in Supabase upon successful sign-in, and embeds
- * the user's stable UUID in the session token.
+ * JWT callbacks, and session handling. Verifies the email + password against the
+ * bcrypt hash in public.users, creates/updates the user in Supabase upon successful
+ * sign-in, and embeds the user's stable UUID in the session token.
  */
 
 import logger from "@/lib/logger";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
 import { createOrUpdateUser } from "@/app/actions/auth";
-import { googleSubToUuid } from "@/lib/utils/id";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { authorizeCredentials } from "@/lib/auth/credentials";
 
 // Fail fast at startup: NEXTAUTH_SECRET must be set explicitly.
 // A missing secret means every JWT token could be forged with the
@@ -41,46 +39,8 @@ export const authOptions: NextAuthOptions = {
         },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email) {
-          return null;
-        }
-        const email = credentials.email.trim().toLowerCase();
-        if (!email) return null;
-
-        const id = googleSubToUuid(email);
-        const name = email.split("@")[0] || "User";
-
-        // Accounts that have a password_hash set (e.g. faculty) must pass a
-        // real bcrypt check. Accounts without one keep the existing
-        // passwordless flow so student/club logins are unaffected.
-        const { data: existingUser, error } = await supabaseAdmin
-          .from("users")
-          .select("password_hash")
-          .eq("id", id)
-          .maybeSingle();
-
-        if (error) {
-          logger.error("[NextAuth] DB lookup error during authorize");
-          return null;
-        }
-
-        if (existingUser?.password_hash) {
-          if (!credentials.password) return null;
-          const valid = await bcrypt.compare(
-            credentials.password,
-            existingUser.password_hash
-          );
-          if (!valid) return null;
-        }
-
-        return {
-          id,
-          name,
-          email,
-          image: null,
-        };
-      },
+      // Every account must have a password_hash and pass a bcrypt check.
+      authorize: (credentials) => authorizeCredentials(credentials),
     }),
   ],
 

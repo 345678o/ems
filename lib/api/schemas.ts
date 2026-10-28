@@ -196,3 +196,22 @@ export type PatchMeInput = z.infer<typeof patchMeSchema>;
 export const partnerConvertSchema = z.object({}).strict();
 
 export type PartnerConvertInput = z.infer<typeof partnerConvertSchema>;
+
+// ---------------------------------------------------------------------------
+// PATCH /api/me/password  (JSON body)
+// ---------------------------------------------------------------------------
+
+export const changePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, "Current password is required"),
+    new_password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(128, "Password is too long"),
+  })
+  .refine((v) => v.new_password !== v.current_password, {
+    message: "New password must be different from the current one",
+    path: ["new_password"],
+  });
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

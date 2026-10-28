@@ -1,15 +1,10 @@
 "use client";
 import logger from "@/lib/logger";
-// components/UserProfile.tsx
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { ErrorState } from "@/components/discover/LoadStates";
 
 type ProfileState = {
   first_name: string;
@@ -19,30 +14,66 @@ type ProfileState = {
   avatar_url?: string | null;
 };
 
+const EMPTY: ProfileState = {
+  first_name: "",
+  last_name: "",
+  email: "",
+  phone_number: "",
+  avatar_url: null,
+};
+
+function Field({
+  id,
+  label,
+  hint,
+  ...input
+}: React.InputHTMLAttributes<HTMLInputElement> & {
+  id: string;
+  label: string;
+  hint?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-ui font-medium text-zinc-300">
+        {label}
+      </label>
+      <input
+        id={id}
+        {...input}
+        className="dz-input h-10 px-3 read-only:cursor-not-allowed read-only:text-zinc-400"
+      />
+      {hint && <p className="text-xs text-faint">{hint}</p>}
+    </div>
+  );
+}
+
+/** Profile details form backed by GET/PATCH /api/me. */
 export function UserProfile() {
   const { data: session } = useSession();
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<"loading" | "error" | "ready">(
+    "loading"
+  );
+  const [attempt, setAttempt] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileState>({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone_number: "",
-    avatar_url: null,
-  });
+  const [saveResult, setSaveResult] = useState<"saved" | "failed" | null>(null);
+  const [profileData, setProfileData] = useState<ProfileState>(EMPTY);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        setLoading(true);
         const res = await fetch("/api/me", { cache: "no-store" });
         if (!res.ok) {
-          logger.error("[UserProfile] GET /api/me failed", await res.json());
+          logger.error(
+            "[UserProfile] GET /api/me failed",
+            await res.json().catch(() => res.status)
+          );
+          if (mounted) setStatus("error");
           return;
         }
         const { user } = await res.json();
-        if (mounted && user) {
+        if (!mounted) return;
+        if (user) {
           setProfileData({
             first_name: user.first_name ?? "",
             last_name: user.last_name ?? "",
@@ -51,22 +82,30 @@ export function UserProfile() {
             avatar_url: user.avatar_url ?? null,
           });
         }
+        setStatus("ready");
       } catch (e) {
         logger.error("[UserProfile] load error:", e);
-      } finally {
-        if (mounted) setLoading(false);
+        if (mounted) setStatus("error");
       }
     })();
     return () => {
       mounted = false;
     };
+  }, [attempt]);
+
+  const retry = useCallback(() => {
+    setStatus("loading");
+    setAttempt((n) => n + 1);
   }, []);
 
   const handleInputChange = (field: keyof ProfileState, value: string) => {
+    setSaveResult(null);
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaveResult(null);
     try {
       setSaving(true);
       const res = await fetch("/api/me", {
@@ -79,188 +118,132 @@ export function UserProfile() {
         }),
       });
       if (!res.ok) {
-        logger.error("[UserProfile] PATCH /api/me failed", await res.json());
-        alert("Update failed");
+        logger.error(
+          "[UserProfile] PATCH /api/me failed",
+          await res.json().catch(() => res.status)
+        );
+        setSaveResult("failed");
         return;
       }
-      alert("Profile updated");
+      setSaveResult("saved");
     } catch (e) {
       logger.error("[UserProfile] update error:", e);
-      alert("Update failed");
+      setSaveResult("failed");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleImageEdit = () => {
-    // TODO: implement upload → save avatar_url via PATCH /api/me
-  };
+  if (status === "error") {
+    return (
+      <ErrorState
+        title="Your profile didn't load"
+        message="We couldn't fetch your account details. Please try again."
+        onRetry={retry}
+      />
+    );
+  }
+
+  const loading = status === "loading";
+  const fullName = `${profileData.first_name} ${profileData.last_name}`.trim();
+  const displayName = fullName || session?.user?.name || "Student";
+  const avatar = profileData.avatar_url || session?.user?.image;
 
   return (
-    <div className="p-6 bg-transparent min-h-screen">
-      <div className="mb-6">
-        <h1 className="text-white text-lg font-medium mb-4">
-          Club - Event Dashboard - User Profile
-        </h1>
-      </div>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
+      <section
+        aria-label="Account summary"
+        className="dz-panel flex flex-col items-center gap-4 p-6 text-center lg:self-start"
+      >
+        {avatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={avatar}
+            alt=""
+            className="size-24 rounded-full object-cover ring-1 ring-[var(--dz-border)]"
+          />
+        ) : (
+          <span className="grid size-24 place-items-center rounded-full bg-[var(--dz-accent)] text-3xl font-semibold text-[#1a0d06]">
+            {displayName[0]?.toUpperCase()}
+          </span>
+        )}
+        <div className="min-w-0">
+          <p className="truncate text-lg font-semibold">
+            {loading ? "Loading…" : displayName}
+          </p>
+          <p className="truncate text-ui text-zinc-400">
+            {profileData.email || session?.user?.email}
+          </p>
+        </div>
+        <span className="dz-chip">Student</span>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl">
-        {/* Left Side - Username Section */}
-        <Card className="bg-neutral-900 border-neutral-700">
-          <CardContent className="flex flex-col items-center justify-center p-8 space-y-6">
-            <div className="text-center">
-              <h2 className="text-white text-2xl font-semibold mb-2">
-                {profileData.first_name || profileData.last_name
-                  ? `${profileData.first_name} ${profileData.last_name}`.trim()
-                  : "Username"}
-              </h2>
-              <p className="text-neutral-400 text-lg">Student</p>
-            </div>
+      <form
+        onSubmit={handleUpdate}
+        className="dz-panel flex flex-col gap-5 p-6"
+      >
+        <h2 className="text-lg font-semibold">Profile details</h2>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field
+            id="firstname"
+            label="First name"
+            value={profileData.first_name}
+            onChange={(e) => handleInputChange("first_name", e.target.value)}
+            placeholder={loading ? "Loading…" : "Enter first name"}
+            disabled={loading}
+            autoComplete="given-name"
+          />
+          <Field
+            id="lastname"
+            label="Last name"
+            value={profileData.last_name}
+            onChange={(e) => handleInputChange("last_name", e.target.value)}
+            placeholder={loading ? "Loading…" : "Enter last name"}
+            disabled={loading}
+            autoComplete="family-name"
+          />
+          <Field
+            id="email"
+            label="Email"
+            value={profileData.email}
+            readOnly
+            hint="Your sign-in email can't be changed here."
+          />
+          <Field
+            id="phone"
+            type="tel"
+            label="Phone number"
+            value={profileData.phone_number}
+            onChange={(e) => handleInputChange("phone_number", e.target.value)}
+            placeholder={loading ? "Loading…" : "Enter phone number"}
+            disabled={loading}
+            autoComplete="tel"
+          />
+        </div>
 
-            <div className="relative">
-              <Avatar className="h-32 w-32">
-                <AvatarImage
-                  src={profileData.avatar_url || "/professional-profile.png"}
-                  alt="Profile"
-                />
-                <AvatarFallback className="bg-neutral-700 text-white text-2xl">
-                  {(
-                    profileData.first_name?.[0] ||
-                    session?.user?.name?.[0] ||
-                    "U"
-                  ).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-
-            <Button
-              variant="ghost"
-              onClick={handleImageEdit}
-              className="text-blue-400 hover:text-blue-300 hover:bg-neutral-800 flex items-center gap-2"
-            >
-              <Camera className="w-4 h-4" />
-              Edit Image
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Right Side - Profile Details */}
-        <Card className="bg-neutral-900 border-neutral-700">
-          <CardContent className="p-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-white text-2xl font-semibold mb-6">
-                Profile Details
-              </h2>
-              {loading && (
-                <span className="text-xs text-neutral-400">Loading…</span>
-              )}
-            </div>
-
-            <div className="space-y-6">
-              {/* Firstname */}
-              <div>
-                <Label htmlFor="firstname" className="text-white mb-2 block">
-                  Firstname
-                </Label>
-                <div className="relative">
-                  <div
-                    className="rounded-lg p-[2px]"
-                    style={{
-                      background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
-                    }}
-                  >
-                    <input
-                      id="firstname"
-                      type="text"
-                      value={profileData.first_name}
-                      onChange={(e) =>
-                        handleInputChange("first_name", e.target.value)
-                      }
-                      className="w-full bg-neutral-800 text-white px-3 py-2 rounded-md outline-none placeholder:text-neutral-400"
-                      placeholder="Enter firstname"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Lastname */}
-              <div>
-                <Label htmlFor="lastname" className="text-white mb-2 block">
-                  Lastname
-                </Label>
-                <div className="relative">
-                  <div
-                    className="rounded-lg p-[2px]"
-                    style={{
-                      background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
-                    }}
-                  >
-                    <input
-                      id="lastname"
-                      type="text"
-                      value={profileData.last_name}
-                      onChange={(e) =>
-                        handleInputChange("last_name", e.target.value)
-                      }
-                      className="w-full bg-neutral-800 text-white px-3 py-2 rounded-md outline-none placeholder:text-neutral-400"
-                      placeholder="Enter lastname"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Email (read-only) */}
-              <div>
-                <Label htmlFor="email" className="text-white mb-2 block">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  value={profileData.email}
-                  readOnly
-                  className="bg-neutral-800 text-white"
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <Label htmlFor="phone" className="text-white mb-2 block">
-                  Phone no.
-                </Label>
-                <div className="relative">
-                  <div
-                    className="rounded-lg p-[2px]"
-                    style={{
-                      background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
-                    }}
-                  >
-                    <input
-                      id="phone"
-                      type="tel"
-                      value={profileData.phone_number}
-                      onChange={(e) =>
-                        handleInputChange("phone_number", e.target.value)
-                      }
-                      className="w-full bg-neutral-800 text-white px-3 py-2 rounded-md outline-none placeholder:text-neutral-400"
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Button
-                  onClick={handleUpdate}
-                  disabled={saving || loading}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-2 rounded-lg font-medium"
-                >
-                  {saving ? "Saving…" : "Update"}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="flex flex-wrap items-center gap-3 border-t border-[var(--dz-border)] pt-5">
+          <button
+            type="submit"
+            disabled={saving || loading}
+            className="dz-btn dz-btn--accent"
+          >
+            {saving ? "Saving…" : "Save changes"}
+          </button>
+          <p aria-live="polite" className="text-ui">
+            {saveResult === "saved" && (
+              <span className="flex items-center gap-1.5 text-[var(--success)]">
+                <CheckCircle2 className="size-4" aria-hidden />
+                Profile saved
+              </span>
+            )}
+            {saveResult === "failed" && (
+              <span className="text-[var(--danger)]">
+                Couldn&apos;t save your changes. Please try again.
+              </span>
+            )}
+          </p>
+        </div>
+      </form>
     </div>
   );
 }

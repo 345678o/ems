@@ -63,9 +63,9 @@ export type RefineFrameProps = {
 };
 
 const STAGES: Record<RefineStatus, Stage> = {
-  queued: { blur: 4, sat: 0.6, scale: 1.04, opacity: 0.55 },
-  generating: { blur: 1.5, sat: 0.8, scale: 1.02, opacity: 0.85 },
-  refining: { blur: 0.5, sat: 0.95, scale: 1.005, opacity: 1 },
+  queued: { blur: 2, sat: 0.75, scale: 1.02, opacity: 0.7 },
+  generating: { blur: 0.6, sat: 0.9, scale: 1.01, opacity: 0.92 },
+  refining: { blur: 0.2, sat: 0.98, scale: 1.003, opacity: 1 },
   complete: { blur: 0, sat: 1, scale: 1, opacity: 1 },
   error: { blur: 2, sat: 0.5, scale: 1, opacity: 0.28 },
 };
@@ -75,7 +75,39 @@ const TARGET: Partial<Record<RefineStatus, number>> = {
   refining: 0.875,
   complete: 1,
 };
-const LEVELS = [48, 32, 20, 12, 8, 5, 3, 2, 1];
+// Mosaic block sizes (CSS px), coarse → sharp. Smaller first blocks keep
+// every step readable.
+const LEVELS = [24, 16, 10, 6, 4, 2, 1];
+
+/**
+ * Shrinks `src` to w×h by repeated halving, so each mosaic block is a true
+ * average of the pixels under it (one big jump skips most of them and
+ * gives muddy, flickery blocks).
+ */
+const downscale = (src: HTMLCanvasElement, w: number, h: number) => {
+  let cur = src;
+  while (cur.width / 2 >= w && cur.height / 2 >= h) {
+    const half = document.createElement("canvas");
+    half.width = Math.max(1, Math.floor(cur.width / 2));
+    half.height = Math.max(1, Math.floor(cur.height / 2));
+    const hc = half.getContext("2d");
+    if (!hc) break;
+    hc.imageSmoothingEnabled = true;
+    hc.imageSmoothingQuality = "high";
+    hc.drawImage(cur, 0, 0, half.width, half.height);
+    cur = half;
+  }
+  const out = document.createElement("canvas");
+  out.width = w;
+  out.height = h;
+  const oc = out.getContext("2d");
+  if (oc) {
+    oc.imageSmoothingEnabled = true;
+    oc.imageSmoothingQuality = "high";
+    oc.drawImage(cur, 0, 0, w, h);
+  }
+  return out;
+};
 const EDGE = 28;
 const STRIPS = 14;
 const DEFAULT_LABELS: Record<RefineStatus, string> = {
@@ -127,6 +159,16 @@ const build = (
     }
   }
   s.glint = glint;
+  // Full-resolution cover crop; every coarser level is averaged down from it.
+  const base = document.createElement("canvas");
+  base.width = W;
+  base.height = H;
+  const bc = base.getContext("2d");
+  if (bc) {
+    bc.imageSmoothingEnabled = true;
+    bc.imageSmoothingQuality = "high";
+    bc.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+  }
   s.levels = LEVELS.map((block) => {
     const b = block === 1 ? 1 : Math.max(2, Math.round(block * dpr));
     const full = document.createElement("canvas");
@@ -135,20 +177,14 @@ const build = (
     const fc = full.getContext("2d");
     if (!fc) return full;
     if (b === 1) {
-      fc.imageSmoothingEnabled = true;
-      fc.imageSmoothingQuality = "high";
-      fc.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+      fc.drawImage(base, 0, 0);
       return full;
     }
-    const small = document.createElement("canvas");
-    small.width = Math.max(1, Math.round(W / b));
-    small.height = Math.max(1, Math.round(H / b));
-    const sc = small.getContext("2d");
-    if (sc) {
-      sc.imageSmoothingEnabled = true;
-      sc.imageSmoothingQuality = "high";
-      sc.drawImage(img, sx, sy, sw, sh, 0, 0, small.width, small.height);
-    }
+    const small = downscale(
+      base,
+      Math.max(1, Math.round(W / b)),
+      Math.max(1, Math.round(H / b))
+    );
     fc.imageSmoothingEnabled = false;
     fc.drawImage(small, 0, 0, W, H);
     return full;
@@ -163,7 +199,7 @@ export function RefineFrame({
   radius = 16,
   background = "#27272a",
   color = "#f5f5f5",
-  stageDuration = 400,
+  stageDuration = 150,
   sweep = true,
   showStatus = true,
   hideAfter = 1200,

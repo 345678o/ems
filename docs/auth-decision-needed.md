@@ -1,5 +1,11 @@
 # Authentication Architecture Decision
 
+> **Decided: Option B (full password auth).** Implemented in `lib/auth/credentials.ts`,
+> `lib/auth/password.ts` and `app/api/auth/register/route.ts`. Accounts without a
+> `password_hash` cannot sign in until they register again with the same email (claims the
+> row) or an admin runs `node scripts/set-password.mjs <email> <password>`.
+> The "Current Behavior" section below describes the old code.
+
 ## Current Behavior & Discrepancies
 
 In [`app/api/auth/[...nextauth]/route.ts`](../app/api/auth/[...nextauth]/route.ts), the credentials `authorize()` function currently operates as follows:

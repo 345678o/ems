@@ -1,10 +1,10 @@
 import type React from "react";
-import { UserAppShell } from "@/components/layout/UserAppShell";
+import { ShowcaseFrame } from "@/components/discover/ShowcaseFrame";
 
 export default function ProfileLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <UserAppShell>{children}</UserAppShell>;
+  return <ShowcaseFrame>{children}</ShowcaseFrame>;
 }

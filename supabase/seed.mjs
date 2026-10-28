@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { v5 as uuidv5 } from "uuid";
+import bcrypt from "bcryptjs";
 
 // Load env
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -48,12 +49,14 @@ async function seed() {
 
   // 1. Users
   console.log("1. Inserting users...");
+  const DEMO_PASSWORD_HASH = await bcrypt.hash("password123", 12);
   const { error: usersErr } = await supabase.from("users").upsert([
     {
       id: DEMO_USER_ID,
       email: "demo@example.com",
       full_name: "Demo Innovation Club",
       avatar_url: null,
+      password_hash: DEMO_PASSWORD_HASH,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
@@ -62,6 +65,7 @@ async function seed() {
       email: "techclub@mlrit.ac.in",
       full_name: "Tech Innovators Club",
       avatar_url: null,
+      password_hash: DEMO_PASSWORD_HASH,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
@@ -408,7 +412,7 @@ async function seed() {
   console.log("\n✅ Seeding complete!\n");
   console.log("Demo Login Credentials:");
   console.log("  Email:    demo@example.com");
-  console.log("  Password: password123 (any password works)");
+  console.log("  Password: password123 (same for techclub@mlrit.ac.in)");
   console.log("\nData inserted for clubs:");
   console.log("  • Demo Innovation Club  (3 self-driven + 1 IIC events)");
   console.log("  • Tech Innovators Club  (1 paid event + 1 pending event)");

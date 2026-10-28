@@ -95,6 +95,32 @@ export function eventCategory(e: DiscoverEvent) {
   return guess === "other" ? "Event" : guess[0].toUpperCase() + guess.slice(1);
 }
 
+export function formatEventTime(iso: string | null) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** Venue text that names an online platform rather than a place. */
+export function isOnlineEvent(e: Pick<DiscoverEvent, "venue">) {
+  return /\b(online|virtual|zoom|google meet|teams|webinar)\b/i.test(
+    e.venue ?? ""
+  );
+}
+
+export function isUpcomingEvent(
+  e: Pick<DiscoverEvent, "start_datetime">,
+  now: number
+) {
+  return !!e.start_datetime && new Date(e.start_datetime).getTime() >= now;
+}
+
+export function clubHref(name: string) {
+  return `/clubs/${encodeURIComponent(name.toLowerCase())}`;
+}
+
 export function formatEventDate(iso: string | null) {
   if (!iso) return "Date TBA";
   return new Date(iso).toLocaleDateString("en-IN", {

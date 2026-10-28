@@ -14,7 +14,7 @@ export default function Profile() {
   useEffect(() => {
     if (status === "loading") return; // wait for next-auth
     if (!session?.user?.email) {
-      router.push("/"); // not logged in
+      router.replace("/register?callbackUrl=/user/profile"); // not logged in → sign in
       return;
     }
 
@@ -47,8 +47,11 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen dark:bg-[#0A0B1E] bg-[#FAF9F6]">
-        <p className="text-neutral-700 dark:text-neutral-200">Loading...</p>
+      <div
+        role="status"
+        className="flex min-h-[40vh] items-center justify-center text-ui text-zinc-400"
+      >
+        Loading…
       </div>
     );
   }

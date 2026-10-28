@@ -1,258 +1,228 @@
 "use client";
 
-import logger from "@/lib/logger";
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { MapPin, CalendarDays, Compass, Ticket } from "lucide-react";
-import { supabase } from "@/lib/supabase/browserClient";
-import { TornCard } from "@/components/ui/torn-card";
-import { ScribbleStar } from "@/components/ui/scribble";
+import { isSameDay } from "date-fns";
+import { ArrowRight, CalendarX2, MapPin } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-
-type DashboardEvent = {
-  id: string;
-  name: string;
-  venue: string | null;
-  city: string | null;
-  start_datetime: string;
-  end_datetime: string;
-};
-
-const QUICK_LINKS = [
-  { label: "Browse Events", href: "/events", icon: Compass },
-  { label: "My Bookings", href: "/user/profile?tab=my-bookings", icon: Ticket },
-  { label: "Event Calendar", href: "/calendar", icon: CalendarDays },
-];
+import { EmptyState, ErrorState } from "@/components/discover/LoadStates";
+import { friendlyError } from "@/components/discover/useEvents";
+import {
+  useMyBookings,
+  type Booking,
+} from "@/components/discover/useMyBookings";
+import {
+  eventLocation,
+  formatEventDate,
+  formatEventTime,
+  isUpcomingEvent,
+} from "@/components/discover/types";
 
 function StatTile({ label, value }: { label: string; value: number | null }) {
   return (
-    <TornCard className="flex-1 px-6 py-5 text-center">
-      <p className="font-display text-4xl text-ink">
-        {value === null ? "—" : value}
+    <div className="dz-panel flex-1 px-5 py-4">
+      <p className="text-ui text-zinc-400">{label}</p>
+      <p className="mt-1 text-3xl font-semibold tabular-nums">
+        {value === null ? (
+          <span className="inline-block h-8 w-10 animate-pulse rounded bg-[var(--dz-surface-3)] align-middle" />
+        ) : (
+          value
+        )}
       </p>
-      <p className="mt-1 text-sm text-foreground/60">{label}</p>
-    </TornCard>
+    </div>
+  );
+}
+
+function EventRow({ booking }: { booking: Booking }) {
+  const e = booking.event;
+  const d = e.start_datetime ? new Date(e.start_datetime) : null;
+  const location = eventLocation(e);
+  const time = formatEventTime(e.start_datetime);
+  return (
+    <Link
+      href={`/events/${e.id}`}
+      className="dz-card flex items-center gap-4 p-3.5"
+    >
+      <span className="flex w-12 shrink-0 flex-col items-center rounded-lg bg-[var(--dz-surface-2)] py-1.5 leading-none ring-1 ring-[var(--dz-border)]">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--dz-accent)]">
+          {d ? d.toLocaleDateString("en-IN", { month: "short" }) : "TBA"}
+        </span>
+        <span className="mt-1 text-lg font-semibold">
+          {d?.getDate() ?? "–"}
+        </span>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold">{e.name}</span>
+        <span className="mt-0.5 flex items-center gap-1 truncate text-xs text-zinc-400">
+          {time && <span>{time}</span>}
+          {time && location && <span aria-hidden>·</span>}
+          {location && (
+            <>
+              <MapPin className="size-3 shrink-0" aria-hidden />
+              <span className="truncate">{location}</span>
+            </>
+          )}
+        </span>
+      </span>
+      <ArrowRight className="size-4 shrink-0 text-faint" aria-hidden />
+    </Link>
   );
 }
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const [registeredEvents, setRegisteredEvents] = useState<DashboardEvent[]>(
-    []
+  const { bookings, status, error, retry } = useMyBookings(
+    session?.user?.email ?? null
   );
-  const [upcoming, setUpcoming] = useState<DashboardEvent[]>([]);
-  const [pastCount, setPastCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [now] = useState(() => Date.now());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date()
+    () => new Date()
   );
 
-  useEffect(() => {
-    const email = session?.user?.email;
-    if (!email) return;
+  // Rejected registrations aren't events the student is going to.
+  const going = useMemo(
+    () =>
+      bookings.filter(
+        (b) => b.registration_status?.toLowerCase() !== "rejected"
+      ),
+    [bookings]
+  );
+  const upcoming = useMemo(
+    () =>
+      going
+        .filter((b) => isUpcomingEvent(b.event, now))
+        .sort(
+          (a, b) =>
+            new Date(a.event.start_datetime!).getTime() -
+            new Date(b.event.start_datetime!).getTime()
+        ),
+    [going, now]
+  );
+  const pastCount = going.length - upcoming.length;
+  const eventDays = useMemo(
+    () =>
+      going
+        .filter((b) => b.event.start_datetime)
+        .map((b) => new Date(b.event.start_datetime!)),
+    [going]
+  );
+  const onSelectedDay = selectedDate
+    ? going.filter(
+        (b) =>
+          b.event.start_datetime &&
+          isSameDay(new Date(b.event.start_datetime), selectedDate)
+      )
+    : [];
 
-    const load = async () => {
-      setLoading(true);
-      try {
-        const { data: participantRows, error: participantError } =
-          await supabase
-            .from("event_participants")
-            .select("event_id")
-            .eq("email", email);
-
-        if (participantError) {
-          logger.error(
-            "[dashboard] participant fetch error:",
-            participantError.message
-          );
-          setRegisteredEvents([]);
-          setUpcoming([]);
-          setPastCount(0);
-          return;
-        }
-
-        const eventIds = Array.from(
-          new Set((participantRows || []).map((r) => r.event_id))
-        );
-
-        if (eventIds.length === 0) {
-          setRegisteredEvents([]);
-          setUpcoming([]);
-          setPastCount(0);
-          return;
-        }
-
-        const { data: events, error: eventsError } = await supabase
-          .from("events")
-          .select("id,name,venue,city,start_datetime,end_datetime")
-          .in("id", eventIds);
-
-        if (eventsError) {
-          logger.error("[dashboard] events fetch error:", eventsError.message);
-          setRegisteredEvents([]);
-          setUpcoming([]);
-          setPastCount(0);
-          return;
-        }
-
-        const rows = (events || []) as DashboardEvent[];
-        setRegisteredEvents(rows);
-
-        // Classify here (in the effect, not during render) since it
-        // depends on the current wall-clock time.
-        const now = Date.now();
-        setUpcoming(
-          rows
-            .filter((e) => new Date(e.start_datetime).getTime() >= now)
-            .sort(
-              (a, b) =>
-                new Date(a.start_datetime).getTime() -
-                new Date(b.start_datetime).getTime()
-            )
-        );
-        setPastCount(
-          rows.filter((e) => new Date(e.end_datetime).getTime() < now).length
-        );
-      } catch (err: unknown) {
-        logger.error(
-          "[dashboard] unexpected error:",
-          err instanceof Error ? err.message : err
-        );
-        setRegisteredEvents([]);
-        setUpcoming([]);
-        setPastCount(0);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [session?.user?.email]);
-
-  const displayName =
+  const ready = status === "ready";
+  const firstName =
     session?.user?.name?.split(" ")[0] || session?.user?.email || "there";
 
   return (
-    <div className="paper-grain min-h-screen bg-background">
-      <div className="mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-14">
-        <h1 className="font-display text-3xl text-ink sm:text-4xl">
-          Hey {displayName}! <span aria-hidden>👋</span>
+    <div className="flex flex-col gap-8">
+      <div>
+        <p className="text-ui font-medium text-[var(--dz-accent)]">Dashboard</p>
+        <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-[-0.02em] sm:text-[28px]">
+          Hey {firstName}
         </h1>
-        <p className="font-marker mt-1 text-lg text-hotpink">
+        <p className="mt-1.5 text-sm text-zinc-400">
           Here&apos;s what&apos;s happening with your events.
         </p>
+      </div>
 
-        {/* Stat tiles */}
-        <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-          <StatTile
-            label="Upcoming Events"
-            value={loading ? null : upcoming.length}
-          />
-          <StatTile
-            label="Registered Events"
-            value={loading ? null : registeredEvents.length}
-          />
-          <StatTile label="Past Events" value={loading ? null : pastCount} />
+      {status === "error" ? (
+        <ErrorState
+          title="Your events didn't load"
+          message={friendlyError(error)}
+          onRetry={retry}
+        />
+      ) : (
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <StatTile label="Upcoming" value={ready ? upcoming.length : null} />
+          <StatTile label="Registered" value={ready ? going.length : null} />
+          <StatTile label="Attended / past" value={ready ? pastCount : null} />
         </div>
+      )}
 
-        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Upcoming events list */}
-          <div className="lg:col-span-2">
-            <div className="mb-4 flex items-center gap-2">
-              <ScribbleStar className="h-4 w-4 text-hotpink" />
-              <h2 className="font-display text-2xl text-ink">
-                Upcoming Events
-              </h2>
-            </div>
-
-            {!loading && upcoming.length === 0 && (
-              <TornCard className="px-6 py-8 text-center">
-                <p className="text-foreground/70">
-                  No registrations yet — browse events to get started.
-                </p>
-                <Link
-                  href="/events"
-                  className="mt-3 inline-block rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
-                >
-                  Browse Events
-                </Link>
-              </TornCard>
-            )}
-
-            <div className="space-y-3">
-              {upcoming.map((e) => {
-                const d = new Date(e.start_datetime);
-                const location = [e.venue, e.city]
-                  .filter((v): v is string => Boolean(v && v.trim()))
-                  .join(", ");
-                return (
-                  <div
-                    key={e.id}
-                    className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4"
-                  >
-                    <div className="flex w-14 shrink-0 flex-col items-center rounded-lg border border-ink/10 bg-secondary py-1.5 leading-none shadow-sm">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-hotpink">
-                        {d.toLocaleDateString("en-IN", { month: "short" })}
-                      </span>
-                      <span className="font-display mt-1 text-lg text-ink">
-                        {d.getDate()}
-                      </span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-display text-base text-foreground">
-                        {e.name}
-                      </h3>
-                      {location && (
-                        <p className="mt-0.5 flex items-center gap-1 truncate text-sm text-foreground/60">
-                          <MapPin className="h-3.5 w-3.5 shrink-0" />
-                          {location}
-                        </p>
-                      )}
-                    </div>
-                    <span className="shrink-0 rounded-full bg-badge-sports px-3 py-1 text-xs font-semibold text-badge-sports-foreground">
-                      Registered
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section aria-labelledby="upcoming-heading" className="min-w-0">
+          <div className="flex items-center justify-between">
+            <h2 id="upcoming-heading" className="text-lg font-semibold">
+              Upcoming events
+            </h2>
+            <Link
+              href="/bookings"
+              className="-my-2 py-2 text-ui text-zinc-400 transition-colors hover:text-white"
+            >
+              All bookings
+            </Link>
           </div>
-
-          {/* Sidebar: calendar + quick links */}
-          <div className="space-y-6">
-            <TornCard className="px-3 pt-3">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                className="mx-auto"
+          <div className="mt-3 grid gap-3">
+            {status === "loading" &&
+              Array.from({ length: 3 }, (_, i) => (
+                <div
+                  key={i}
+                  aria-hidden
+                  className="dz-panel h-[74px] animate-pulse"
+                />
+              ))}
+            {ready && upcoming.length === 0 && (
+              <EmptyState
+                icon={<CalendarX2 className="size-5" aria-hidden />}
+                title="Nothing coming up"
+                message="Register for an event and it will show up here."
+                action={
+                  <Link href="/events" className="dz-btn dz-btn--accent">
+                    Explore events
+                  </Link>
+                }
               />
-            </TornCard>
-
-            <TornCard className="px-5 py-5">
-              <h3 className="font-display mb-3 text-lg text-ink">
-                Quick Links
-              </h3>
-              <ul className="space-y-1">
-                {QUICK_LINKS.map((link) => {
-                  const Icon = link.icon;
-                  return (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-paper-dim hover:text-ink"
-                      >
-                        <Icon className="h-4 w-4 text-hotpink" />
-                        {link.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </TornCard>
+            )}
+            {ready && upcoming.map((b) => <EventRow key={b.id} booking={b} />)}
           </div>
-        </div>
+        </section>
+
+        <section
+          aria-label="Your event calendar"
+          className="dz-panel self-start p-3"
+        >
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+            modifiers={{ hasEvent: eventDays }}
+            modifiersClassNames={{
+              hasEvent:
+                "[&>button]:font-semibold [&>button]:text-[var(--dz-accent)]",
+            }}
+            className="mx-auto"
+          />
+          <div className="border-t border-[var(--dz-border)] px-2 pb-1 pt-3">
+            <p className="text-xs text-faint">
+              {selectedDate
+                ? formatEventDate(selectedDate.toISOString())
+                : "Pick a day"}
+            </p>
+            {ready && onSelectedDay.length === 0 && (
+              <p className="mt-1 text-ui text-zinc-400">
+                None of your events on this day.
+              </p>
+            )}
+            <ul className="mt-1 grid gap-1">
+              {onSelectedDay.map((b) => (
+                <li key={b.id}>
+                  <Link
+                    href={`/events/${b.event.id}`}
+                    className="block truncate rounded-md py-1 text-ui hover:text-[var(--dz-accent)]"
+                  >
+                    {b.event.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
       </div>
     </div>
   );

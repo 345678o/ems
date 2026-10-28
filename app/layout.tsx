@@ -26,6 +26,10 @@ const bigShouldersDisplay = Big_Shoulders({
   subsets: ["latin"],
   weight: ["600", "700", "800"],
   variable: "--font-big-shoulders",
+  // Next has no metric overrides for this font. Turbopack still looks them up
+  // (and warns on every compile) unless an explicit fallback is given.
+  adjustFontFallback: false,
+  fallback: ["Arial Narrow", "sans-serif"],
 });
 
 const caveat = Caveat({

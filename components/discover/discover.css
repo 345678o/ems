@@ -88,6 +88,15 @@
   .dz-btn--primary:hover {
     background: #e7e7ea;
   }
+  /* Main call to action on a page; one per view */
+  .dz-btn--accent {
+    background: var(--dz-accent);
+    color: #1a0d06;
+    font-weight: 600;
+  }
+  .dz-btn--accent:hover {
+    background: #ff8f6b;
+  }
   .dz-btn--ghost {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--dz-border-strong);
@@ -232,6 +241,50 @@
   .dz-scroll::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 9999px;
+  }
+}
+
+/* Sidebar shell.
+   data-sb on the shell sets the content offset; data-sb on the sidebar sets
+   its own width, labels and tooltips. "auto" = collapsed on tablet,
+   expanded from lg up; "expanded"/"collapsed" are the user's choice. */
+.dz-shell {
+  --sb-w: 72px;
+}
+.dz-shell[data-sb="expanded"] {
+  --sb-w: 240px;
+}
+.dz-sb {
+  width: 72px;
+  transition: width 0.2s ease;
+}
+.dz-sb[data-sb="expanded"] {
+  width: 240px;
+}
+.dz-sb[data-sb="collapsed"] .dz-sb-label,
+.dz-sb[data-sb="expanded"] .dz-sb-tip {
+  display: none;
+}
+@media (max-width: 1023px) {
+  .dz-sb[data-sb="auto"] .dz-sb-label {
+    display: none;
+  }
+}
+@media (min-width: 1024px) {
+  .dz-shell[data-sb="auto"] {
+    --sb-w: 240px;
+  }
+  .dz-sb[data-sb="auto"] {
+    width: 240px;
+  }
+  .dz-sb[data-sb="auto"] .dz-sb-tip {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dz-sb,
+  .dz-shell main {
+    transition: none;
   }
 }
 

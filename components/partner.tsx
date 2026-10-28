@@ -3,10 +3,12 @@ import logger from "@/lib/logger";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AlertTriangle, CalendarPlus, Handshake, Users } from "lucide-react";
 
 export default function Partner() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleConvert = async () => {
     const ok = window.confirm(
@@ -15,43 +17,66 @@ export default function Partner() {
     if (!ok) return;
 
     try {
+      setError(null);
       setLoading(true);
       const res = await fetch("/api/partner/convert", { method: "PATCH" });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        alert(j?.error || "Failed to convert account.");
+        setError(j?.error || "Failed to convert account.");
         return;
       }
       // success → go to /club
       router.replace("/club");
     } catch (e) {
       logger.error("Failed to convert account:", e);
-      alert("Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-[70vh] flex items-center justify-center px-4">
-      <div className="max-w-xl text-center space-y-6">
-        <h1 className="text-2xl sm:text-3xl font-semibold">
-          Partner with us and host events
-        </h1>
+    <section className="dz-panel max-w-2xl p-6 sm:p-8">
+      <span className="grid size-12 place-items-center rounded-xl bg-[rgba(255,117,71,0.12)] text-[var(--dz-accent)] ring-1 ring-[rgba(255,117,71,0.25)]">
+        <Handshake className="size-6" aria-hidden />
+      </span>
+      <h2 className="mt-4 text-xl font-semibold">
+        Partner with us and host events
+      </h2>
+      <ul className="mt-4 flex flex-col gap-2.5 text-sm text-zinc-300">
+        <li className="flex items-center gap-2.5">
+          <CalendarPlus className="size-4 text-faint" aria-hidden />
+          Create and publish events for your club
+        </li>
+        <li className="flex items-center gap-2.5">
+          <Users className="size-4 text-faint" aria-hidden />
+          Manage participants, tickets and reports
+        </li>
+      </ul>
 
-        <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
-          By continuing, you choose to convert this account into an organizer
-          account and cannot go back.
+      <div className="mt-6 flex items-start gap-3 rounded-lg border border-[rgba(251,191,36,0.25)] bg-[var(--warning-soft)] p-3 text-ui text-[var(--warning)]">
+        <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <p>
+          This converts your account into an organizer account. You can&apos;t
+          switch back to a student account afterwards.
         </p>
+      </div>
 
+      <div className="mt-6 flex flex-wrap items-center gap-3">
         <button
+          type="button"
           onClick={handleConvert}
           disabled={loading}
-          className="inline-flex items-center justify-center rounded-md px-5 py-2.5 text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+          className="dz-btn dz-btn--accent"
         >
           {loading ? "Converting…" : "Convert to Organizer"}
         </button>
+        {error && (
+          <p role="alert" className="text-ui text-[var(--danger)]">
+            {error}
+          </p>
+        )}
       </div>
-    </main>
+    </section>
   );
 }

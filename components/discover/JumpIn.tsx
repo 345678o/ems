@@ -1,87 +1,74 @@
-"use client";
-
-import { useSyncExternalStore } from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
 import {
-  Calendar03Icon,
-  Ticket01Icon,
-  UserCircleIcon,
-  UserGroupIcon,
-} from "@hugeicons/core-free-icons";
-import GlassIcons from "@/components/ui/glass-icons";
+  ArrowUpRight,
+  CalendarDays,
+  Ticket,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
 
 /**
- * "Jump in" row of glass discs under the Discover header. Each disc is a
- * shortcut to a main area of the app. Warm ember glass sits on the dark
- * page; labels stay visible so the row reads on touch screens too.
+ * "Jump in" shortcuts under the Discover header: one row of compact tiles
+ * (two columns on phones). Each tile is a single link with one icon in the
+ * accent tint, so the row stays quiet next to the event artwork below.
  */
 const SHORTCUTS = [
   {
-    icon: <HugeiconsIcon icon={Ticket01Icon} />,
-    color: "orange",
+    icon: Ticket,
     label: "Events",
+    hint: "Browse everything on campus",
     href: "/events",
   },
   {
-    icon: <HugeiconsIcon icon={UserGroupIcon} />,
-    color: "pink",
+    icon: UsersRound,
     label: "Clubs",
+    hint: "Find your community",
     href: "/clubs",
   },
   {
-    icon: <HugeiconsIcon icon={Calendar03Icon} />,
-    color: "teal",
+    icon: CalendarDays,
     label: "Calendar",
+    hint: "See what's on each day",
     href: "/calendar",
   },
   {
-    icon: <HugeiconsIcon icon={UserCircleIcon} />,
-    color: "indigo",
+    icon: UserRound,
     label: "Profile",
+    hint: "Your account and events",
     href: "/user/profile",
   },
 ];
 
-// Phone width: smaller discs and tighter gap so all four fit one row.
-const subscribe = (notify: () => void) => {
-  const mq = window.matchMedia("(max-width: 480px)");
-  mq.addEventListener("change", notify);
-  return () => mq.removeEventListener("change", notify);
-};
-const isCompact = () => window.matchMedia("(max-width: 480px)").matches;
-
 export function JumpIn() {
-  const compact = useSyncExternalStore(subscribe, isCompact, () => false);
-
   return (
-    <section className="dz-panel relative overflow-hidden px-5 pb-10 pt-5 sm:px-8">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 className="text-lg font-semibold tracking-[-0.01em]">Jump in</h2>
-        <p className="text-ui text-zinc-400">Where to next?</p>
-      </div>
-      <div className="mt-8 flex justify-center">
-        <GlassIcons
-          items={SHORTCUTS}
-          size={compact ? 60 : 76}
-          gap={compact ? 18 : 44}
-          columns={4}
-          roundness={0.5}
-          refraction={0.8}
-          bevel={0.6}
-          frost={0.3}
-          shine={0.85}
-          tint="#ffd2bf"
-          tintOpacity={0.16}
-          iconColor="#fff8f4"
-          plate="circle"
-          spread={0.45}
-          hover="float"
-          parallax={0.6}
-          labels="always"
-          intro
-          theme="dark"
-        />
-      </div>
+    <section aria-labelledby="jump-in-heading">
+      <h2 id="jump-in-heading" className="sr-only">
+        Jump in
+      </h2>
+      <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {SHORTCUTS.map(({ icon: Icon, label, hint, href }) => (
+          <li key={label} className="min-w-0">
+            <Link
+              href={href}
+              className="dz-card group flex h-full items-center gap-3 p-3 sm:p-4"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[rgba(255,122,80,0.12)] text-[var(--dz-accent)] ring-1 ring-[rgba(255,122,80,0.2)] transition-colors group-hover:bg-[rgba(255,122,80,0.18)]">
+                <Icon className="size-[18px]" strokeWidth={1.75} aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">{label}</span>
+                <span className="block truncate text-xs text-zinc-400 max-sm:hidden">
+                  {hint}
+                </span>
+              </span>
+              <ArrowUpRight
+                className="size-4 shrink-0 text-faint transition-colors group-hover:text-white max-sm:hidden"
+                aria-hidden
+              />
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

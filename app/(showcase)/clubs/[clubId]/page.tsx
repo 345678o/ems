@@ -1,14 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import { ArrowLeft, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-
-import { SiteFooter } from "@/components/ems/site-shell";
-import RingGallery from "@/components/originkit/ui/ring-gallery";
+import { ArrowLeft, CalendarDays, CalendarPlus, MapPin } from "lucide-react";
 import { supabase } from "@/lib/supabase/browserClient";
+import { HeroBanner } from "@/components/discover/HeroBanner";
+import { EventCard } from "@/components/discover/EventCard";
+import {
+  clubLogo,
+  eventCategory,
+  eventCover,
+  eventLocation,
+  formatEventDate,
+  type DiscoverEvent,
+} from "@/components/discover/types";
 
 type Club = {
   id: string;
@@ -17,220 +23,38 @@ type Club = {
   avatar_url: string | null;
 };
 
-type ClubEvent = {
-  id: string;
-  name: string;
-  start_datetime: string;
-  venue: string | null;
-};
-
-const fallbackPosters = [
-  { id: "equinox", name: "Equinox" },
-  { id: "hustle-mania", name: "Hustle Mania" },
-  { id: "welcome-2", name: "Welcome 2.0" },
-  { id: "metaloop", name: "Metaloop" },
-  { id: "b2b", name: "B2B" },
-];
-
-const blankPlaceholder =
-  "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-
-const clubImages: Record<string, string> = {
-  APEX: "/clubs/apex",
-  AREO: "/clubs/areo",
-  CAME: "/clubs/came",
-  CIE: "/clubs/cie",
-  CODE: "/clubs/code",
-  EWB: "/clubs/EWB",
-  LIT: "/clubs/lit",
-  MUN: "/clubs/mun",
-  NSS: "/clubs/nss",
-  SCOPE: "/clubs/scope",
-};
-
-const placeholderEventDetails = [
-  {
-    image: "/events/equniox.png",
-    date: "October 18, 2026",
-    venue: "Innovation Hall",
-    description: "An evening of ideas, energy, and new connections.",
-  },
-  {
-    image: "/events/hustle mania.png",
-    date: "November 06, 2026",
-    venue: "MLRIT Main Auditorium",
-    description: "A fast-paced showcase built for curious minds.",
-  },
-];
-
-function EventRingGallery({
-  events,
-  clubImage,
-}: {
-  events: ClubEvent[];
-  clubImage?: string;
-}) {
-  const posters = events.length
-    ? events.map((event, index) => ({
-        id: event.id,
-        name: event.name,
-        image:
-          index < placeholderEventDetails.length
-            ? placeholderEventDetails[index].image
-            : blankPlaceholder,
-      }))
-    : fallbackPosters.map((poster, index) => ({
-        ...poster,
-        image:
-          index < placeholderEventDetails.length
-            ? placeholderEventDetails[index].image
-            : blankPlaceholder,
-      }));
-  const ringPosters = Array.from({ length: 20 }, (_, index) => {
-    const poster = posters[index % posters.length];
-    return {
-      ...poster,
-      image:
-        index < placeholderEventDetails.length
-          ? poster.image
-          : blankPlaceholder,
-    };
-  });
-  const [selectedPoster, setSelectedPoster] = useState<
-    (typeof ringPosters)[number] | null
-  >(null);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const selectedDetails =
-    selectedIndex < placeholderEventDetails.length
-      ? placeholderEventDetails[selectedIndex]
-      : {
-          image: blankPlaceholder,
-          date: "Event date placeholder",
-          venue: "Venue placeholder",
-          description: "Event information will appear here.",
-        };
-
-  return (
-    <div className="club-ring-gallery relative flex h-[520px] w-full items-center justify-center overflow-hidden sm:h-[650px]">
-      <RingGallery
-        images={ringPosters.map((poster) => ({
-          image: { src: poster.image || blankPlaceholder, alt: poster.name },
-        }))}
-        ring={{ radiusX: 210, radiusY: 210, tilt: true, repeat: 1 }}
-        cardWidth={125}
-        cardHeight={165}
-        rounded={5}
-        direction="anticlockwise"
-        stack="firstOnTop"
-        drag
-        onSelect={(index) => {
-          setSelectedIndex(index);
-          setSelectedPoster(ringPosters[index]);
-        }}
-        style={{ width: "100%", height: "520px" }}
-      />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 z-[500000] grid h-40 w-40 -translate-x-1/2 -translate-y-1/2 place-items-center overflow-hidden rounded-full border border-white/10 bg-[#121212] shadow-2xl shadow-black/50 sm:h-52 sm:w-52">
-        {clubImage ? (
-          <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-2 sm:p-3">
-            <Image
-              src={clubImage}
-              alt=""
-              fill
-              sizes="(max-width: 640px) 160px, 208px"
-              className="scale-[1.16] object-contain"
-              style={{
-                objectPosition: "center",
-                filter: "drop-shadow(0 8px 10px rgba(0,0,0,0.28))",
-              }}
-              unoptimized
-            />
-          </div>
-        ) : (
-          <span className="text-2xl font-semibold text-white/30">CLUB</span>
-        )}
-      </div>
-      <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2 text-xs uppercase tracking-[0.16em] text-white/45">
-        <span>Event placeholders</span>
-      </div>
-      {selectedPoster ? (
-        <div
-          className="absolute inset-0 z-[1000000] grid grid-cols-2 gap-16 bg-[#121212]/35 px-6 py-8 backdrop-blur-[1px] sm:gap-16 sm:px-10"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setSelectedPoster(null);
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setSelectedPoster(null)}
-            className="absolute right-4 top-4 z-10 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-black/60 transition hover:text-black"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </button>
-          <button
-            type="button"
-            aria-label="Close event placeholder"
-            onClick={() => setSelectedPoster(null)}
-            className="group relative flex items-center justify-center bg-white/90 text-black shadow-2xl transition-transform duration-500 animate-in slide-in-from-left-8 hover:bg-white"
-          >
-            <Image
-              src={selectedDetails.image}
-              alt={selectedPoster.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="absolute inset-0 h-full w-full object-cover"
-              unoptimized
-            />
-            <span className="absolute inset-0 bg-black/25" />
-            <span className="relative text-2xl font-semibold uppercase tracking-tight text-white sm:text-4xl">
-              {selectedPoster.name}
-            </span>
-            <span className="absolute bottom-4 text-[10px] uppercase tracking-[0.2em] text-black/45">
-              Event card
-            </span>
-          </button>
-          <div className="flex flex-col justify-center bg-white/90 px-6 text-black shadow-2xl animate-in slide-in-from-right-8 sm:px-10">
-            <span className="text-xs uppercase tracking-[0.2em] text-black/45">
-              Event details
-            </span>
-            <span className="mt-3 text-2xl font-semibold uppercase tracking-tight sm:text-4xl">
-              {selectedPoster.name}
-            </span>
-            <span className="mt-5 text-sm text-black/60">
-              {selectedDetails.description}
-            </span>
-            <span className="mt-6 text-xs uppercase tracking-[0.16em] text-black/50">
-              {selectedDetails.date} | {selectedDetails.venue}
-            </span>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 export default function ClubPage() {
-  const params = useParams<{ clubId: string }>();
-  const clubId = params.clubId;
+  const { clubId } = useParams<{ clubId: string }>();
   const [club, setClub] = useState<Club | null>(null);
-  const [events, setEvents] = useState<ClubEvent[]>([]);
+  const [events, setEvents] = useState<DiscoverEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [now] = useState(() => Date.now());
 
   useEffect(() => {
-    const loadClub = async () => {
+    const load = async () => {
       setIsLoading(true);
-      const decodedId = decodeURIComponent(clubId);
-      const { data: clubs } = await supabase
+      const name = decodeURIComponent(clubId);
+      const select = "id,name,about,avatar_url";
+      // Exact name first, then a prefix match so short slugs like "cie"
+      // still resolve to "CIE MLRIT".
+      let { data: found } = await supabase
         .from("clubs")
-        .select("id,name,about,avatar_url")
-        .ilike("name", decodedId)
+        .select(select)
+        .ilike("name", name)
         .limit(1);
+      if (!found?.length) {
+        ({ data: found } = await supabase
+          .from("clubs")
+          .select(select)
+          .ilike("name", `${name}%`)
+          .limit(1));
+      }
 
-      const matchedClub = clubs?.[0] as Club | undefined;
-      if (!matchedClub) {
+      const matched = found?.[0] as Club | undefined;
+      if (!matched) {
         setClub({
-          id: decodedId,
-          name: decodedId.toUpperCase(),
+          id: name,
+          name: name.toUpperCase(),
           about: null,
           avatar_url: null,
         });
@@ -238,102 +62,150 @@ export default function ClubPage() {
         return;
       }
 
-      setClub(matchedClub);
+      setClub(matched);
       const { data: eventData } = await supabase
         .from("events")
-        .select("id,name,start_datetime,venue")
-        .eq("club_id", matchedClub.id)
+        .select(
+          "id,name,description,start_datetime,event_type,theme,venue,city,banners"
+        )
+        .eq("club_id", matched.id)
         .order("start_datetime", { ascending: true });
-      setEvents((eventData as ClubEvent[]) || []);
+      setEvents(
+        ((eventData as Omit<DiscoverEvent, "club">[]) || []).map((e) => ({
+          ...e,
+          club: { name: matched.name },
+        }))
+      );
       setIsLoading(false);
     };
-
-    void loadClub();
+    void load();
   }, [clubId]);
 
-  if (isLoading) {
+  if (isLoading || !club) {
     return (
-      <div className="event-world flex min-h-screen items-center justify-center bg-background">
-        <p style={{ color: "var(--clr-white)" }}>Loading club...</p>
-      </div>
+      <p className="py-24 text-center text-ui text-zinc-400">
+        Loading club…
+      </p>
     );
   }
 
-  if (!club) {
-    return (
-      <div className="event-world flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
-        <p style={{ color: "var(--clr-white)" }}>Club not found.</p>
-        <Link href="/clubs" className="meta flex items-center gap-2" style={{ color: "var(--clr-orange)" }}>
-          <ArrowLeft className="size-4" />
-          All clubs
-        </Link>
-      </div>
-    );
-  }
+  const logo = clubLogo(club.name) || club.avatar_url;
+  const upcoming = events.filter(
+    (e) => e.start_datetime && new Date(e.start_datetime).getTime() >= now
+  );
+  const banner = events.find((e) => e.banners && Object.keys(e.banners).length);
 
   return (
-    <main>
-      <section className="relative min-h-[75svh]" style={{ background: "var(--clr-purple)", color: "var(--clr-white)" }}>
-        <div className="page-gutter mx-auto grid min-h-[75svh] max-w-[1400px] items-end gap-10 pb-16 pt-32 md:grid-cols-12">
-          <div className="md:col-span-8">
-            <Link href="/clubs" className="meta flex items-center gap-2" style={{ color: "var(--clr-orange)" }}>
-              <ArrowLeft className="size-4" />
-              All clubs
-            </Link>
-            <h1 className="display-lg mt-8 uppercase" style={{ color: "var(--clr-white)" }}>
-              {club.name}
-            </h1>
-            {club.about && (
-              <p className="mt-6 text-xl" style={{ color: "rgba(233,236,239,0.7)" }}>
-                {club.about}
-              </p>
-            )}
-          </div>
-          <div
-            className="flex aspect-square w-full items-center justify-center rounded-3xl text-7xl font-black tracking-[0.2em] md:col-span-3 md:col-start-10"
-            style={{
-              border: "1px solid rgba(233,236,239,0.2)",
-              background: "rgba(233,236,239,0.07)",
-              color: "var(--clr-white)",
-            }}
+    <div className="grid lg:grid-cols-[280px_minmax(0,1fr)] gap-6 grid-cols-1">
+      <aside className="flex flex-col gap-6 max-lg:order-2">
+        <section className="dz-panel flex flex-col items-center p-5 text-center">
+          <Link
+            href="/clubs"
+            className="flex items-center gap-1.5 self-start text-xs text-zinc-400 hover:text-white"
           >
-            {club.name.slice(0, 2).toUpperCase()}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-pad page-gutter" style={{ background: "var(--clr-white)" }}>
-        <div className="mx-auto grid max-w-[1400px] gap-10 md:grid-cols-12">
-          <h2 className="text-5xl font-semibold md:col-span-4" style={{ color: "var(--clr-black)" }}>
-            Built by students,
-            <br />
-            open to ideas.
+            <ArrowLeft className="size-3" aria-hidden />
+            All clubs
+          </Link>
+          <span className="mt-4 grid size-24 place-items-center overflow-hidden rounded-full border-2 border-white/30 bg-white text-2xl font-semibold text-[#18181b]">
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt="" className="size-full object-cover" />
+            ) : (
+              club.name.slice(0, 2).toUpperCase()
+            )}
+          </span>
+          <h2 className="mt-3 text-ui font-semibold leading-snug">
+            {club.name}
           </h2>
-          <div className="md:col-span-7 md:col-start-6">
-            <p className="text-2xl leading-relaxed" style={{ color: "rgba(33,37,41,0.75)" }}>
-              {club.name} is part of the MLRIT student community
-              {club.about ? `, bringing people together through ${club.about.toLowerCase()}` : ""}.
-            </p>
-            <div className="mt-16">
-              <div className="mb-5 flex items-center justify-between">
-                <h3 className="meta flex items-center gap-2" style={{ color: "var(--clr-purple)" }}>
-                  <CalendarDays className="size-4" />
-                  Events
-                </h3>
-                <span className="meta" style={{ color: "rgba(33,37,41,0.4)" }}>
-                  Hover to explore
-                </span>
-              </div>
-              <EventRingGallery
-                events={events}
-                clubImage={club.avatar_url || clubImages[club.name.toUpperCase()]}
-              />
+          <p className="mt-0.5 text-xs text-zinc-400">Student community</p>
+          <div className="mt-4 grid w-full grid-cols-2 gap-2">
+            <div className="rounded-xl bg-white/[0.06] py-2.5">
+              <p className="text-lg font-semibold">{events.length}</p>
+              <p className="text-xs text-zinc-400">Events</p>
+            </div>
+            <div className="rounded-xl bg-white/[0.06] py-2.5">
+              <p className="text-lg font-semibold">{upcoming.length}</p>
+              <p className="text-xs text-zinc-400">Upcoming</p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <SiteFooter />
-    </main>
+        {upcoming.length > 0 && (
+          <section className="dz-panel p-5">
+            <h2 className="text-lg font-semibold">Coming up</h2>
+            <ul className="mt-3 flex flex-col gap-3">
+              {upcoming.slice(0, 4).map((e) => (
+                <li key={e.id}>
+                  <Link href={`/events/${e.id}`} className="block">
+                    <p className="truncate text-xs font-medium">{e.name}</p>
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-zinc-400">
+                      <MapPin className="size-2.5" aria-hidden />
+                      {eventLocation(e) || "Venue TBA"}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </aside>
+
+      <div className="flex min-w-0 flex-col gap-6 max-lg:order-1">
+        <HeroBanner
+          titleAs="h1"
+          image={banner ? eventCover(banner, 0) : "/events/welcome-gate.jpg"}
+          eyebrow="Student community"
+          tags={[
+            `${events.length} event${events.length === 1 ? "" : "s"}`,
+            "MLRIT",
+          ]}
+          title={club.name}
+          description={
+            club.about || `${club.name} is part of the MLRIT student community.`
+          }
+          primary={{
+            label: "View events",
+            href: "#club-events",
+            icon: <CalendarDays className="size-3.5" aria-hidden />,
+          }}
+          secondary={{
+            label: "Calendar",
+            href: "/calendar",
+            icon: (
+              <CalendarPlus
+                className="size-3.5"
+                strokeWidth={1.8}
+                aria-hidden
+              />
+            ),
+          }}
+        />
+
+        <section id="club-events">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Events</h2>
+            <span className="dz-chip">{events.length} listed</span>
+          </div>
+          {events.length === 0 ? (
+            <p className="dz-panel mt-3 p-6 text-ui text-zinc-400">
+              No events posted yet. Check back soon.
+            </p>
+          ) : (
+            <div className="mt-3 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-3">
+              {events.map((e, i) => (
+                <EventCard
+                  key={e.id}
+                  href={`/events/${e.id}`}
+                  title={e.name}
+                  meta={`${formatEventDate(e.start_datetime)}${e.club ? ` · ${e.club.name}` : ""}`}
+                  category={eventCategory(e)}
+                  image={eventCover(e, i)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
   );
 }

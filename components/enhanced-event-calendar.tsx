@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import logger from "@/lib/logger";
+import { ErrorState } from "@/components/discover/LoadStates";
+import { friendlyError } from "@/components/discover/useEvents";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -66,10 +70,19 @@ interface EventData {
 
 type Club = { id: string; name: string; avatar_url?: string };
 
-export function EnhancedEventCalendar() {
+export function EnhancedEventCalendar({
+  actionsSlot,
+}: {
+  actionsSlot?: HTMLElement | null;
+} = {}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("semester-1-quarter-1");
   const [events, setEvents] = useState<EventData[]>([]);
+  // Keep a failed fetch apart from "no events" so the page can say so.
+  const [eventsStatus, setEventsStatus] = useState<
+    "loading" | "error" | "ready"
+  >("loading");
+  const [eventsError, setEventsError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [activeView, setActiveView] = useState<"calendar" | "list">("calendar");
@@ -78,6 +91,7 @@ export function EnhancedEventCalendar() {
   const [open, setOpen] = useState(false);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [isLoadingClubs, setIsLoadingClubs] = useState(false);
+  const [clubsFailed, setClubsFailed] = useState(false);
   const [selectedClubId, setSelectedClubId] = useState<string>("");
   const [form, setForm] = useState({
     title: "",
@@ -186,6 +200,7 @@ export function EnhancedEventCalendar() {
 
   // fetch events from Supabase
   const fetchEvents = async () => {
+    setEventsStatus("loading");
     try {
       const parts = selectedSemester.split("-");
       const semester = parts.length >= 2 ? `${parts[0]}-${parts[1]}` : "";
@@ -236,9 +251,13 @@ export function EnhancedEventCalendar() {
         has_report: false, // Will be updated separately
       }));
       setEvents(mapped);
-    } catch (e) {
-      console.error("Failed to fetch events", e);
+      setEventsStatus("ready");
+    } catch (e: any) {
+      const message = e?.message || String(e);
+      logger.error("[calendar] events fetch error:", message);
       setEvents([]);
+      setEventsError(message);
+      setEventsStatus("error");
     }
   };
 
@@ -250,6 +269,7 @@ export function EnhancedEventCalendar() {
   const fetchClubs = async () => {
     try {
       setIsLoadingClubs(true);
+      setClubsFailed(false);
       const { data, error } = await supabase
         .from("clubs")
         .select("id, name, avatar_url")
@@ -257,8 +277,9 @@ export function EnhancedEventCalendar() {
       if (error) throw error;
       setClubs((data as Club[]) || []);
     } catch (e: any) {
-      console.error("Failed to load clubs", e?.message || e);
+      logger.error("[calendar] clubs fetch error:", e?.message || e);
       setClubs([]);
+      setClubsFailed(true);
     } finally {
       setIsLoadingClubs(false);
     }
@@ -328,11 +349,11 @@ export function EnhancedEventCalendar() {
   };
 
   return (
-    <div className="p-6 dark:from-purple-950 dark:via-neutral-900 dark:to-black bg-gradient-to-tl from-pink-300 via-white to-white min-h-screen">
+    <div className="w-full">
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Enhanced Event Calendar</h1>
-          <div className="flex items-center gap-2">
+        {(() => {
+          const actions = (
+          <div className="flex flex-wrap items-center gap-2">
             <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "calendar" | "list")}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="calendar" className="flex items-center gap-2">
@@ -347,13 +368,14 @@ export function EnhancedEventCalendar() {
             </Tabs>
             <Button
               onClick={openAddDialog}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Event
             </Button>
           </div>
-        </div>
+          );
+          return actionsSlot ? createPortal(actions, actionsSlot) : <div className="flex justify-end mb-4">{actions}</div>;
+        })()}
 
         <div className="flex gap-4 mb-6 flex-wrap">
           <Select value={selectedSemester} onValueChange={setSelectedSemester}>
@@ -370,7 +392,15 @@ export function EnhancedEventCalendar() {
 
           <Select value={selectedClubId || "all"} onValueChange={(v) => setSelectedClubId(v === "all" ? "" : v)}>
             <SelectTrigger className="w-72 bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
-              <SelectValue placeholder={isLoadingClubs ? "Loading clubs..." : "Filter by Club (All)"} />
+              <SelectValue
+                placeholder={
+                  isLoadingClubs
+                    ? "Loading clubs..."
+                    : clubsFailed
+                      ? "Clubs unavailable"
+                      : "Filter by Club (All)"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Clubs</SelectItem>
@@ -397,17 +427,31 @@ export function EnhancedEventCalendar() {
               className="pl-10"
             />
           </div>
+          {clubsFailed && (
+            <button
+              type="button"
+              onClick={fetchClubs}
+              className="h-9 rounded-md px-3 text-sm text-[var(--danger)] hover:bg-white/5"
+            >
+              Clubs didn&apos;t load · Retry
+            </button>
+          )}
         </div>
       </div>
 
-      {activeView === "calendar" ? (
+      {eventsStatus === "error" ? (
+        <ErrorState
+          title="Calendar events didn't load"
+          message={friendlyError(eventsError)}
+          onRetry={fetchEvents}
+        />
+      ) : null}
+
+      {eventsStatus === "error" ? null : activeView === "calendar" ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Calendar View */}
           <div className="lg:col-span-2">
             <Card>
-              <CardHeader>
-                <CardTitle>Event Calendar</CardTitle>
-              </CardHeader>
               <CardContent>
                 <Calendar
                   mode="single"
@@ -415,7 +459,8 @@ export function EnhancedEventCalendar() {
                   onSelect={setSelectedDate}
                   month={selectedMonth}
                   onMonthChange={setSelectedMonth}
-                  className="rounded-md border"
+                  className="w-full rounded-md border"
+                  classNames={{ root: "w-full", day: "relative w-full p-0 text-center group/day select-none" }}
                   components={{
                     DayButton: ({ day, ...props }) => (
                       <button
@@ -443,7 +488,9 @@ export function EnhancedEventCalendar() {
               <CardContent className="space-y-3">
                 {selectedDateEvents.length === 0 ? (
                   <p className="text-muted-foreground text-center py-4">
-                    No events scheduled for this date
+                    {eventsStatus === "loading"
+                      ? "Loading events…"
+                      : "No events scheduled for this date"}
                   </p>
                 ) : (
                   selectedDateEvents.map((event) => (
@@ -494,7 +541,7 @@ export function EnhancedEventCalendar() {
                 {filteredEvents.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                      No events found
+                      {eventsStatus === "loading" ? "Loading events…" : "No events found"}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -622,7 +669,15 @@ export function EnhancedEventCalendar() {
                 onValueChange={(v) => setForm({ ...form, clubId: v })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={isLoadingClubs ? "Loading..." : "Select a club"} />
+                  <SelectValue
+                placeholder={
+                  isLoadingClubs
+                    ? "Loading..."
+                    : clubsFailed
+                      ? "Clubs unavailable"
+                      : "Select a club"
+                }
+              />
                 </SelectTrigger>
                 <SelectContent>
                   {clubs.map((c) => (

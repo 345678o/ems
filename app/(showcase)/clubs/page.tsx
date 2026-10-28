@@ -1,264 +1,137 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-import { ArrowUpRight } from "lucide-react";
-import { SiteFooter } from "@/components/ems/site-shell";
-import { supabase } from "@/lib/supabase/browserClient";
+import { ArrowUpRight, CalendarPlus } from "lucide-react";
+import { HeroBanner } from "@/components/discover/HeroBanner";
+import { clubHref, clubLogo } from "@/components/discover/types";
+import { ErrorState } from "@/components/discover/LoadStates";
+import {
+  friendlyError,
+  useClubs,
+  type ClubRow,
+} from "@/components/discover/useEvents";
 
-// GalleryTunnel is raw three.js — load it client-only.
-const GalleryTunnel = dynamic(
-  () => import("@/components/ems/GalleryTunnel").then((m) => m.GalleryTunnel),
-  { ssr: false }
-);
+type Club = ClubRow;
 
-const EVENT_IMAGES = [
-  "/events/welcome-gate.jpg",
-  "/events/B2B.png",
-  "/events/equniox.png",
-  "/events/gi.png",
-  "/events/hustle mania.png",
-  "/events/metaloop.png",
-  "/events/wc 2.0.png",
-  "/events/wc.png",
-];
-
-type Club = {
-  id: string;
-  name: string;
-  focus: string | null;
-};
-
-export default function ClubsPage() {
-  const [clubs, setClubs] = useState<Club[]>([]);
-
-  useEffect(() => {
-    const loadClubs = async () => {
-      const { data, error } = await supabase
-        .from("clubs")
-        .select("id,name,about")
-        .order("name", { ascending: true });
-
-      if (error) {
-        console.error("[clubs] fetch error:", error.message);
-        return;
-      }
-
-      setClubs((data || []).map((c) => ({ id: c.id, name: c.name, focus: c.about })));
-    };
-    void loadClubs();
-  }, []);
-
-  useEffect(() => {
-    const cards = document.querySelectorAll<HTMLElement>(".club-card");
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const el = entry.target as HTMLElement;
-            const d = el.dataset.delay ?? "0";
-            setTimeout(() => {
-              el.style.opacity = "1";
-              el.style.transform = "translateY(0)";
-            }, parseInt(d));
-            obs.unobserve(el);
-          }
-        });
-      },
-      { threshold: 0.08 }
-    );
-    cards.forEach((c) => obs.observe(c));
-    return () => obs.disconnect();
-  }, [clubs]);
-
+function ClubCard({ club }: { club: Club }) {
+  const logo = club.avatar_url || clubLogo(club.name);
   return (
-    <>
-      {/* ── Hero ── GalleryTunnel full bleed */}
-      <div
-        style={{
-          position: "relative",
-          height: "60vh",
-          minHeight: "500px",
-          overflow: "hidden",
-          display: "block",
-          width: "100%",
-          background: "#212529",
-        }}
-      >
-        <GalleryTunnel
-          images={EVENT_IMAGES}
-          colors={["#212529", "#1a1d21", "#2d3748", "#E9ECEF"]}
-          background="#212529"
-          lineColor="#ffffff"
-          lineOpacity={25}
-          grid={3}
-          speed={40}
-          fade={70}
-        />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(to top, rgba(33,37,41,0.9) 30%, transparent 100%)",
-            zIndex: 1,
-          }}
-        />
-        <div
-          className="page-gutter"
-          style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, paddingBottom: "3rem" }}
+    <Link
+      href={clubHref(club.name)}
+      className="dz-card group flex min-h-[136px] flex-col gap-4 p-4 sm:h-[168px] sm:gap-0"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-[var(--dz-surface-3)] text-ui font-semibold text-zinc-300">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logo}
+              alt=""
+              className="size-full bg-white object-cover"
+            />
+          ) : (
+            club.name.slice(0, 2).toUpperCase()
+          )}
+        </span>
+        <span
+          className="grid size-8 shrink-0 place-items-center rounded-lg text-faint transition-colors group-hover:bg-white/[0.06] group-hover:text-white"
+          aria-hidden
         >
-          <div className="mx-auto max-w-[1400px]">
-            <p className="meta mb-4" style={{ color: "var(--clr-orange)" }}>
-              Campus communities
-            </p>
-            <h1 className="display-lg uppercase" style={{ color: "var(--clr-white)" }}>
-              Find your
-              <br />
-              circle.
-            </h1>
-            <p className="mt-6 max-w-xl text-lg" style={{ color: "rgba(233,236,239,0.7)" }}>
-              {clubs.length} active clubs and communities across campus.
-            </p>
-          </div>
-        </div>
+          <ArrowUpRight className="size-4" />
+        </span>
       </div>
-
-      <main style={{ background: "var(--clr-white)" }}>
-        {/* ── All Clubs ── */}
-        <div className="page-gutter py-20" style={{ background: "var(--clr-white)" }}>
-          <div className="mx-auto max-w-[1400px]">
-            <div className="mb-10 flex items-end justify-between">
-              <div>
-                <p className="meta mb-2" style={{ color: "var(--clr-purple)" }}>
-                  Student communities
-                </p>
-                <h2 className="text-4xl font-semibold" style={{ color: "var(--clr-black)" }}>
-                  All clubs
-                </h2>
-              </div>
-              <span className="meta" style={{ color: "var(--clr-black)", opacity: 0.3 }}>
-                {clubs.length} clubs
-              </span>
-            </div>
-
-            {clubs.length === 0 ? (
-              <p style={{ color: "rgba(33,37,41,0.5)" }}>No clubs yet.</p>
-            ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-                  gap: "1px",
-                  background: "var(--border)",
-                }}
-              >
-                {clubs.map((c, i) => (
-                  <ClubCard
-                    key={c.id}
-                    club={c}
-                    delay={i * 60}
-                    accent={i % 2 === 0 ? "var(--clr-purple)" : "var(--clr-orange)"}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <SiteFooter />
-      </main>
-    </>
+      <h3 className="mt-auto truncate text-[15px] font-semibold">
+        {club.name}
+      </h3>
+      <p className="mt-1 line-clamp-2 text-ui leading-snug text-zinc-400">
+        {club.about || "Student community at MLRIT."}
+      </p>
+    </Link>
   );
 }
 
-function ClubCard({
-  club,
-  delay,
-  accent,
-}: {
-  club: Club;
-  delay: number;
-  accent: string;
-}) {
-  const abbr = club.name.slice(0, 4).toUpperCase();
+export default function ClubsPage() {
+  const { clubs, status, error, retry } = useClubs();
+  const [query, setQuery] = useState("");
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return q
+      ? clubs.filter((c) =>
+          [c.name, c.about].some((v) => v?.toLowerCase().includes(q))
+        )
+      : clubs;
+  }, [clubs, query]);
+
   return (
-    <Link
-      href={`/clubs/${club.name.toLowerCase()}`}
-      className="club-card group"
-      data-delay={delay}
-      style={{
-        background: "#fff",
-        padding: "2rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.25rem",
-        opacity: 0,
-        transform: "translateY(32px)",
-        transition:
-          "opacity 0.65s ease, transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94), background 0.2s ease",
-        textDecoration: "none",
-        position: "relative",
-        overflow: "hidden",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background =
-          accent === "var(--clr-purple)" ? "rgba(131,56,236,0.06)" : "rgba(251,86,7,0.06)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "#fff";
-      }}
-    >
-      <div
-        style={{
-          width: "3.5rem",
-          height: "3.5rem",
-          borderRadius: "50%",
-          background: accent === "var(--clr-purple)" ? "rgba(131,56,236,0.1)" : "rgba(251,86,7,0.1)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "var(--font-display)",
-          fontWeight: 800,
-          fontSize: "0.9rem",
-          letterSpacing: "0.05em",
-          color: accent,
-          flexShrink: 0,
+    <div className="flex flex-col gap-6">
+      <HeroBanner
+        titleAs="h1"
+        image="/events/welcome-gate.jpg"
+        eyebrow="Campus communities"
+        tags={[`${clubs.length || "—"} clubs`, "MLRIT"]}
+        title="Find your circle"
+        description="Active clubs and communities across campus, from code and robotics to debate and service."
+        primary={{ label: "Browse events", href: "/events" }}
+        secondary={{
+          label: "Calendar",
+          href: "/calendar",
+          icon: (
+            <CalendarPlus className="size-3.5" strokeWidth={1.8} aria-hidden />
+          ),
         }}
-      >
-        {abbr}
-      </div>
+      />
 
-      <div style={{ flex: 1 }}>
-        <h3
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "1.35rem",
-            fontWeight: 700,
-            color: "var(--clr-black)",
-            margin: 0,
-            lineHeight: 1.15,
-            transition: "color 0.2s ease",
-          }}
-          className="group-hover:text-[var(--clr-purple)]"
-        >
-          {club.name}
-        </h3>
-        <p
-          style={{
-            marginTop: "0.4rem",
-            fontSize: "0.78rem",
-            color: "rgba(33,37,41,0.5)",
-            lineHeight: 1.4,
-          }}
-        >
-          {club.focus || "Student community at MLRIT."}
-        </p>
-      </div>
+      <section>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">All clubs</h2>
+          <div className="flex items-center gap-2">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Filter clubs"
+              aria-label="Filter clubs"
+              className="dz-input w-48 px-3"
+            />
+            <span className="dz-chip">
+              {visible.length} club{visible.length === 1 ? "" : "s"}
+            </span>
+          </div>
+        </div>
 
-      <ArrowUpRight className="club-card-arrow size-4" style={{ color: accent }} />
-
-      <div className="club-card-bar" style={{ background: accent }} />
-    </Link>
+        {status === "loading" ? (
+          <div
+            role="status"
+            aria-label="Loading clubs"
+            className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4"
+          >
+            {Array.from({ length: 8 }, (_, i) => (
+              <div
+                key={i}
+                className="dz-card h-[168px] animate-pulse bg-[var(--dz-surface-2)]"
+              />
+            ))}
+          </div>
+        ) : status === "error" ? (
+          <ErrorState
+            className="mt-3"
+            title="Clubs didn't load"
+            message={friendlyError(error)}
+            onRetry={retry}
+          />
+        ) : visible.length === 0 ? (
+          <p className="dz-panel mt-3 p-6 text-ui text-zinc-400">
+            No clubs found.
+          </p>
+        ) : (
+          <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
+            {visible.map((c) => (
+              <ClubCard key={c.id} club={c} />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

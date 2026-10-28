@@ -1,0 +1,174 @@
+/* Campus Calendar — bold editorial look: cobalt board, month panels in
+   lime / cobalt / yellow / pink with deep-blue ink, flat illustrations.
+   Self-contained palette so the board reads the same inside the dark app
+   shell and inside portalled dialogs. */
+.cc {
+  --cc-cobalt: #2f4bd3;
+  --cc-cobalt-deep: #2238b0;
+  --cc-ink: #16207a;
+  --cc-lime: #b7dd48;
+  --cc-yellow: #ffc83d;
+  --cc-pink: #f5a3cf;
+  --cc-paper: #fffdf6;
+  --cc-display: var(--font-big-shoulders), "Arial Narrow", sans-serif;
+}
+
+.cc-board {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--cc-cobalt);
+  color: var(--cc-paper);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 24px 48px -24px rgba(0, 0, 0, 0.6);
+}
+
+.cc-display {
+  font-family: var(--cc-display);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+/* Month panel tones; --tone-ink is the text colour that sits on the tone */
+.cc-tone-lime {
+  --tone: var(--cc-lime);
+  --tone-ink: var(--cc-ink);
+}
+.cc-tone-yellow {
+  --tone: var(--cc-yellow);
+  --tone-ink: var(--cc-ink);
+}
+.cc-tone-pink {
+  --tone: var(--cc-pink);
+  --tone-ink: var(--cc-ink);
+}
+.cc-tone-cobalt {
+  --tone: var(--cc-cobalt-deep);
+  --tone-ink: var(--cc-paper);
+}
+.cc-panel {
+  background: var(--tone);
+  color: var(--tone-ink);
+}
+
+/* Paper cards (agenda, week columns, day list) */
+.cc-paper {
+  background: var(--cc-paper);
+  color: var(--cc-ink);
+  border-radius: 20px;
+  box-shadow: 0 10px 24px -14px rgba(10, 16, 70, 0.55);
+}
+
+/* Controls on the cobalt board */
+.cc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+}
+.cc-btn--paper {
+  background: var(--cc-paper);
+  color: var(--cc-ink);
+}
+.cc-btn--paper:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+.cc-btn--lime {
+  background: var(--cc-lime);
+  color: var(--cc-ink);
+}
+.cc-btn--lime:hover {
+  background: #c6e866;
+  transform: translateY(-1px);
+}
+.cc-btn--ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--cc-paper);
+}
+.cc-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.cc-icon-btn {
+  width: 40px;
+  padding: 0;
+}
+.cc :focus-visible {
+  outline: 3px solid var(--cc-yellow);
+  outline-offset: 2px;
+}
+
+/* Category colours for chips, dots and the legend */
+.cc-cat-tech {
+  --cat: var(--cc-cobalt);
+  --cat-ink: #fff;
+}
+.cc-cat-cultural {
+  --cat: #ec5fa6;
+  --cat-ink: #fff;
+}
+.cc-cat-sports {
+  --cat: var(--cc-lime);
+  --cat-ink: var(--cc-ink);
+}
+.cc-cat-workshop {
+  --cat: var(--cc-yellow);
+  --cat-ink: var(--cc-ink);
+}
+.cc-cat-club {
+  --cat: #ffffff;
+  --cat-ink: var(--cc-ink);
+}
+.cc-chip {
+  background: var(--cat);
+  color: var(--cat-ink);
+  box-shadow: 0 0 0 1px rgba(22, 32, 122, 0.18);
+}
+.cc-dot {
+  background: var(--cat);
+  box-shadow: 0 0 0 1.5px rgba(22, 32, 122, 0.35);
+}
+
+/* Date cells inside a month panel */
+.cc-day {
+  border-radius: 14px;
+  transition: background-color 0.15s ease;
+}
+.cc-day:hover {
+  background: color-mix(in srgb, var(--tone-ink) 8%, transparent);
+}
+.cc-day[data-outside="true"] {
+  opacity: 0.38;
+}
+.cc-day[data-selected="true"] {
+  background: var(--tone-ink);
+  color: var(--tone);
+}
+.cc-day[data-selected="true"] .cc-chip {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+.cc-today-ring {
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-btn,
+  .cc-day {
+    transition: none;
+  }
+  .cc-btn:hover {
+    transform: none;
+  }
+}
