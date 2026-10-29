@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { unstable_rethrow } from "next/navigation";
 import { Inter } from "next/font/google";
 import { getServerSession } from "next-auth";
 import {
@@ -105,6 +106,8 @@ async function loadOverview() {
       now,
     };
   } catch (e) {
+    // Let Next's own signals (e.g. "this route reads cookies") through.
+    unstable_rethrow(e);
     logger.error("[landing] overview failed:", e);
     return null;
   }

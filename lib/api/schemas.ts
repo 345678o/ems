@@ -21,8 +21,9 @@ import { z } from "zod";
 const nonEmptyString = (label: string) =>
   z.string().trim().min(1, `${label} is required`);
 
-/** UUID v4 — used for IDs that come from the client. */
-const uuid = z.string().uuid("Must be a valid UUID");
+/** UUID-shaped ID from the client. z.guid() keeps zod 3's loose format
+ *  check; z.uuid() would also reject non-RFC version/variant digits. */
+const uuid = z.guid("Must be a valid UUID");
 
 /** ISO-8601 datetime string that can be parsed by Date. */
 const isoDatetime = (label: string) =>
@@ -37,14 +38,14 @@ const isoDatetime = (label: string) =>
 /** Positive integer — used for participant counts, budgets, etc. */
 const positiveInt = (label: string) =>
   z.coerce
-    .number({ invalid_type_error: `${label} must be a number` })
+    .number({ error: `${label} must be a number` })
     .int(`${label} must be a whole number`)
     .positive(`${label} must be greater than 0`);
 
 /** Non-negative number — allows 0 (e.g. estimated_budget). */
 const nonNegativeNumber = (label: string) =>
   z.coerce
-    .number({ invalid_type_error: `${label} must be a number` })
+    .number({ error: `${label} must be a number` })
     .min(0, `${label} must be 0 or greater`);
 
 // ---------------------------------------------------------------------------
@@ -98,7 +99,7 @@ export const createEventSchema = z
     estimated_budget: nonNegativeNumber("Estimated budget"),
     club_id: uuid.describe("Club ID"),
     event_type: z.enum(["free", "paid"], {
-      errorMap: () => ({ message: 'Event type must be "free" or "paid"' }),
+      error: 'Event type must be "free" or "paid"',
     }),
   })
   .refine((d) => new Date(d.end_datetime) >= new Date(d.start_datetime), {
@@ -114,9 +115,7 @@ export type CreateEventInput = z.infer<typeof createEventSchema>;
 
 export const storageUploadSchema = z.object({
   bucket: z.enum(ALLOWED_STORAGE_BUCKETS, {
-    errorMap: () => ({
-      message: `Bucket must be one of: ${ALLOWED_STORAGE_BUCKETS.join(", ")}`,
-    }),
+    error: `Bucket must be one of: ${ALLOWED_STORAGE_BUCKETS.join(", ")}`,
   }),
   /**
    * Storage path for the file. Authorization is handled separately in the
@@ -139,9 +138,7 @@ export type StorageUploadInput = z.infer<typeof storageUploadSchema>;
 
 export const storageDeleteSchema = z.object({
   bucket: z.enum(ALLOWED_STORAGE_BUCKETS, {
-    errorMap: () => ({
-      message: `Bucket must be one of: ${ALLOWED_STORAGE_BUCKETS.join(", ")}`,
-    }),
+    error: `Bucket must be one of: ${ALLOWED_STORAGE_BUCKETS.join(", ")}`,
   }),
   path: z
     .string()
@@ -158,8 +155,9 @@ export type StorageDeleteInput = z.infer<typeof storageDeleteSchema>;
 // PATCH /api/me  (JSON body — all fields optional)
 // ---------------------------------------------------------------------------
 
-export const patchMeSchema = z
-  .object({
+// Strict: extra fields are rejected — never write unexpected columns to users.
+export const patchMeSchema = z.strictObject(
+  {
     first_name: z
       .string()
       .trim()
@@ -179,9 +177,9 @@ export const patchMeSchema = z
       .regex(/^[+\d\s\-().]*$/, "Phone number contains invalid characters")
       .nullable()
       .optional(),
-  })
-  // Strip any extra fields — never write unexpected columns to users.
-  .strict("Unexpected fields in request body");
+  },
+  "Unexpected fields in request body"
+);
 
 export type PatchMeInput = z.infer<typeof patchMeSchema>;
 
@@ -193,7 +191,7 @@ export type PatchMeInput = z.infer<typeof patchMeSchema>;
  * This route takes no request body; validation is purely session-based.
  * The schema is included for symmetry and to document that intent explicitly.
  */
-export const partnerConvertSchema = z.object({}).strict();
+export const partnerConvertSchema = z.strictObject({});
 
 export type PartnerConvertInput = z.infer<typeof partnerConvertSchema>;
 
