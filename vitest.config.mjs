@@ -7,6 +7,8 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
+  // Tests never render CSS; skip the app's Tailwind PostCSS pipeline.
+  css: { postcss: { plugins: [] } },
   test: {
     environment: "jsdom",
     globals: true,

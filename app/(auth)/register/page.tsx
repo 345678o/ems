@@ -11,7 +11,14 @@ import {
   toUserRole,
   useUserRole,
 } from "@/components/discover/useUserRole";
-import { AlertCircle, ArrowUpRight, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Loader2,
+} from "lucide-react";
 
 const ALLOWED_DOMAINS = ["gmail.com", "mlrit.ac.in"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -74,6 +81,7 @@ function SignInView() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<
@@ -187,7 +195,8 @@ function SignInView() {
   const field = (
     name: Field,
     label: string,
-    input: React.InputHTMLAttributes<HTMLInputElement>
+    input: React.InputHTMLAttributes<HTMLInputElement>,
+    trailing?: React.ReactNode
   ) => {
     const id = `${ids}-${name}`;
     const err = fieldErrors[name];
@@ -196,19 +205,22 @@ function SignInView() {
         <label htmlFor={id} className="block text-ui font-medium text-zinc-300">
           {label}
         </label>
-        <input
-          id={id}
-          {...input}
-          disabled={busy}
-          aria-invalid={!!err}
-          aria-describedby={err ? `${id}-error` : undefined}
-          onInput={() =>
-            err && setFieldErrors((prev) => ({ ...prev, [name]: undefined }))
-          }
-          className={`dz-input mt-1.5 h-11 w-full px-3 disabled:opacity-60 ${
-            err ? "!border-[var(--danger)]" : ""
-          }`}
-        />
+        <div className="relative mt-1.5">
+          <input
+            id={id}
+            {...input}
+            disabled={busy}
+            aria-invalid={!!err}
+            aria-describedby={err ? `${id}-error` : undefined}
+            onInput={() =>
+              err && setFieldErrors((prev) => ({ ...prev, [name]: undefined }))
+            }
+            className={`dz-input h-11 w-full px-3 disabled:opacity-60 ${
+              trailing ? "pr-11" : ""
+            } ${err ? "!border-[var(--danger)]" : ""}`}
+          />
+          {trailing}
+        </div>
         {err && (
           <p
             id={`${id}-error`}
@@ -233,6 +245,10 @@ function SignInView() {
           aria-hidden
           className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,11,13,0.1)_0%,rgba(11,11,13,0.35)_45%,rgba(11,11,13,0.92)_100%)] max-md:bg-[linear-gradient(180deg,rgba(11,11,13,0.45)_0%,rgba(11,11,13,0.75)_40%,rgba(11,11,13,0.95)_100%)]"
         />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(70%_50%_at_0%_100%,rgba(255,122,80,0.28),transparent_70%)]"
+        />
         <div className="relative max-w-[380px]">
           <p className="flex items-center gap-2 text-ui font-medium text-zinc-200">
             <span
@@ -250,6 +266,16 @@ function SignInView() {
             One account for every club at MLRIT. Register for events in a tap
             and keep your semester in one calendar.
           </p>
+          <ul className="mt-5 flex flex-wrap gap-2 text-xs text-zinc-200">
+            {["Workshops", "Hackathons", "Fests", "Club meetups"].map((t) => (
+              <li
+                key={t}
+                className="rounded-full border border-[rgba(255,122,80,0.35)] bg-[rgba(255,122,80,0.12)] px-3 py-1"
+              >
+                {t}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -306,7 +332,7 @@ function SignInView() {
                     onClick={() => switchMode(m)}
                     className={`h-9 flex-1 rounded-md transition-colors ${
                       mode === m
-                        ? "bg-white/10 font-medium text-white"
+                        ? "bg-[rgba(255,122,80,0.16)] font-medium text-[var(--dz-accent)] ring-1 ring-[rgba(255,122,80,0.35)]"
                         : "text-zinc-400 hover:text-white"
                     }`}
                   >
@@ -361,18 +387,37 @@ function SignInView() {
                   placeholder: "you@mlrit.ac.in",
                   autoComplete: "email",
                 })}
-                {field("password", "Password", {
-                  value: password,
-                  onChange: (e) => setPassword(e.target.value),
-                  type: "password",
-                  placeholder: "••••••••",
-                  autoComplete:
-                    mode === "signin" ? "current-password" : "new-password",
-                })}
+                {field(
+                  "password",
+                  "Password",
+                  {
+                    value: password,
+                    onChange: (e) => setPassword(e.target.value),
+                    type: showPassword ? "text" : "password",
+                    placeholder: "••••••••",
+                    autoComplete:
+                      mode === "signin" ? "current-password" : "new-password",
+                  },
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    aria-pressed={showPassword}
+                    className="absolute inset-y-0 right-0 grid w-11 place-items-center text-zinc-400 transition-colors hover:text-white"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" aria-hidden />
+                    ) : (
+                      <Eye className="size-4" aria-hidden />
+                    )}
+                  </button>
+                )}
                 <button
                   type="submit"
                   disabled={busy}
-                  className="dz-btn dz-btn--primary h-11 w-full"
+                  className="dz-btn dz-btn--accent h-11 w-full"
                 >
                   {status === "submitting" ? (
                     <>
@@ -389,9 +434,20 @@ function SignInView() {
               </form>
 
               <p className="mt-4 text-xs text-faint">
-                {mode === "signup"
-                  ? `Only @mlrit.ac.in or @gmail.com addresses. Passwords need ${MIN_PASSWORD}+ characters.`
-                  : "New here? Choose Create account above."}
+                {mode === "signup" ? (
+                  `Only @mlrit.ac.in or @gmail.com addresses. Passwords need ${MIN_PASSWORD}+ characters.`
+                ) : (
+                  <>
+                    New here?{" "}
+                    <button
+                      type="button"
+                      onClick={() => switchMode("signup")}
+                      className="font-medium text-[var(--dz-accent)] hover:underline"
+                    >
+                      Create an account
+                    </button>
+                  </>
+                )}
               </p>
             </>
           )}

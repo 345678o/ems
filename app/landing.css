@@ -1,0 +1,169 @@
+/* Landing page (app/page.tsx): "campus noticeboard after dark".
+   Builds on the .dz tokens from components/discover/discover.css. */
+
+.lp {
+  --lp-display: var(--font-lp-display), var(--font-dz), system-ui, sans-serif;
+  --lp-mono: var(--font-lp-mono), ui-monospace, monospace;
+  background: var(--dz-bg);
+}
+
+.lp-display {
+  font-family: var(--lp-display);
+  font-optical-sizing: auto;
+}
+
+.lp-mono {
+  font-family: var(--lp-mono);
+  letter-spacing: 0.02em;
+}
+
+/* Film grain over the whole page, very faint. */
+.lp::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Hand-drawn style underline under the accent word in the headline. */
+.lp-underline {
+  position: relative;
+  white-space: nowrap;
+  color: var(--dz-accent);
+  background: linear-gradient(90deg, #ea580c, #ffb08f 60%, #fff1ea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.lp-underline::after {
+  content: "";
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: 0.02em;
+  height: 0.14em;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ea580c, #ffb08f);
+  opacity: 0.45;
+  transform: rotate(-1.2deg);
+  transform-origin: left;
+  animation: lp-draw 0.9s 0.55s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+/* Staggered entrance: set --d on each element for its delay. */
+.lp-rise {
+  animation: lp-rise 0.8s calc(var(--d, 0) * 1ms) cubic-bezier(0.2, 0.7, 0.2, 1)
+    both;
+}
+
+/* Ticket: notches cut on both sides at the tear line. */
+.lp-ticket {
+  --notch: 11px;
+  --tear: 68%;
+  position: relative;
+  border-radius: var(--dz-r-lg, 18px);
+  background:
+    linear-gradient(160deg, rgba(255, 122, 80, 0.16), transparent 45%),
+    var(--dz-surface-1);
+  border: 1px solid var(--dz-border-strong);
+  mask:
+    radial-gradient(circle var(--notch) at 0 var(--tear), transparent 98%, #000)
+      left / 51% 100% no-repeat,
+    radial-gradient(
+        circle var(--notch) at 100% var(--tear),
+        transparent 98%,
+        #000
+      )
+      right / 51% 100% no-repeat;
+  box-shadow: 0 30px 80px -30px rgba(255, 122, 80, 0.35);
+  transform: rotate(2deg);
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.lp-ticket:hover {
+  transform: rotate(0deg) translateY(-4px);
+}
+.lp-ticket-tear {
+  position: absolute;
+  left: calc(var(--notch) + 6px);
+  right: calc(var(--notch) + 6px);
+  top: var(--tear);
+  border-top: 2px dashed var(--dz-border-strong);
+}
+
+/* Ticker of real event and club names. Content is doubled in markup so the
+   loop is seamless at -50%. */
+.lp-marquee {
+  mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.lp-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: lp-marquee var(--lp-marquee-s, 40s) linear infinite;
+}
+.lp-marquee:hover .lp-marquee-track {
+  animation-play-state: paused;
+}
+
+/* Big outlined step numbers. */
+.lp-step-num {
+  font-family: var(--lp-display);
+  font-weight: 800;
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 122, 80, 0.55);
+}
+
+/* Role cards: accent glow follows hover. */
+.lp-role {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.lp-role::before {
+  content: "";
+  position: absolute;
+  inset: auto -30% -60% auto;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(rgba(255, 122, 80, 0.22), transparent 70%);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.lp-role:hover::before {
+  opacity: 1;
+}
+
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes lp-draw {
+  from {
+    transform: rotate(-1.2deg) scaleX(0);
+  }
+}
+@keyframes lp-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-rise,
+  .lp-underline::after,
+  .lp-marquee-track {
+    animation: none;
+  }
+  .lp-ticket,
+  .lp-ticket:hover {
+    transition: none;
+    transform: none;
+  }
+}

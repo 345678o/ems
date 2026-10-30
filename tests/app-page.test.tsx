@@ -17,10 +17,13 @@ vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/"),
   useSearchParams: vi.fn(() => new URLSearchParams()),
   notFound: vi.fn(),
+  unstable_rethrow: vi.fn(),
 }));
 
 vi.mock("next/font/google", () => ({
   Inter: () => ({ variable: "font-inter", className: "font-inter" }),
+  Bricolage_Grotesque: () => ({ variable: "font-display", className: "font-display" }),
+  JetBrains_Mono: () => ({ variable: "font-mono", className: "font-mono" }),
 }));
 
 vi.mock("next-auth", () => ({ getServerSession: vi.fn(async () => null) }));
@@ -65,7 +68,7 @@ describe("app/page.tsx — landing page", () => {
   it("renders the hero and real counts without redirecting", async () => {
     const html = renderToStaticMarkup(await LandingPage());
     expect(redirect).not.toHaveBeenCalled();
-    expect(html).toContain("Every campus event, in one place.");
+    expect(html).toContain("Every campus event,");
     expect(html).toContain('href="/discover"');
     expect(html).toContain(">7<");
   });
@@ -73,7 +76,7 @@ describe("app/page.tsx — landing page", () => {
   it("hides the stats when the database is unreachable", async () => {
     supabaseState.fail = true;
     const html = renderToStaticMarkup(await LandingPage());
-    expect(html).toContain("Every campus event, in one place.");
+    expect(html).toContain("Every campus event,");
     expect(html).not.toContain("Coming up");
   });
 });
